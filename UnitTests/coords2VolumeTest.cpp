@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     char* filename = "/home/lupoglaz/ProteinsDataset/CASP_SCWRL/T0653/FALCON-TOPO-X_TS5";
 	pL.loadPDB(filename);
     pL.assignAtomTypes(2);
-    cCoords2Volumes c2v(11, spatial_dim, resolution);
+    cCoords2Volume c2v(11, spatial_dim, resolution);
     
     THCudaTensor *coords = THCudaTensor_newWithSize1d(state, pL.r.size()*3);
     THCudaIntTensor *offsets = THCudaIntTensor_newWithSize1d(state, 11);
