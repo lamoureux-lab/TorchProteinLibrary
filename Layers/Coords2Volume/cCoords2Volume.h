@@ -1,9 +1,9 @@
-#ifndef CPAIRS2FORCES_H_
-#define CPAIRS2FORCES_H_
+#ifndef CCOORDS2VOLUME_H_
+#define CCOORDS2VOLUME_H_
 #include <TH.h>
 #include <THC.h>
 
-class cCoords2Volumes{
+class cCoords2Volume{
 
 	THCState *state;
 
@@ -14,7 +14,7 @@ class cCoords2Volumes{
     	
 public:
 
-	cCoords2Volumes( int num_types, int box_size, float resolution );
+	cCoords2Volume( int num_types, int box_size, float resolution );
 	
     void computeForward(    THCState *state,
                             THCudaTensor *gpu_plain_coords, 
@@ -24,7 +24,7 @@ public:
                             );
                         
 	                        
-	~cCoords2Volumes();
+	~cCoords2Volume();
 
 };
 

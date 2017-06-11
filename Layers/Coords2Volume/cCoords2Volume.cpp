@@ -8,7 +8,7 @@
 #include "cCoords2Volume.h"
 #include "cCoords2Volume_CUDAKernels.h"
 
-cCoords2Volumes::cCoords2Volumes(		int num_types,
+cCoords2Volume::cCoords2Volume(		int num_types,
 										int box_size,
 										float resolution
 								){
@@ -17,10 +17,10 @@ cCoords2Volumes::cCoords2Volumes(		int num_types,
 	this->resolution = resolution;
 }
 
-cCoords2Volumes::~cCoords2Volumes(){
+cCoords2Volume::~cCoords2Volume(){
 }
 
-void cCoords2Volumes::computeForward(   THCState *state,
+void cCoords2Volume::computeForward(   THCState *state,
 										THCudaTensor *gpu_plain_coords, 
 										THCudaIntTensor *gpu_offsets, 
 										THCudaIntTensor *gpu_num_coords_of_type,

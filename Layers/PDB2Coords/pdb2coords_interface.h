@@ -1,0 +1,1 @@
+int PDB2Coords_forward(const char* filename, THCudaTensor *gpu_plain_coords, THCudaIntTensor *gpu_offsets, THCudaIntTensor *gpu_num_coords_of_type, int spatial_dim, int resolution, int rotate, int shift );
