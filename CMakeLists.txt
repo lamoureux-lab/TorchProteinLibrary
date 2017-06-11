@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8)
+project(MainProj)
 
 set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_BUILD_TYPE Debug)
@@ -38,9 +39,13 @@ LINK_DIRECTORIES("${Torch_INSTALL_LIB}")
 include_directories("Math")
 add_subdirectory(Math)
 
-#PROTEINLOADER: protein loading library
-include_directories("CppProteinLoader")
-add_subdirectory(CppProteinLoader)
+#PROTEINLOADER: protein loading layer
+include_directories("Layers/PDB2Coords")
+add_subdirectory(Layers/PDB2Coords)
+
+#COORDS2VOLUME: projection of coordinates on a grid on gpu
+include_directories("Layers/Coords2Volume")
+add_subdirectory(Layers/Coords2Volume)
 
 #GLFRAMEWORK: freeglut visualization library
 include_directories("GL")
@@ -51,22 +56,16 @@ include_directories("VolumeVisualization")
 add_subdirectory(VolumeVisualization)
 
 
-# library for loading protein structure from torch
-ADD_LIBRARY(load_protein SHARED CppProteinLoader/loadProtein.cpp)
-TARGET_LINK_LIBRARIES(load_protein TH PROTEINLOADER)
 
 #Test tensor visualization using protein loading and visualizing it's density
-add_executable(proteinLoaderTest UnitTests/proteinLoaderTest.cpp)
-target_link_libraries (proteinLoaderTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
+cuda_add_executable(cpuProteinLoaderTest UnitTests/cpuProteinLoaderTest.cpp)
+target_link_libraries (cpuProteinLoaderTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
 
-#CUDA_ADD_LIBRARY(load_protein_cuda SHARED CppProteinLoader/loadProteinCUDA.cu)
-#TARGET_LINK_LIBRARIES(load_protein_cuda TH THC PROTEINLOADER)
+#Test PDB2Coords layer
+cuda_add_executable(pdb2CoordsTest UnitTests/pdb2CoordsTest.cpp)
+target_link_libraries (pdb2CoordsTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
 
-#CUDA_ADD_LIBRARY(get_gradient_cuda SHARED CppProteinLoader/reprojectGradientCUDA.cu)
-#TARGET_LINK_LIBRARIES(get_gradient_cuda TH THC PROTEINLOADER)
+#Test PDB2Coords layer
+cuda_add_executable(coords2VolumeTest UnitTests/coords2VolumeTest.cpp)
+target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK COORDS2VOLUME)
 
-#CUDA_ADD_LIBRARY(load_protein_cuda_direct SHARED CppProteinLoader/loadProteinCUDAdirect.cu)
-#TARGET_LINK_LIBRARIES(load_protein_cuda_direct TH THC PROTEINLOADER)
-
-#CUDA_ADD_EXECUTABLE(dummy_load_protein_cuda CppProteinLoader/dummyProteinLoadCuda.cu)
-#TARGET_LINK_LIBRARIES(dummy_load_protein_cuda PROTEINLOADER THC)

@@ -103,7 +103,11 @@ std::ostream& operator << (std::ostream& os, cVector3 v)
     os<<v.v[0]<<" "<<v.v[1]<<" "<<v.v[2];
     return os;
 }
-
+void cVector3::makeUniformVector(THGenerator *gen){
+    v[0] = THRandom_uniform(gen,0,1.0);
+    v[1] = THRandom_uniform(gen,0,1.0);
+    v[2] = THRandom_uniform(gen,0,1.0);
+}
 void cVector3::save(std::ofstream &outFile){
     for(int i=0;i<3;i++)outFile<<v[i]<<" ";
 }

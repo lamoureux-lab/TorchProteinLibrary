@@ -917,3 +917,26 @@ void cMatrix33::getAxis(cVector3 &axis) {
     diagonalize(eigValues, eigVectors);
     eigValues.print();
 }
+
+void cMatrix33::makeUniformRotation(cVector3 &uniformVector){
+
+	float u1 = uniformVector.v[0];
+	float u2 = uniformVector.v[1];
+	float u3 = uniformVector.v[2];
+	float q[4];
+	q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
+	q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
+	q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
+	q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
+	m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+	m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
+	m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
+
+	m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
+	m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+	m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
+
+	m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
+	m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
+	m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
+}

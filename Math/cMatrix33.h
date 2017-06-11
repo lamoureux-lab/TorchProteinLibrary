@@ -110,6 +110,7 @@ public:
     void                makeEulerRotationXYZ(double phi, double theta, double psi);
     void                makeEulerRotationYZX(double theta, double psi, double phi);
     void                getAxis(cVector3 &axis);
+    void                makeUniformRotation(cVector3 &uniformVector);
 };
 
 std::ostream& operator<<(std::ostream& out, const cMatrix33& M);

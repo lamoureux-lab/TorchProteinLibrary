@@ -27,12 +27,77 @@ std::string string_format( const std::string& format, Args ... args )
 
 cProteinLoader::cProteinLoader() {
 	num_atom_types = -1;
+	gen = THGenerator_new();
+ 	THRandom_seed(gen);
 }
 
 cProteinLoader::~cProteinLoader() {
 	// TODO Auto-generated destructor stub
+	THGenerator_free(gen);
 }
 
+void cProteinLoader::pdb2Coords(THCState *state,
+								std::string filename, 
+								THCudaTensor *gpu_plain_coords, 
+								THCudaIntTensor *gpu_offsets, 
+								THCudaIntTensor *gpu_num_coords_of_type,
+								int spatial_dim,
+								int resolution,
+								bool rotate,
+								bool shift){
+	this->loadPDB(filename);
+	this->assignAtomTypes(2);
+	this->computeBoundingBox();
+	this->shiftProtein( -0.5*(b0 + b1) );
+	if(rotate){
+		cVector3 uniform;
+		cMatrix33 rotation;
+		uniform.makeUniformVector(gen);
+		rotation.makeUniformRotation(uniform);
+		rotateProtein(rotation);
+	}
+	if(shift){
+		float dx_max = fmax(0, spatial_dim*resolution/2.0 - (b1[0]-b0[0])/2.0)*0.5;
+		float dy_max = fmax(0, spatial_dim*resolution/2.0 - (b1[1]-b0[1])/2.0)*0.5;
+		float dz_max = fmax(0, spatial_dim*resolution/2.0 - (b1[2]-b0[2])/2.0)*0.5;
+		float dx = THRandom_uniform(gen,-dx_max,dx_max);
+		float dy = THRandom_uniform(gen,-dy_max,dy_max);
+		float dz = THRandom_uniform(gen,-dz_max,dz_max);
+		shiftProtein(cVector3(dx,dy,dz));
+	}
+	this->shiftProtein( 0.5*cVector3(spatial_dim, spatial_dim, spatial_dim)*resolution ); 
+	
+	//contructing arrays for atom coordinates and types
+	std::vector<std::vector<float>> coords(num_atom_types, std::vector<float>(0));
+	
+	for(int i=0; i<r.size(); i++){
+		coords[atomType[i]].push_back(r[i].v[0]);
+		coords[atomType[i]].push_back(r[i].v[1]);
+		coords[atomType[i]].push_back(r[i].v[2]);
+	}
+
+	int plain_coords_size = r.size()*3;	
+	float *cpu_plain_coords = new float[plain_coords_size];
+	int *cpu_offsets = new int[num_atom_types];
+	int *cpu_num_coords_of_type = new int[num_atom_types];
+	cpu_offsets[0] = 0;
+	for(int i=0; i<num_atom_types;i++){
+		cpu_num_coords_of_type[i] = coords[i].size();
+		std:copy(coords[i].begin(), coords[i].end(), cpu_plain_coords+cpu_offsets[i]);
+		
+		if(i<(num_atom_types-1))
+			cpu_offsets[i+1] = cpu_offsets[i] + coords[i].size();
+	}
+	
+	cudaMemcpy( THCudaIntTensor_data(state, gpu_offsets), cpu_offsets, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy( THCudaIntTensor_data(state, gpu_num_coords_of_type), cpu_num_coords_of_type, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy( THCudaTensor_data(state, gpu_plain_coords), cpu_plain_coords, plain_coords_size*sizeof(float), cudaMemcpyHostToDevice);
+
+	delete [] cpu_plain_coords;
+	delete [] cpu_offsets;
+	delete [] cpu_num_coords_of_type;
+
+}
 
 int cProteinLoader::loadPDB(std::string filename){
 	std::ifstream pfile(filename);

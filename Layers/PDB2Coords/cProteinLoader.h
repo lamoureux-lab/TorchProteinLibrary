@@ -7,7 +7,8 @@
 
 #ifndef CPROTEINLOADER_H_
 #define CPROTEINLOADER_H_
-#include "TH/TH.h"
+#include <TH.h>
+#include <THC.h>
 #include <string>
 #include <vector>
 #include <cVector3.h>
@@ -26,6 +27,8 @@ public:
 	//bounding box
 	cVector3 b0, b1;
 	int num_atom_types;
+	
+	THGenerator *gen;
 
 public:
 	cProteinLoader();
@@ -51,9 +54,18 @@ public:
 
 	int get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 	int get4AtomType(std::string &atom_name);
-	
-	THGenerator *gen;
 
+
+	//
+	void pdb2Coords(THCState *state,
+					std::string filename, 
+					THCudaTensor *gpu_plain_coords, 
+					THCudaIntTensor *gpu_offsets, 
+					THCudaIntTensor *gpu_num_coords_of_type,
+					int spatial_dim,
+					int resolution,
+					bool rotate,
+					bool shift);
 };
 
 #endif /* CPROTEINLOADER_H_ */
