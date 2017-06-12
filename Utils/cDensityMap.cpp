@@ -31,12 +31,12 @@ void cDensityMap::saveAsXPlor(std::string filename){
         fprintf(fout, "%8d\n", z-1);
         for(int y=0; y<size; y++){
             for(int x=0; x<size; x+=6){
-                float val1 = THFloatTensor_get1d(t, x);
-                float val2 = THFloatTensor_get1d(t, x+1);
-                float val3 = THFloatTensor_get1d(t, x+2);
-                float val4 = THFloatTensor_get1d(t, x+3);
-                float val5 = THFloatTensor_get1d(t, x+4);
-                float val6 = THFloatTensor_get1d(t, x+5);
+                float val1 = THFloatTensor_get3d(t, x, y, z);
+                float val2 = THFloatTensor_get3d(t, x+1, y, z);
+                float val3 = THFloatTensor_get3d(t, x+2, y, z);
+                float val4 = THFloatTensor_get3d(t, x+3, y, z);
+                float val5 = THFloatTensor_get3d(t, x+4, y, z);
+                float val6 = THFloatTensor_get3d(t, x+5, y, z);
                 fprintf(fout, "%12.5E%12.5E%12.5E%12.5E%12.5E%12.5E\n", val1, val2, val3, val4, val5, val6);
             }
         }
