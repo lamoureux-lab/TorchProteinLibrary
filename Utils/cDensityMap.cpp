@@ -3,7 +3,7 @@
 #include <string>
 
 cDensityMap::cDensityMap(THFloatTensor *t, cVector3 b0, float resolution){
-    if(t->nDimension != 3 or (t->size[0]!=t->size[1] or t->size[0]!=t->size[3])){
+    if(t->nDimension != 3 or (t->size[0]!=t->size[1] or t->size[0]!=t->size[2])){
         std::cout<<"cDensityMap::Invalid tensor"<<std::endl;
         return;
     }
