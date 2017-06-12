@@ -73,3 +73,7 @@ target_link_libraries (pdb2CoordsTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK
 cuda_add_executable(coords2VolumeTest UnitTests/coords2VolumeTest.cpp)
 target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK COORDS2VOLUME)
 
+#Test Utils saving 3d tensor to xplor
+add_executable(densityMapSaveTest UnitTests/densityMapSaveTest.cpp)
+target_link_libraries (densityMapSaveTest TH UTILS TH_MATH)
+

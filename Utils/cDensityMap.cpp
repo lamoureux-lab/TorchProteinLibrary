@@ -25,7 +25,7 @@ void cDensityMap::saveAsXPlor(std::string filename){
     fprintf(fout, " 1\n");
     fprintf(fout, " 4\n");
     fprintf(fout, "%8d%8d%8d%8d%8d%8d%8d%8d%8d\n",size-1,0,size-1,size-1,0,size-1,size-1,0,size-1);
-    fprintf(fout, "%12.5E%12.5E%12.5E%12.5E%12.5E%12.5E\n\n",size,size,size,90,90.,90.);
+    fprintf(fout, "%12.5E%12.5E%12.5E%12.5E%12.5E%12.5E\n",float(size),float(size),float(size),90.,90.,90.);
     fprintf(fout, "ZYX\n");
     for(int z=0; z<size; z++){
         fprintf(fout, "%8d\n", z);
