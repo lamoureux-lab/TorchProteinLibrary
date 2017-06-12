@@ -55,6 +55,10 @@ add_subdirectory(GL)
 include_directories("VolumeVisualization")
 add_subdirectory(VolumeVisualization)
 
+#UTILS: some useful utilities
+include_directories("Utils")
+add_subdirectory(Utils)
+
 
 
 #Test tensor visualization using protein loading and visualizing it's density
