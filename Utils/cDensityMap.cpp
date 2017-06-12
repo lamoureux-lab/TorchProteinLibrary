@@ -28,7 +28,7 @@ void cDensityMap::saveAsXPlor(std::string filename){
     fprintf(fout, "%12.5E%12.5E%12.5E%12.5E%12.5E%12.5E\n\n",size,size,size,90,90.,90.);
     fprintf(fout, "ZYX\n");
     for(int z=0; z<size; z++){
-        fprintf(fout, "%8d\n", z-1);
+        fprintf(fout, "%8d\n", z);
         for(int y=0; y<size; y++){
             for(int x=0; x<size; x+=6){
                 float val1 = THFloatTensor_get3d(t, x, y, z);
