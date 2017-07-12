@@ -47,6 +47,10 @@ add_subdirectory(Layers/PDB2Coords)
 include_directories("Layers/Coords2Volume")
 add_subdirectory(Layers/Coords2Volume)
 
+#TENSORUPSAMPLE: upsampling a tensor on cpu
+include_directories("Layers/Upsampling")
+add_subdirectory(Layers/Upsampling)
+
 #GLFRAMEWORK: freeglut visualization library
 include_directories("GL")
 add_subdirectory(GL)
@@ -58,6 +62,11 @@ add_subdirectory(VolumeVisualization)
 #UTILS: some useful utilities
 include_directories("Utils")
 add_subdirectory(Utils)
+
+#ANGLES2BACKBONE: convert backbone dihedral angles to coordinates
+include_directories("Layers/Angles2Backbone")
+add_subdirectory(Layers/Angles2Backbone)
+
 
 
 
@@ -76,4 +85,13 @@ target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEW
 #Test Utils saving 3d tensor to xplor
 add_executable(densityMapSaveTest UnitTests/densityMapSaveTest.cpp)
 target_link_libraries (densityMapSaveTest TH UTILS TH_MATH)
+
+#Test upsampling of tensor on cpu
+add_executable(tensorUpsampleTest UnitTests/tensorUpsampleTest.cpp)
+target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
+
+#Test backbone computation
+add_executable(angles2BackboneTest UnitTests/angles2BackboneTest.cpp)
+target_link_libraries (angles2BackboneTest TH GLFRAMEWORK ANGLES2BACKBONE)
+
 

@@ -50,14 +50,6 @@
 #include <TH/TH.h>
 
 
-class cVector3Idx{
-public:
-  unsigned x, y, z;
-  cVector3Idx(int x, int y, int z):x(x),y(y),z(z){};
-  cVector3Idx():x(0),y(0),z(0){};
-  ~cVector3Idx(){};
-} ;
-
 class cVector3 {
 
 public:
