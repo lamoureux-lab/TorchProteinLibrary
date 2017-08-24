@@ -67,6 +67,10 @@ add_subdirectory(Utils)
 include_directories("Layers/Angles2Backbone")
 add_subdirectory(Layers/Angles2Backbone)
 
+#CALPHA_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for C-alpha protein model
+include_directories("Layers/C_alpha_protein")
+add_subdirectory(Layers/C_alpha_protein)
+
 
 
 

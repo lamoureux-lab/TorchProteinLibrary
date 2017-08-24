@@ -1,11 +1,10 @@
 #include "cMathCUDAKernels.h"
-
 #define KAPPA1 (3.14159 - 1.9391)
 #define KAPPA2 (3.14159 - 2.061)
 #define KAPPA3 (3.14159 -2.1186)
 #define OMEGACIS -3.1318
 #define R_CALPHA_C 1.525
-#define R_C_N 1.330
+#define R_C_N 1.320
 #define R_N_CALPHA 1.460
 
 __device__ void getRotationMatrix(float *d_data, float alpha, float beta, float R){
@@ -13,6 +12,38 @@ __device__ void getRotationMatrix(float *d_data, float alpha, float beta, float 
 	d_data[4]=sin(alpha);	d_data[5]=cos(alpha)*cos(beta); d_data[6]=-cos(alpha)*sin(beta);d_data[7]=R*cos(alpha)*cos(beta);
 	d_data[8]=0.0;   		d_data[9]=sin(beta);			d_data[10]=cos(beta); 			d_data[11]=R*sin(beta);
 	d_data[12]=0.0;			d_data[13]=0.0;					d_data[14]=0.0;		 			d_data[15]=1.0;
+}
+
+__device__ void get33RotationMatrix(float *d_data, float alpha, float beta){
+    d_data[0]=cos(alpha);   d_data[1]=-sin(alpha)*cos(beta);d_data[2]=sin(alpha)*sin(beta);	
+	d_data[3]=sin(alpha);	d_data[4]=cos(alpha)*cos(beta); d_data[5]=-cos(alpha)*sin(beta);
+	d_data[6]=0.0;   		d_data[7]=sin(beta);			d_data[8]=cos(beta); 			
+}
+
+__device__ void getRotationMatrixDAlpha(float *d_data, float alpha, float beta, float R){
+	d_data[0]=-sin(alpha);  d_data[1]=-cos(alpha)*cos(beta);    d_data[2]=cos(alpha)*sin(beta);		d_data[3]=-R*cos(alpha)*cos(beta);
+	d_data[4]=cos(alpha);   d_data[5]=-sin(alpha)*cos(beta); 	d_data[6]=sin(alpha)*sin(beta);		d_data[7]=-R*sin(alpha)*cos(beta);
+	d_data[8]=0.0;   		d_data[9]=0.0;				 	    d_data[10]=0.0; 					d_data[11]=0.0;
+	d_data[12]=0.0;			d_data[13]=0.0;					    d_data[14]=0.0;		 				d_data[15]=0.0;
+}
+
+__device__ void get33RotationMatrixDAlpha(float *d_data, float alpha, float beta){
+	d_data[0]=-sin(alpha);  d_data[1]=-cos(alpha)*cos(beta);    d_data[2]=cos(alpha)*sin(beta);
+	d_data[3]=cos(alpha);   d_data[4]=-sin(alpha)*cos(beta); 	d_data[5]=sin(alpha)*sin(beta);
+	d_data[6]=0.0;   		d_data[7]=0.0;				 	    d_data[8]=0.0; 			
+}
+
+__device__ void getRotationMatrixDBeta(float *d_data, float alpha, float beta, float R){
+	d_data[0]=0.0;          d_data[1]=sin(alpha)*sin(beta);	d_data[2]=sin(alpha)*cos(beta);		d_data[3]=R*sin(alpha)*sin(beta);
+	d_data[4]=0.0;			d_data[5]=-cos(alpha)*sin(beta); 	d_data[6]=-cos(alpha)*cos(beta);    d_data[7]=-R*cos(alpha)*sin(beta);
+	d_data[8]=0.0;   		d_data[9]=cos(beta); 				d_data[10]=-sin(beta); 				d_data[11]=R*cos(beta);
+	d_data[12]=0.0;			d_data[13]=0.0;					    d_data[14]=0.0;		 				d_data[15]=0.0;
+}
+
+__device__ void get33RotationMatrixDBeta(float *d_data, float alpha, float beta){
+	d_data[0]=0.0;          d_data[1]=sin(alpha)*sin(beta);	    d_data[2]=sin(alpha)*cos(beta);	
+	d_data[3]=0.0;			d_data[4]=-cos(alpha)*sin(beta); 	d_data[5]=-cos(alpha)*cos(beta);
+	d_data[6]=0.0;   		d_data[7]=cos(beta); 				d_data[8]=-sin(beta); 			
 }
 
 __device__ void getRotationMatrixDihedral(float *d_data, float psi, float kappa, float R){
@@ -61,47 +92,6 @@ __device__ void getRotationMatrixCalphaDPsi(float *d_data, float phi, float psi)
 	mat44Mul(D, A, d_data);
 }
 
-
-// __device__ void getRotationMatrixDihedral(float *d_data, float psi, float kappa, float R){
-// 	d_data[0]=cos(psi)*cos(kappa); 	d_data[1]=-sin(kappa);	d_data[2]=sin(psi)*cos(kappa);	d_data[3]=-R*sin(kappa);
-// 	d_data[4]=cos(psi)*sin(kappa);	d_data[5]=cos(kappa); 	d_data[6]=sin(psi)*sin(kappa);	d_data[7]=R*cos(kappa);
-// 	d_data[8]=-sin(psi); 			d_data[9]=0;			d_data[10]=cos(psi);			d_data[11]=0.0;
-// 	d_data[12]=0.0;					d_data[13]=0.0;					d_data[14]=0.0;		d_data[15]=1.0;
-// }
-
-
-
-__device__ void get33RotationMatrix(float *d_data, float alpha, float beta){
-    d_data[0]=cos(alpha);   d_data[1]=-sin(alpha)*cos(beta);d_data[2]=sin(alpha)*sin(beta);	
-	d_data[3]=sin(alpha);	d_data[4]=cos(alpha)*cos(beta); d_data[5]=-cos(alpha)*sin(beta);
-	d_data[6]=0.0;   		d_data[7]=sin(beta);			d_data[8]=cos(beta); 			
-}
-
-__device__ void getRotationMatrixDAlpha(float *d_data, float alpha, float beta, float R){
-	d_data[0]=-sin(alpha);  d_data[1]=-cos(alpha)*cos(beta);    d_data[2]=cos(alpha)*sin(beta);		d_data[3]=-R*cos(alpha)*cos(beta);
-	d_data[4]=cos(alpha);   d_data[5]=-sin(alpha)*cos(beta); 	d_data[6]=sin(alpha)*sin(beta);		d_data[7]=-R*sin(alpha)*cos(beta);
-	d_data[8]=0.0;   		d_data[9]=0.0;				 	    d_data[10]=0.0; 					d_data[11]=0.0;
-	d_data[12]=0.0;			d_data[13]=0.0;					    d_data[14]=0.0;		 				d_data[15]=0.0;
-}
-
-__device__ void get33RotationMatrixDAlpha(float *d_data, float alpha, float beta){
-	d_data[0]=-sin(alpha);  d_data[1]=-cos(alpha)*cos(beta);    d_data[2]=cos(alpha)*sin(beta);
-	d_data[3]=cos(alpha);   d_data[4]=-sin(alpha)*cos(beta); 	d_data[5]=sin(alpha)*sin(beta);
-	d_data[6]=0.0;   		d_data[7]=0.0;				 	    d_data[8]=0.0; 			
-}
-
-__device__ void getRotationMatrixDBeta(float *d_data, float alpha, float beta, float R){
-	d_data[0]=0.0;          d_data[1]=sin(alpha)*sin(beta);	d_data[2]=sin(alpha)*cos(beta);		d_data[3]=R*sin(alpha)*sin(beta);
-	d_data[4]=0.0;			d_data[5]=-cos(alpha)*sin(beta); 	d_data[6]=-cos(alpha)*cos(beta);    d_data[7]=-R*cos(alpha)*sin(beta);
-	d_data[8]=0.0;   		d_data[9]=cos(beta); 				d_data[10]=-sin(beta); 				d_data[11]=R*cos(beta);
-	d_data[12]=0.0;			d_data[13]=0.0;					    d_data[14]=0.0;		 				d_data[15]=0.0;
-}
-
-__device__ void get33RotationMatrixDBeta(float *d_data, float alpha, float beta){
-	d_data[0]=0.0;          d_data[1]=sin(alpha)*sin(beta);	    d_data[2]=sin(alpha)*cos(beta);	
-	d_data[3]=0.0;			d_data[4]=-cos(alpha)*sin(beta); 	d_data[5]=-cos(alpha)*cos(beta);
-	d_data[6]=0.0;   		d_data[7]=cos(beta); 				d_data[8]=-sin(beta); 			
-}
 
 __device__ void getIdentityMatrix44(float *d_data){
 	d_data[0]=1.0;          d_data[1]=0.0;	d_data[2]=0.0;  d_data[3]=0.0;
@@ -224,4 +214,10 @@ __device__ void setVec3(float *d_v, float x, float y, float z){
 
 __device__ float vec3Mul(float *v1, float *v2){
 	return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+}
+
+__device__ void extract33RotationMatrix(float *mat44, float *mat33){
+	for(int i=0;i<3;i++)	
+		for(int j=0;j<3;j++)
+			mat33[3*i+j] = mat44[4*i+j];
 }

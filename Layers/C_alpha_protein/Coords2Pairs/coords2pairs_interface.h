@@ -1,0 +1,2 @@
+int Coords2Pairs_forward(  THCudaTensor *input_coords,THCudaTensor *output_pairs, THIntTensor *angles_length );
+int Coords2Pairs_backward( THCudaTensor *gradInput,THCudaTensor *gradOutput,THIntTensor *angles_length);

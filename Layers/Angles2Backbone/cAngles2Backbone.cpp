@@ -203,6 +203,20 @@ void cAngles2Backbone::display_backbone(){
                 glVertex3f(x3,y3,z3);
             }
         }
+	glColor3f(1.0,0.0,0.0);
+        for(int i=0; i<(num_atoms_calpha); i++){
+            float x0 = THFloatTensor_get1d(c_r_calpha, 3*i);
+            float y0 = THFloatTensor_get1d(c_r_calpha, 3*i+1);
+            float z0 = THFloatTensor_get1d(c_r_calpha, 3*i+2);           
+            
+            if ( (i+1)<num_atoms_calpha){
+                float x3 = THFloatTensor_get1d(c_r_calpha, 3*(i+1));
+                float y3 = THFloatTensor_get1d(c_r_calpha, 3*(i+1)+1);
+                float z3 = THFloatTensor_get1d(c_r_calpha, 3*(i+1)+2);
+                glVertex3f(x0,y0,z0);
+                glVertex3f(x3,y3,z3);
+            }
+        }
     glEnd();
     glPopAttrib();
 }
