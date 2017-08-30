@@ -1,6 +1,7 @@
 #include <THC/THC.h>
 #include "cProteinLoader.h"
 #include <iostream>
+#include <string>
 extern THCState *state;
 extern "C" {
     int PDB2Coords_forward( const char* filename, 

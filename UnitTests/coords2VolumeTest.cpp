@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     int spatial_dim = 120;
     float resolution = 1.0;
 	cProteinLoader pL;
-    char* filename = "/home/lupoglaz/ProteinsDataset/CASP_SCWRL/T0653/FALCON-TOPO-X_TS5";
+    char* filename = "/media/lupoglaz/a56f0954-3abe-49ae-a024-5c17afc19995/ProteinsDataset/3DRobot_set/1BYIA/decoy0_1.pdb";
 	pL.loadPDB(filename);
     pL.assignAtomTypes(2);
     cCoords2Volume c2v(11, spatial_dim, resolution);

@@ -21,14 +21,21 @@ extern "C" {
     
     int VisualizeVolume4d(THCudaTensor *gpu_volume){
         GlutFramework framework;
+        if(gpu_volume->nDimension!=4){
+            std::cout<<"VisualizeVolume4d: nDimension should be 4"<<std::endl;
+            return -1;
+        }
         int spatial_dim = gpu_volume->size[1];
+        
         THFloatTensor *c_volume = THFloatTensor_newWithSize4d(gpu_volume->size[0], spatial_dim, spatial_dim, spatial_dim);
-
+        
         toCPUTensor(state, c_volume, gpu_volume);   
+        
         cVolume v(c_volume);
         Vector<double> lookAtPos(spatial_dim/2,spatial_dim/2,spatial_dim/2);
         framework.setLookAt(spatial_dim, spatial_dim, spatial_dim, lookAtPos.x, lookAtPos.y, lookAtPos.z, 0.0, 1.0, 0.0);
         framework.addObject(&v);
+        
         framework.startFramework(0, NULL);     
         THFloatTensor_free(c_volume);
     }
