@@ -15,20 +15,20 @@ class Pairs2DistributionsFunction(Function):
 		self.num_types = num_types
 		self.num_bins = num_bins
 		self.resolution = resolution
-		self.needs_input_grad = (True, False, False)
+		# self.needs_input_grad = (True, False, False)
 		
 	def forward(self, input, input_types, angles_length):
 		output_pairs_gpu = None
 		if len(input.size())==1:
 			#allocating output on gpu
 			# output_dist_gpu = torch.FloatTensor(3*self.max_num_atoms*self.num_types*self.num_bins).cuda()
-			output_dist_gpu = torch.FloatTensor(self.max_num_atoms*self.num_types*self.num_bins).cuda()
+			output_dist_gpu = torch.FloatTensor(self.max_num_atoms*self.num_types*self.num_types*self.num_bins).cuda()
 			
 		elif len(input.size())==2:
 			#allocating output on gpu
 			batch_size = input.size()[0]
 			# output_dist_gpu = torch.FloatTensor(batch_size, 3*self.max_num_atoms*self.num_types*self.num_bins).cuda()
-			output_dist_gpu = torch.FloatTensor(batch_size, self.max_num_atoms*self.num_types*self.num_bins).cuda()
+			output_dist_gpu = torch.FloatTensor(batch_size, self.max_num_atoms*self.num_types*self.num_types*self.num_bins).cuda()
 			
 		else:
 			raise ValueError('Pairs2DistributionsFunction: ', 'Incorrect input size:', input.size()) 
@@ -69,6 +69,17 @@ class Pairs2DistributionsFunction(Function):
 		if math.isnan(gradInput_gpu.sum()):
 			print gradOutput, gradOutput.sum()
 			print gradInput_gpu, gradInput_gpu.sum()
+			with open('pairs2distributions_backward_gradInput_gpu.pkl', 'w') as f:
+				torch.save(gradInput_gpu, f)
+			with open('pairs2distributions_backward_gradOutput.pkl', 'w') as f:
+				torch.save(gradOutput, f)
+			with open('pairs2distributions_backward_input.pkl', 'w') as f:
+				torch.save(input, f)
+			with open('pairs2distributions_backward_angles_length.pkl', 'w') as f:
+				torch.save(angles_length, f)
+			with open('pairs2distributions_backward_input_types.pkl', 'w') as f:
+				torch.save(input_types, f)
+			
 			raise(Exception('Pairs2DistributionsFunction: backward Nan'))
 		
 		return gradInput_gpu, None, None

@@ -150,46 +150,6 @@ __global__ void gpu_computeGradientPotentials(  float *forces_grads,    //input:
                         
 }
 
-// __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pairwise coordinates 3 x maxlen x maxlen
-//                                             int *input_types,       //input: atom types maxlen
-//                                             float *output_dist,   //output: forces maxlen x 3
-//                                             int num_types,
-//                                             int num_bins,
-//                                             float resolution,
-//                                             int L,
-//                                             int Lmax){
-//     int atoms_size = L+1;
-//     int max_atoms = Lmax+1;
-//     uint i = blockIdx.x; 
-//     uint at2 = floorf(threadIdx.x/num_bins);    //atom_type2
-//     uint bin_idx = threadIdx.x - at2*num_bins;    //number of bin
-// 	int plane_stride = max_atoms*max_atoms;
-        
-// 	for(int j=0; j<atoms_size; j++){
-//         if(i==j)
-//             continue;
-//         if(input_types[i]==at2){
-//             float rx_ij = d_paircoords[0*plane_stride + i*max_atoms + j];
-//             float ry_ij = d_paircoords[1*plane_stride + i*max_atoms + j];
-//             float rz_ij = d_paircoords[2*plane_stride + i*max_atoms + j];
-//             float mod_rij = sqrt(rx_ij*rx_ij + ry_ij*ry_ij + rz_ij*rz_ij);
-//             if(mod_rij<0.0001)
-//                 continue;
-//             uint cbin_idx = int(mod_rij/resolution);
-//             if(cbin_idx!=bin_idx)
-//                 continue;
-            
-//             //total length max_atoms*num_types*num_bins*3;
-//             uint global_ind = i*num_types*num_bins*3 + at2*num_bins*3 + bin_idx*3;
-
-//             output_dist[global_ind] += rx_ij/mod_rij;
-//             output_dist[global_ind+1] += ry_ij/mod_rij;
-//             output_dist[global_ind+2] += rz_ij/mod_rij;
-//         }
-//     }
-
-// }
-
 __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pairwise coordinates 3 x maxlen x maxlen
                                             int *input_types,       //input: atom types maxlen
                                             float *output_dist,   //output: forces maxlen x 3
@@ -201,8 +161,9 @@ __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pai
     float sigma = 2.0;
     int atoms_size = L+1;
     int max_atoms = Lmax+1;
-    uint i = blockIdx.x; 
-    uint at2 = floorf(threadIdx.x);    //atom_type2
+    uint i = blockIdx.x;
+    uint at1 = input_types[i];
+    uint at2 = threadIdx.x;    //atom_type2
 	int plane_stride = max_atoms*max_atoms;
         
 	for(int j=0; j<atoms_size; j++){
@@ -216,8 +177,8 @@ __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pai
             for(int bin_idx=0; bin_idx<num_bins; bin_idx++){
                 float r_k = bin_idx*resolution;
                                 
-                //total length max_atoms*num_types*num_bins;
-                uint global_ind = i*num_types*num_bins + at2*num_bins + bin_idx;
+                //total length max_atoms*num_types*num_types*num_bins;
+                uint global_ind = i*num_types*num_types*num_bins + at1*num_types*num_bins + at2*num_bins + bin_idx;
                 output_dist[global_ind] += exp( -(r_k - mod_rij)*(r_k - mod_rij)/sigma);
             }
         }
@@ -225,54 +186,6 @@ __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pai
 
 }
 
-// __global__ void gpu_backwardPairwiseDist(   float *gradInput_pairs,    //input: coordinates 3 x maxlen x maxlen
-//                                             float *gradOutput_dist,       //input: atom types maxlen
-//                                             int *input_types,   //output: forces maxlen x 3
-//                                             float *input_pairs,
-//                                             int num_types,
-//                                             int num_bins,
-//                                             float resolution,
-//                                             int L, int Lmax){
-//     int atoms_size = L+1;
-//     int max_atoms = Lmax+1;
-//     uint i = blockIdx.x; 
-//     uint at2 = floorf(threadIdx.x/num_bins);    //atom_type2
-//     uint bin_idx = threadIdx.x - at2*num_bins;    //number of bin
-// 	int plane_stride = max_atoms*max_atoms;
-        
-// 	for(int j=0; j<atoms_size; j++){
-//         if(i==j)
-//             continue;
-//         if(input_types[i]==at2){
-//             float rx_ij = input_pairs[0*plane_stride + i*max_atoms + j];
-//             float ry_ij = input_pairs[1*plane_stride + i*max_atoms + j];
-//             float rz_ij = input_pairs[2*plane_stride + i*max_atoms + j];
-//             float mod_rij = sqrt(rx_ij*rx_ij + ry_ij*ry_ij + rz_ij*rz_ij);
-//             if(mod_rij<0.0001)
-//                 continue;
-//             uint cbin_idx = int(mod_rij/resolution);
-//             if(cbin_idx!=bin_idx)
-//                 continue;
-//             //total length max_atoms*num_types*num_bins*3;
-//             uint global_ind = i*num_types*num_bins*3 + at2*num_bins*3 + bin_idx*3;
-//             float go_x = gradOutput_dist[global_ind];
-//             float go_y = gradOutput_dist[global_ind+1];
-//             float go_z = gradOutput_dist[global_ind+2];
-
-//             float c1 = 1.0/(mod_rij);
-//             float c2 = 1.0/(mod_rij*mod_rij*mod_rij);
-            
-//             float res_x = go_x*(c1 - rx_ij*rx_ij*c2) + go_y*(- rx_ij*ry_ij*c2) + go_z*(- rx_ij*rz_ij*c2);
-//             float res_y = go_x*(- ry_ij*rx_ij*c2) + go_y*( c1 - ry_ij*ry_ij*c2) + go_z*(- ry_ij*rz_ij*c2);
-//             float res_z = go_x*(- rz_ij*rx_ij*c2) + go_y*( - rz_ij*ry_ij*c2) + go_z*( c1 - rz_ij*rz_ij*c2);
-            
-//             atomicAdd(gradInput_pairs + 0*plane_stride + i*max_atoms + j, res_x);
-//             atomicAdd(gradInput_pairs + 1*plane_stride + i*max_atoms + j, res_y);
-//             atomicAdd(gradInput_pairs + 2*plane_stride + i*max_atoms + j, res_z);
-//         }
-//     }
-
-// }
 
 __global__ void gpu_backwardPairwiseDist(   float *gradInput_pairs,    //input: coordinates 3 x maxlen x maxlen
                                             float *gradOutput_dist,       //input: atom types maxlen
@@ -282,11 +195,12 @@ __global__ void gpu_backwardPairwiseDist(   float *gradInput_pairs,    //input: 
                                             int num_bins,
                                             float resolution,
                                             int L, int Lmax){
-    float sigma = 2.0;
+    float sigma = 1.0;
     int atoms_size = L+1;
     int max_atoms = Lmax+1;
-    uint i = blockIdx.x; 
-    uint at2 = floorf(threadIdx.x);    //atom_type2
+    uint i = blockIdx.x;
+    uint at1 = input_types[i]; 
+    uint at2 = threadIdx.x;    //atom_type2
 	int plane_stride = max_atoms*max_atoms;
         
 	for(int j=0; j<atoms_size; j++){
@@ -300,15 +214,32 @@ __global__ void gpu_backwardPairwiseDist(   float *gradInput_pairs,    //input: 
             for(int bin_idx=0; bin_idx<num_bins; bin_idx++){
                 float r_k = bin_idx*resolution;
                                                             
-                //total length max_atoms*num_types*num_bins;
-                uint global_ind = i*num_types*num_bins + at2*num_bins + bin_idx;
+                //total length max_atoms*num_types*num_types*num_bins;
+                uint global_ind = i*num_types*num_types*num_bins + at1*num_types*num_bins + at2*num_bins + bin_idx;
                 float go = gradOutput_dist[global_ind];
-                float c1 = 1.0/(mod_rij+0.00001);
+                float c1 = 1.0/(mod_rij+0.01);
                 float exp_coef = go*2*((r_k-mod_rij)/sigma)*exp( -(r_k - mod_rij)*(r_k - mod_rij)/sigma);
+                float dx = (rx_ij*c1)*exp_coef;
+                float dy = (ry_ij*c1)*exp_coef;
+                float dz = (rz_ij*c1)*exp_coef;
+                if(isnan(dx)||isnan(dy)||isnan(dz)){
+                    printf("%d, %d, %f, %f, %f\n",i, j, (rx_ij*c1)*exp_coef, (ry_ij*c1)*exp_coef, (rz_ij*c1)*exp_coef);
+                    printf("num_bins %d\n", num_bins);
+                    printf("num_types %d\n", num_types);
+                    printf("atoms_size %d\n", atoms_size);
+                    printf("max_atoms %d\n", max_atoms);
+                    printf("at2 %d\n", at2);
+                    printf("input_types[j] = %d\n", input_types[j]);
+                    printf("global_ind %d\n", global_ind);
+                    printf("r_k %f\n", r_k);
+                    printf("mod_rij %f\n", mod_rij);
+                    printf("go %f\n", go);
+                    printf("c1 %f\n", c1);
+                    printf("exp_coef %f\n", exp_coef);
+                }
                 atomicAdd(gradInput_pairs + 0*plane_stride + i*max_atoms + j, (rx_ij*c1)*exp_coef);
                 atomicAdd(gradInput_pairs + 1*plane_stride + i*max_atoms + j, (ry_ij*c1)*exp_coef);
                 atomicAdd(gradInput_pairs + 2*plane_stride + i*max_atoms + j, (rz_ij*c1)*exp_coef);
-                
             }
         }
     }
@@ -363,7 +294,7 @@ void cpu_computePairwiseDistributions(float *d_paircoords,    //input: coordinat
     
     gpu_computePairwiseDist <<< L+1, num_types >>>(d_paircoords, input_types, output_dist, num_types, num_bins, resolution,L,Lmax);
 
-}       
+}
 
 void cpu_backwardPairwiseDistributions( float *gradInput_pairs,    //input: coordinates 3 x maxlen x maxlen
                                         float *gradOutput_dist,       //input: atom types maxlen
@@ -373,7 +304,5 @@ void cpu_backwardPairwiseDistributions( float *gradInput_pairs,    //input: coor
                                         int num_bins,
                                         float resolution,
                                         int L, int Lmax){
-    
     gpu_backwardPairwiseDist <<< L+1, num_bins*num_types >>>(gradInput_pairs, gradOutput_dist, input_types, input_pairs, num_types, num_bins, resolution,L,Lmax);
-
-}       
+}        
