@@ -13,7 +13,6 @@ class Coords2RMSDFunction(Function):
 		super(Coords2RMSDFunction, self).__init__()
 		self.angles_max_length = angles_max_length
 		self.max_atoms = self.angles_max_length + 1
-		self.needs_input_grad = (True, False, False)
 		
 		self.c_coords_input = None
 		self.c_coords_target = None

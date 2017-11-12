@@ -12,8 +12,7 @@ class Coords2PairsFunction(Function):
 		super(Coords2PairsFunction, self).__init__()
 		self.angles_max_length = angles_max_length
 		self.max_num_atoms = self.angles_max_length + 1
-		self.needs_input_grad = (True, False)
-		
+				
 	def forward(self, input, angles_length):
 		output_pairs_gpu = None
 		if len(input.size())==1:

@@ -27,6 +27,7 @@ class Pairs2DistributionsFunction(Function):
 		elif len(input.size())==2:
 			#allocating output on gpu
 			batch_size = input.size()[0]
+			
 			# output_dist_gpu = torch.FloatTensor(batch_size, 3*self.max_num_atoms*self.num_types*self.num_bins).cuda()
 			output_dist_gpu = torch.FloatTensor(batch_size, self.max_num_atoms*self.num_types*self.num_types*self.num_bins).cuda()
 			
@@ -41,6 +42,7 @@ class Pairs2DistributionsFunction(Function):
 											self.num_types,
 											self.num_bins,
 											self.resolution)
+		
 		if math.isnan(output_dist_gpu.sum()):
 			raise(Exception('Pairs2DistributionsFunction: forward Nan'))
 
