@@ -175,9 +175,13 @@ class ABModelEnv(gym.Env):
 		rz = coordinates[:self.num_atoms,2].numpy()
 		
 		
-		fig = plt.figure()
-		plt.title("Fitted C-alpha model and the protein C-alpha coordinates")
-		ax = p3.Axes3D(fig)
+		fig = plt.figure(figsize=plt.figaspect(2.))
+		ax = fig.add_subplot(2, 1, 1)
+		distr_np = self.distributions.cpu()
+		distr_np = distr_np.resize_(self.num_atoms,self.num_types,self.num_types,self.num_bins).numpy()
+		ax.imshow(distr_np.reshape((self.num_atoms,self.num_types*self.num_types*self.num_bins)))
+		
+		ax = fig.add_subplot(2, 1, 2, projection='3d')
 		ax.plot(rx,ry,rz, '--', color='black', label = 'structure')
 		for i, s in enumerate(self.sequence):
 			if s=='A':
@@ -185,8 +189,8 @@ class ABModelEnv(gym.Env):
 			if s=='B':
 				ax.plot([rx[i]],[ry[i]],[rz[i]], '.b')
 
-		ax.legend()	
-		plt.savefig("test.png")
+		ax.legend()
+		plt.savefig("ABModelRender.png")
 		pass
 
 
