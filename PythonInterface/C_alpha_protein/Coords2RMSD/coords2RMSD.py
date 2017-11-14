@@ -27,7 +27,7 @@ class Coords2RMSDFunction(Function):
 		if self.angles_length is None:
 			self.angles_length = torch.IntTensor(angles_length.size(0)).copy_(angles_length)
 		if len(input.size())==1:
-			output = torch.torch.FloatTensor(1).cuda()
+			output = torch.FloatTensor(1).cuda()
 			#allocating temp outputs
 			if self.c_coords_input is None:
 				self.c_coords_input = torch.FloatTensor(3*self.max_atoms).cuda()
@@ -42,7 +42,7 @@ class Coords2RMSDFunction(Function):
 						
 		elif len(input.size())==2:
 			batch_size = input.size()[0]
-			output = torch.torch.FloatTensor(batch_size).cuda()
+			output = torch.FloatTensor(batch_size).cuda()
 			#allocating temp outputs on gpu
 			if self.c_coords_input is None:
 				self.c_coords_input = torch.FloatTensor(batch_size, 3*self.max_atoms).cuda()

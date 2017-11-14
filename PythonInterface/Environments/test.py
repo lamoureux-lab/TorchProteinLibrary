@@ -18,7 +18,7 @@ if __name__=='__main__':
     while not done:
         move_naive(move)
         obs, rew, done, _ = env.step(move)
-        if rew==1.0:
-            print env.prev_energy
+        if rew>1.0:
+            print env.prev_energy, rew
 
     env.render()

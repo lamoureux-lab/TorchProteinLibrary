@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from C_alpha_protein.Angles2CoordsAB import cppAngles2CoordsAB
 from C_alpha_protein.Coords2Pairs import cppCoords2Pairs
 from C_alpha_protein.Pairs2Distributions import cppPairs2Dist
+from C_alpha_protein.Coords2RMSD import cppCoords2RMSD
 
 class ABModelEnv(gym.Env):
 	metadata = {
@@ -40,8 +41,16 @@ class ABModelEnv(gym.Env):
 		self.A = torch.squeeze(torch.FloatTensor(self.batch_size, 16*self.angles_length).cuda())
 		self.angles_length_tensor = torch.IntTensor(self.batch_size).fill_(self.angles_length)
 		self.coords = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
+		self.new_coords = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
 		self.pairs = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms*self.num_atoms).cuda())
 		self.distributions = torch.squeeze(torch.FloatTensor(self.batch_size, self.num_atoms, self.num_types*self.num_types*self.num_bins).cuda())
+
+		self.rmsd = torch.FloatTensor(self.batch_size).cuda()
+		self.c_coords_input = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
+		self.c_coords_target = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
+		self.U_coordinates_src = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
+		self.Ut_coordinates_dst = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
+		self.rot_mat_t = torch.squeeze(torch.FloatTensor(self.batch_size, 3, 3).cuda())
 
 		self.mask = torch.ByteTensor(self.batch_size, self.num_atoms*self.num_atoms).cuda().fill_(0)
 		self.mask[:, ::self.num_atoms+1]=1
@@ -86,25 +95,22 @@ class ABModelEnv(gym.Env):
 		
 		trial_angles = self.angles + action
 		
-		self.coords.fill_(0.0)
+		self.new_coords.fill_(0.0)
 		cppAngles2CoordsAB.Angles2Coords_forward(   trial_angles,              #input angles
-													self.coords,  #output coordinates
+													self.new_coords,  #output coordinates
 													self.angles_length_tensor, 
 													self.A)
-		if math.isnan(self.coords.sum()):
+		if math.isnan(self.new_coords.sum()):
 			raise(Exception('ABModel: angles2coords forward Nan'))		
 
 		self.pairs.fill_(0.0)
-		cppCoords2Pairs.Coords2Pairs_forward( 	self.coords, #input coordinates
+		cppCoords2Pairs.Coords2Pairs_forward( 	self.new_coords, #input coordinates
 												self.pairs,  #output pairwise coordinates
 												self.angles_length_tensor)
 		if math.isnan(self.pairs.sum()):
 			raise(Exception('ABModel: angles2coords forward Nan'))
 
-		
 
-		
-		
 		self.distributions.fill_(0.0)
 		cppPairs2Dist.Pairs2Dist_forward( 	self.pairs,              #input coordinates
 											self.distributions,  #output pairwise coordinates
@@ -138,9 +144,19 @@ class ABModelEnv(gym.Env):
 		
 
 		if real_acc[0]:
-			reward = 1.0
+
+			cppCoords2RMSD.Coords2RMSD_forward( self.coords, self.new_coords, self.rmsd, self.angles_length_tensor,
+												self.c_coords_input,
+												self.c_coords_target,
+												self.U_coordinates_src,
+												self.Ut_coordinates_dst,
+												self.rot_mat_t)
+
+
+			reward = 1.0 + self.rmsd[0]
 			self.angles.copy_(trial_angles)
 			self.prev_energy = trial_energy
+			self.coords.copy_(self.new_coords)
 		else:
 			reward = 0.0
 
@@ -196,7 +212,4 @@ class ABModelEnv(gym.Env):
 
 
 if __name__=='__main__':
-	
-
-
 	pass
