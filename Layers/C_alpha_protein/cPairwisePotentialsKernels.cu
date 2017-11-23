@@ -158,7 +158,7 @@ __global__ void gpu_computePairwiseDist(    float *d_paircoords,    //input: pai
                                             float resolution,
                                             int L,
                                             int Lmax){
-    float sigma = 2.0;
+    float sigma = 0.5;
     int atoms_size = L+1;
     int max_atoms = Lmax+1;
     uint i = blockIdx.x;
@@ -195,7 +195,7 @@ __global__ void gpu_backwardPairwiseDist(   float *gradInput_pairs,    //input: 
                                             int num_bins,
                                             float resolution,
                                             int L, int Lmax){
-    float sigma = 1.0;
+    float sigma = 0.5;
     int atoms_size = L+1;
     int max_atoms = Lmax+1;
     uint i = blockIdx.x;

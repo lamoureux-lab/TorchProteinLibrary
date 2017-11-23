@@ -30,7 +30,7 @@ class ABModelEnv(gym.Env):
 	def __init__(self):
 		self.sequence = 'ABBABBABABBAB'
 		self.num_bins = 10
-		self.resolution = 1.0
+		self.resolution = 0.3
 		self.num_types = 2
 		self.angles_length = len(self.sequence)-1
 		self.num_atoms = len(self.sequence)
@@ -44,8 +44,7 @@ class ABModelEnv(gym.Env):
 		self.coords = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
 		self.new_coords = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
 		self.pairs = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms*self.num_atoms).cuda())
-		self.distributions = torch.squeeze(torch.FloatTensor(self.batch_size, self.num_atoms, self.num_types*self.num_types*self.num_bins).cuda())
-
+		
 		self.rmsd = torch.FloatTensor(self.batch_size).cuda()
 		self.c_coords_input = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
 		self.c_coords_target = torch.squeeze(torch.FloatTensor(self.batch_size, 3*self.num_atoms).cuda())
@@ -83,15 +82,13 @@ class ABModelEnv(gym.Env):
 		self.interaction = torch.squeeze(self.interaction)
 		
 		self.action_space = TorchContinuous(low=-np.pi, high=np.pi, shape = self.angles.size())
-		self.observation_space = TorchContinuous(low=float('-inf'), high=float('+inf'), shape = self.distributions.size())
+		self.observation_space = TorchContinuous(low=-np.pi, high=np.pi, shape = self.angles.size())
 
 		self.iterations = 0
 
 		self.ones = torch.FloatTensor(self.batch_size).cuda().fill_(1.0)
 
-		# self.compute_internal_variables(self.action_space.sample(), self.coords)
-
-
+		
 	def compute_internal_variables(self, angles, coords):
 
 		coords.fill_(0.0)
@@ -109,22 +106,6 @@ class ABModelEnv(gym.Env):
 		if math.isnan(self.pairs.sum()):
 			raise(Exception('ABModel: angles2coords forward Nan'))
 
-
-		self.distributions.fill_(0.0)
-		cppPairs2Dist.Pairs2Dist_forward( 	self.pairs,              #input coordinates
-											self.distributions,  #output pairwise coordinates
-											self.seq_int,
-											self.angles_length_tensor,
-											self.num_types,
-											self.num_bins,
-											self.resolution)	
-		if math.isnan(self.distributions.sum()):
-			raise(Exception('Pairs2DistributionsFunction: forward Nan'))
-
-		
-		new_distributions = self.distributions.unsqueeze(0).permute(0, 2, 1).squeeze().contiguous()
-
-		return new_distributions
 
 	def compute_energy(self, angles):
 		
@@ -147,13 +128,19 @@ class ABModelEnv(gym.Env):
 				
 		trial_angles = self.angles + action
 		
-		new_distributions = self.compute_internal_variables(trial_angles, self.new_coords)
+		self.compute_internal_variables(trial_angles, self.new_coords)
 		trial_energy = self.compute_energy(trial_angles)	
 		
 		prob = torch.min(self.ones, torch.exp(self.beta*(trial_energy - self.prev_energy)))
 		samples = torch.rand(self.batch_size).cuda()
 		real_acc = torch.le(prob, samples)
 		
+		if self.iterations>self.num_steps:
+			done = True
+		else:
+			done = False
+
+		self.iterations += 1
 
 		if real_acc[0]:
 
@@ -169,25 +156,22 @@ class ABModelEnv(gym.Env):
 			self.angles.copy_(trial_angles)
 			self.prev_energy = trial_energy
 			self.coords.copy_(self.new_coords)
+						
 		else:
 			reward = 0.0
+			
 
+		return torch.FloatTensor(self.angles.size()).cuda().copy_(self.angles), reward, done, {}
+		
 
-		if self.iterations>self.num_steps:
-			done = True
-		else:
-			done = False
-
-		self.iterations += 1
-
-		return new_distributions, reward, done, {}
+		
 
 	def _reset(self):
 		self.angles.copy_(self.action_space.sample())
 		self.iterations = 0
-		new_distributions = self.compute_internal_variables(self.angles, self.coords)
+		self.compute_internal_variables(self.angles, self.coords)
 		self.prev_energy = self.compute_energy(self.angles)
-		return new_distributions
+		return torch.FloatTensor(self.angles.size()).cuda().copy_(self.angles)
 
 	def _render(self, mode='human', close=False):
 		import matplotlib as mpl
@@ -204,13 +188,9 @@ class ABModelEnv(gym.Env):
 		rz = coordinates[:self.num_atoms,2].numpy()
 		
 		
-		fig = plt.figure(figsize=plt.figaspect(2.))
-		ax = fig.add_subplot(2, 1, 1)
-		distr_np = self.distributions.cpu()
-		distr_np = distr_np.resize_(self.num_atoms,self.num_types,self.num_types,self.num_bins).numpy()
-		ax.imshow(distr_np.reshape((self.num_atoms,self.num_types*self.num_types*self.num_bins)))
+		fig = plt.figure()
 		
-		ax = fig.add_subplot(2, 1, 2, projection='3d')
+		ax = fig.add_subplot(1, 1, 1, projection='3d')
 		ax.plot(rx,ry,rz, '--', color='black', label = 'structure')
 		for i, s in enumerate(self.sequence):
 			if s=='A':
@@ -221,7 +201,7 @@ class ABModelEnv(gym.Env):
 		ax.legend()
 		plt.savefig("ABModelRender.png")
 		plt.close(fig)
-		pass
+		
 
 
 
