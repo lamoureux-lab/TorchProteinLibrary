@@ -35,6 +35,7 @@ class ABModelEnv(gym.Env):
 		self.angles_length = len(self.sequence)-1
 		self.num_atoms = len(self.sequence)
 		self.beta = 0.1
+		self.num_steps = 1000
 		
 		self.batch_size = 1
 		self.angles = torch.squeeze(torch.FloatTensor(self.batch_size, 2, self.angles_length).cuda())
@@ -88,23 +89,21 @@ class ABModelEnv(gym.Env):
 
 		self.ones = torch.FloatTensor(self.batch_size).cuda().fill_(1.0)
 
-		self._step(self.action_space.sample())
-	
-	def _step(self, action):
-		# assert self.action_space.contains(action), "%r (%s) invalid"%(action, type(action))
-		
-		trial_angles = self.angles + action
-		
-		self.new_coords.fill_(0.0)
-		cppAngles2CoordsAB.Angles2Coords_forward(   trial_angles,              #input angles
-													self.new_coords,  #output coordinates
+		# self.compute_internal_variables(self.action_space.sample(), self.coords)
+
+
+	def compute_internal_variables(self, angles, coords):
+
+		coords.fill_(0.0)
+		cppAngles2CoordsAB.Angles2Coords_forward(   angles,              #input angles
+													coords,  #output coordinates
 													self.angles_length_tensor, 
 													self.A)
-		if math.isnan(self.new_coords.sum()):
+		if math.isnan(coords.sum()):
 			raise(Exception('ABModel: angles2coords forward Nan'))		
 
 		self.pairs.fill_(0.0)
-		cppCoords2Pairs.Coords2Pairs_forward( 	self.new_coords, #input coordinates
+		cppCoords2Pairs.Coords2Pairs_forward( 	coords, #input coordinates
 												self.pairs,  #output pairwise coordinates
 												self.angles_length_tensor)
 		if math.isnan(self.pairs.sum()):
@@ -123,9 +122,15 @@ class ABModelEnv(gym.Env):
 			raise(Exception('Pairs2DistributionsFunction: forward Nan'))
 
 		
-		trial_angles.resize_(self.batch_size, 2, self.angles_length)
-		V1 = self.angles_length - torch.sum(torch.cos(trial_angles[:,0,1:]), dim=1) - 1
-		trial_angles.squeeze_()
+		new_distributions = self.distributions.unsqueeze(0).permute(0, 2, 1).squeeze().contiguous()
+
+		return new_distributions
+
+	def compute_energy(self, angles):
+		
+		angles.resize_(self.batch_size, 2, self.angles_length)
+		V1 = self.angles_length - torch.sum(torch.cos(angles[:,0,1:]), dim=1) - 1
+		angles.squeeze_()
 		
 		self.pairs.resize_(self.batch_size, 3, self.num_atoms, self.num_atoms)
 		r2 = torch.pow( self.pairs[:,0,:,:], 2) + torch.pow( self.pairs[:,1,:,:], 2) + torch.pow( self.pairs[:,2,:,:], 2)
@@ -136,8 +141,15 @@ class ABModelEnv(gym.Env):
 		r12 = torch.addcmul(r12, value=-1, tensor1=r6, tensor2=self.interaction)
 		V2 = torch.sum(torch.sum(r12,1),1)
 		
-		trial_energy = 0.25*V1+2.0*V2
-
+		return 0.25*V1+2.0*V2
+	
+	def _step(self, action):
+				
+		trial_angles = self.angles + action
+		
+		new_distributions = self.compute_internal_variables(trial_angles, self.new_coords)
+		trial_energy = self.compute_energy(trial_angles)	
+		
 		prob = torch.min(self.ones, torch.exp(self.beta*(trial_energy - self.prev_energy)))
 		samples = torch.rand(self.batch_size).cuda()
 		real_acc = torch.le(prob, samples)
@@ -161,20 +173,21 @@ class ABModelEnv(gym.Env):
 			reward = 0.0
 
 
-		if self.iterations>1000:
+		if self.iterations>self.num_steps:
 			done = True
 		else:
 			done = False
 
 		self.iterations += 1
 
-		return self.distributions, reward, done, {}
+		return new_distributions, reward, done, {}
 
 	def _reset(self):
-		self.angles.fill_(0.0)
+		self.angles.copy_(self.action_space.sample())
 		self.iterations = 0
-		self._step(self.action_space.sample())
-		return np.array(self.angles)
+		new_distributions = self.compute_internal_variables(self.angles, self.coords)
+		self.prev_energy = self.compute_energy(self.angles)
+		return new_distributions
 
 	def _render(self, mode='human', close=False):
 		import matplotlib as mpl
@@ -207,6 +220,7 @@ class ABModelEnv(gym.Env):
 
 		ax.legend()
 		plt.savefig("ABModelRender.png")
+		plt.close(fig)
 		pass
 
 
