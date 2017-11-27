@@ -1,3 +1,6 @@
+#ifndef MATH_CUDA_KERNELS_H
+#define MATH_CUDA_KERNELS_H
+
 extern __device__ void getRotationMatrix(float *d_data, float alpha, float beta, float R);
 // Fills rotation-translation 4x4 matrix. 
 extern __device__ void getRotationMatrixDAlpha(float *d_data, float alpha, float beta, float R);
@@ -26,8 +29,20 @@ extern __device__ void setVec3(float *d_v, float x, float y, float z);
 // Initializes a 3-vector
 extern __device__ float vec3Mul(float *v1, float *v2);
 // Multiplies two 3-vectors and returns the result
-
-
+__device__ void vec3Mul(float *u, float lambda);
+// Multiplies 3-vector by lambda
+__device__ float vec3Dot(float *v1, float *v2);
+// Dot product of two 3-vectors
+__device__ void vec3Cross(float *u, float *v, float *w);
+// Cross product of two 3-vectors
+__device__ float getVec3Norm(float *u);
+// Returns norm of a 3-vector
+__device__ void vec3Normalize(float *u);
+// Normalizes 3-vector
+__device__ void vec3Minus(float *vec1, float *vec2, float *res);
+// Result = Vector1 - Vector2
+__device__ void vec3Plus(float *vec1, float *vec2, float *res);
+// Result = Vector1 + Vector2
 
 extern __device__ void get33RotationMatrix(float *d_data, float alpha, float beta);
 // Fills rotation 3x3 matrix. 
@@ -45,3 +60,5 @@ extern __device__ void mat33Vec3Mul(float *d_m, float *d_v, float *dst);
 // Multiplies two 3x3 matrixe by 3-vector and puts the result to dst
 
 __device__ void extract33RotationMatrix(float *mat44, float *mat33);
+
+#endif

@@ -2,6 +2,9 @@
 // #include "cMathCUDAKernels.h"
 #include "cMathCUDAKernels.cu"
 
+
+#define EPS 1E-5
+
 __device__ void getABRotationMatrix(float *d_data, float alpha, float beta){
 	d_data[0]=cos(alpha);   d_data[1]=-sin(alpha)*cos(beta);d_data[2]=sin(alpha)*sin(beta);	d_data[3]=cos(alpha);
 	d_data[4]=sin(alpha);	d_data[5]=cos(alpha)*cos(beta); d_data[6]=-cos(alpha)*sin(beta);d_data[7]=sin(alpha);
@@ -111,4 +114,98 @@ void cpu_backwardFromCoords(float *d_dalpha, float *d_dbeta, // angles gradients
 							int L                          //number of angles
 							){                   
 	backwardFromCoordinates<<<1,L>>>(d_dalpha, d_dbeta, d_dr, d_dRdAlpha, d_dRdBeta, L);
+}
+
+
+__device__ void compute_w(float *u, float *v, float *w){
+	float product = u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+	if(abs(product)>EPS){
+		vec3Cross(u,v,w);
+	}else{
+		float v1[3]={1,-1,1}; //chosing an arbitrary vector (1, -1, 1)
+		if( (vec3Dot(u,v1)>EPS) && (vec3Dot(v,v1)>EPS) ){
+			vec3Cross(u,v1,w);
+		}else{ //another arbitrary vector (-1, 1, 1)
+			float v2[3]={-1,1,1};
+			vec3Cross(u,v2,w);
+		}
+	}
+	vec3Normalize(w);
+}
+
+
+__global__ void computeBMatrixBend( float *d_alpha, float *d_beta,
+									float *d_coords,
+									float *d_B_bend,
+									int L){
+	int angles_size = L;
+	int atoms_size = L+1;
+	uint angle_id = blockIdx.x;
+	uint atom_id = threadIdx.x;
+	uint deriv_flat_index = angle_id *(atoms_size*3) + atom_id*3;
+	float u[3], v[3], w[3];
+	float lambda_u, lambda_v;
+	uint vector_id_center, vector_id_right, vector_id_left;
+	float a[3], b[3];
+
+	uint m = angle_id;
+	uint o = angle_id+1;
+	uint n = angle_id+2;
+	float xi1=0, xi2=0;
+	if(atom_id<=m){
+		vector_id_left = atom_id;
+		vector_id_center = o;
+		vector_id_right = n;
+		xi1 = 1;
+	}else if(atom_id>=n)
+		vector_id_left = m;
+		vector_id_center = o;
+		vector_id_right = atom_id;
+		xi2 = 1;
+	}else{
+		vector_id_left = m;
+		vector_id_center = atom_id;
+		vector_id_right = n;
+		xi1 = -1;
+		xi2 = -1;
+	}
+	vec3Minus(d_coords + 3*vector_id_left, d_coords + 3*vector_id_center, u);
+	vec3Minus(d_coords + 3*vector_id_right, d_coords + 3*vector_id_center, v);
+	lambda_u = getVec3Norm(u);
+	lambda_v = getVec3Norm(v);
+	vec3Normalize(u);
+	vec3Normalize(v);
+	
+	compute_w(u, v, w);
+
+	vec3Cross(u, w, a);
+	vec3Mul(a, xi1/lambda_u);
+	vec3Cross(w, v, b);
+	vec3Mul(b, xi2/lambda_v);
+	vec3Plus(a, b, d_B_bend+deriv_flat_index);
+}
+
+
+__global__ void computeBMatrixRot(  float *d_alpha, float *d_beta,
+									float *d_coords,
+									float *d_B_rot,
+									int L){
+
+	int angles_size = L;
+	int atoms_size = L+1;
+	uint angle_id = blockIdx.x;
+	uint atom_id = threadIdx.x;
+	uint deriv_flat_index = angle_id *(atoms_size*3) + atom_id*3;
+
+
+}
+
+
+void cpu_computeBMatrix( 	float *d_dalpha, float *d_dbeta,
+							float *d_coords,
+							float *d_B_bend,	// L x L + 1 x 3 matrix
+							float *d_B_rot,	// L x L + 1 x 3 matrix
+							int L){
+	computeBMatrixBend<<<L,L+1>>>(d_alpha, d_beta, d_B_bend, L);
+	computeBMatrixRot<<<L,L+1>>>(d_alpha, d_beta, d_B_rot, L);
 }

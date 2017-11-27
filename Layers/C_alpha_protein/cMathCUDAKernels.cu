@@ -221,3 +221,31 @@ __device__ void extract33RotationMatrix(float *mat44, float *mat33){
 		for(int j=0;j<3;j++)
 			mat33[3*i+j] = mat44[4*i+j];
 }
+
+__device__ void vec3Mul(float *u, float lambda){
+	u[0]*=lambda;u[1]*=lambda;u[2]*=lambda;
+}
+__device__ float vec3Dot(float *v1, float *v2){
+	return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+}
+
+__device__ void vec3Cross(float *u, float *v, float *w){
+	w[0] = u[1]*v[2] - u[2]*v[1];
+	w[1] = u[2]*v[0] - u[0]*v[2];
+	w[2] = u[0]*v[1] - u[1]*v[0];
+}
+
+__device__ float getVec3Norm(float *u){
+	return sqrt(vec3Dot(u,u));
+}
+
+__device__ void vec3Normalize(float *u){
+	vec3Mul(u, 1.0/getVec3Norm(u));
+}
+
+__device__ void vec3Minus(float *vec1, float *vec2, float *res){
+	res[0] = vec1[0]-vec2[0];res[1] = vec1[1]-vec2[1];res[2] = vec1[2]-vec2[2];
+}	
+__device__ void vec3Plus(float *vec1, float *vec2, float *res){
+	res[0] = vec1[0]+vec2[0];res[1] = vec1[1]+vec2[1];res[2] = vec1[2]+vec2[2];
+}	
