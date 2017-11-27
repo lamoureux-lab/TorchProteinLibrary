@@ -1,0 +1,37 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{multirow}
+
+%opening
+\title{Protein Classes Library}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Protein folding is a problem of predicting the atomic structure of a protein given its amino-acid sequence. 
+The challenging part of this problem is the complexity of the manifold to which belongs a protein structure.
+The key idea of the library is the local conversion of this manifold to the euclidian space, where deep learning
+techniques can be applied. After some machine learning algorithm provides prediction of the folding step in this 
+local space, we have to convert this step back to the changes of the coordinates on the manifold.
+
+\section{AB Protein Model}
+
+\subsection{From Manifold to Euclidian space}
+\input{Angles2Coords.tex}
+
+\subsection{From Euclidian space to Manifold}
+\input{BMatrix.tex}
+
+\bibliographystyle{plain}
+\bibliography{VariationalMethods/citations,bibliography}
+
+\end{document}
