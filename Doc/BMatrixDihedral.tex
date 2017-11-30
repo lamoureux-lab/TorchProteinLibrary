@@ -15,7 +15,26 @@ The angle of rotation can be computed as follows:
 $$
 \beta = \arccos \left( \frac{ \left([\mathbf{u}, \mathbf{w}], [\mathbf{w}, \mathbf{v}] \right) }{\sin(\alpha_{i-1}) \sin(\alpha_{i})} \right)
 $$
+In this case I took the expressions from MODELLER \cite{}:
+$$
+\begin{array}{lcl}
+\frac{d\beta_i}{dr_{i}} &=& -\frac{1}{\sin(\beta)} \left( [\mathbf{r}_{i,i+1}, \mathbf{a}] - [\mathbf{r}_{i+1,i+2}, \mathbf{b}] \right) \\
+\frac{d\beta_i}{dr_{i+1}} &=& -\frac{1}{\sin(\beta)} \left( [\mathbf{r}_{i,i+2}, \mathbf{b}] - [\mathbf{r}_{i-1,i}, \mathbf{a}] \right) \\
+\mathbf{a} &=& \frac{1}{\left| [\mathbf{r}_{i-1,i}, \mathbf{r}_{i+1,i+2}] \right|} 
+    \left( 
+        \frac{[\mathbf{r}_{i+1,i}, \mathbf{r}_{i+1,i+2}]}{\left| [\mathbf{r}_{i+1,i}, \mathbf{r}_{r+1,i+2}] \right|} - 
+        \cos(\beta)
+        \frac{[\mathbf{r}_{i-1,i}, \mathbf{r}_{i+1,i+2}]}{\left| [\mathbf{r}_{i-1,i}, \mathbf{r}_{r+1,i+2}] \right|}
+    \right)\\
 
+\mathbf{b} &=& \frac{1}{\left| [\mathbf{r}_{i+1,i}, \mathbf{r}_{i+1,i+2}] \right|} 
+    \left( 
+        \frac{[\mathbf{r}_{i-1,i}, \mathbf{r}_{i+1,i}]}{\left| [\mathbf{r}_{i-1,i}, \mathbf{r}_{r+1,i}] \right|} - 
+        \cos(\beta)
+        \frac{[\mathbf{r}_{i+1,i}, \mathbf{r}_{i+1,i+2}]}{\left| [\mathbf{r}_{i+1,i}, \mathbf{r}_{r+1,i+2}] \right|}
+    \right)
+\end{array}
+$$
 
 \begin{algorithm}
     \caption{Bending matrix computation}

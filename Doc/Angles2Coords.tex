@@ -65,9 +65,9 @@ $$r_{i+1} = A_i \cdot \begin{bmatrix} 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}$$
 Now, we need to compute gradients of the internal angles with respect to the cartesian coordinates.
 Each $R^{i}$ matrix depends on the angles $\alpha_i$ and $\beta_i$ (lets denote them as $q_i$), 
 therefore the derivative of the coordinates:
-$$ \frac{dr_i}{dq_j} = \frac{d R^{0} \cdot R^{1} \dots R^{i-1} \cdot R^{i} } {dq_j} = 
-R^{0} \cdot R^{1} \dots \frac{dR^j}{dq_j} \dots R^{i-1} \cdot R^{i} $$
+$$ \frac{dr_i}{dq_j} = \frac{d R^{0} \cdot R^{1} \dots R^{i-1} \cdot R^{i} \cdot r_0} {dq_j} = 
+R^{0} \cdot R^{1} \dots \frac{dR^j}{dq_j} \dots R^{i-1} \cdot R^{i} \cdot r_0 $$
 using $A$ matrixes we obtain:
-$$ \frac{dr_i}{dq_j} = A_{j-1}  \cdot \frac{dR^j}{dq_j} R^{j+1} \dots R^{i} $$
+$$ \frac{dr_i}{dq_j} = A_{j-1}  \cdot \frac{dR^j}{dq_j} R^{j+1} \dots R^{i} \cdot r_0 $$
 
 

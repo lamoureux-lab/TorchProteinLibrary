@@ -29,14 +29,17 @@ local space, we have to convert this step back to the changes of the coordinates
 \section{AB Protein Model}
 
 \subsection{From Manifold to Euclidian space}
-%\input{Angles2Coords.tex}
+% \input{Angles2Coords.tex}
 
 \subsection{From Euclidian space to Manifold}
 I will derive the derivatives of angles using simple analogy to the rigid body kinematics.
 When we compute the derivative of a single angle with respect to the coordinates of a single atom, 
 we assume all other angles constant, which means that the protein behaves as a rigid body on a joint.
-\input{BMatrixBend.tex}
+% \input{BMatrixBend.tex}
 \input{BMatrixDihedral.tex}
+
+Much more simple approach would be the following:
+% \input{BMatrixMatrix.tex}
 
 \bibliographystyle{plain}
 \bibliography{VariationalMethods/citations,bibliography}
