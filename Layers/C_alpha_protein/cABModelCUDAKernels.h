@@ -15,3 +15,9 @@ void cpu_backwardFromCoords(float *d_dalpha, float *d_dbeta, // angles gradients
 							float *d_dRdAlpha, float *d_dRdBeta, //dr_j/dq_k derivatives, size=atoms x angles x 3
 							int L                          //number of angles
 							);
+
+void cpu_computeBMatrix( 	float *d_dalpha, float *d_dbeta,
+							float *d_coords,
+							float *d_B_bend,	// L x L + 1 x 3 matrix
+							float *d_B_rot,	// L x L + 1 x 3 matrix
+							int L);

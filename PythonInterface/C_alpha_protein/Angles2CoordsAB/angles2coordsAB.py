@@ -13,11 +13,12 @@ class Angles2CoordsABFunction(Function):
 		super(Angles2CoordsABFunction, self).__init__()
 		self.angles_max_length = angles_max_length
 		self.A = None
+		self.dr_dangle = None
 		
 	def forward(self, input, angles_length):
 		output_coords_gpu = None
-		A = None
-		dr_dangle = None
+		self.A = None
+		self.dr_dangle = None
 		if len(input.size())==2:
 			#allocating output on gpu
 			output_coords_gpu = torch.FloatTensor(3*(self.angles_max_length+1)).cuda()
@@ -50,15 +51,15 @@ class Angles2CoordsABFunction(Function):
 		input, angles_length = self.saved_tensors
 		if len(input.size()) == 2:
 			gradInput_gpu = torch.FloatTensor(2, self.angles_max_length).cuda()
-			dr_dangle = torch.FloatTensor(2, 3*(self.angles_max_length+1)*self.angles_max_length).cuda()
+			self.dr_dangle = torch.FloatTensor(2, 3*(self.angles_max_length+1)*self.angles_max_length).cuda()
 		if len(input.size()) == 3:
 			batch_size = input.size()[0]
 			gradInput_gpu = torch.FloatTensor(batch_size, 2, self.angles_max_length).cuda()
-			dr_dangle = torch.FloatTensor(batch_size, 2, 3*(self.angles_max_length+1)*self.angles_max_length).cuda()
-		dr_dangle.fill_(0.0)
+			self.dr_dangle = torch.FloatTensor(batch_size, 2, 3*(self.angles_max_length+1)*self.angles_max_length).cuda()
+		self.dr_dangle.fill_(0.0)
 		gradInput_gpu.fill_(0.0)
 		
-		cppAngles2CoordsAB.Angles2Coords_backward(gradInput_gpu, gradOutput, input, angles_length, self.A, dr_dangle)
+		cppAngles2CoordsAB.Angles2Coords_backward(gradInput_gpu, gradOutput, input, angles_length, self.A, self.dr_dangle)
 		
 		# print 'A2C gI:', gradInput_gpu.sum()
 		if math.isnan(gradInput_gpu.sum()):

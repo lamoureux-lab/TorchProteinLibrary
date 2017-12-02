@@ -212,6 +212,10 @@ __device__ void setVec3(float *d_v, float x, float y, float z){
 	d_v[0]=x;d_v[1]=y;d_v[2]=z;
 }
 
+__device__ void setVec3(float *src, float *dst){
+	dst[0]=src[0];dst[1]=src[1];dst[2]=src[2];
+}
+
 __device__ float vec3Mul(float *v1, float *v2){
 	return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
 }
