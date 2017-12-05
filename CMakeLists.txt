@@ -95,7 +95,12 @@ add_executable(tensorUpsampleTest UnitTests/tensorUpsampleTest.cpp)
 target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
 
 #Test backbone computation
-add_executable(angles2BackboneTest UnitTests/angles2BackboneTest.cpp)
-target_link_libraries (angles2BackboneTest TH GLFRAMEWORK ANGLES2BACKBONE)
+#add_executable(angles2BackboneTest UnitTests/angles2BackboneTest.cpp)
+#target_link_libraries (angles2BackboneTest TH GLFRAMEWORK)
+
+
+#Test backbone computation
+add_executable(angles2BMatrixTest UnitTests/bmatrixTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Angles2BMatrix/cAngles2BMatrix.cpp)
+target_link_libraries (angles2BMatrixTest TH THC AB_MODEL GLFRAMEWORK)
 
 

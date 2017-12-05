@@ -117,6 +117,6 @@ def test_forward_iterative():
 		
 
 if __name__=='__main__':
-	test_forward_iterative()
-	# test_forward()
+	# test_forward_iterative()
+	test_forward()
 	
