@@ -4,6 +4,7 @@
 #include <cVector3.h>
 #include <Angles2CoordsAB/cAngles2CoordsAB.h>
 #include <Angles2BMatrix/cAngles2BMatrix.h>
+#include <Ddist2Forces/cDdist2Forces.h>
 
 using namespace glutFramework;
 
@@ -85,10 +86,11 @@ class ProteinVis: public Object{
 
 class ProteinMover: public Object{
     THCState* state;
-    THCudaTensor *coords, *angles, *dangles, *A, *B;
+    THCudaTensor *coords, *angles, *dangles, *A, *B, *ddist;
     THCudaTensor *force;
     cAngles2CoordsAB *a2c;
     cAngles2BMatrix *a2b;
+    cDdist2Forces *dd2f;
     int num_angles, num_atoms;
     public:
         ProteinMover(THCState* state, int num_angles){
@@ -99,32 +101,39 @@ class ProteinMover: public Object{
             force = THCudaTensor_newWithSize1d(state, num_atoms*3);
             angles = THCudaTensor_newWithSize2d(state, 2, num_angles);
             dangles = THCudaTensor_newWithSize2d(state, 2, num_angles);
+            ddist = THCudaTensor_newWithSize2d(state, num_atoms, num_atoms);
             for(int i=0;i<num_angles;i++){
                 THCudaTensor_set2d(state, angles, 0, i, 1.3);
                 THCudaTensor_set2d(state, angles, 1, i, 0.5);
             }
-
+            THCudaTensor_fill(state, ddist, 0.0);
             for(int i=0;i<num_atoms;i++){
-                float val = 0.0;
-                if(i==4) val=0.1;
-                THCudaTensor_set1d(state, force, 3*i, val);
-                THCudaTensor_set1d(state, force, 3*i+1, val);
-                THCudaTensor_set1d(state, force, 3*i+2, val);
+                for(int j=i+1;j<num_atoms;j++){
+                    float val = 0.01;
+                    if(i==0 && j==9) val=0.01;
+                    if(i==2 && j==5) val=0.01;
+                    if(i==1 && j==4) val=-0.02;
+                    THCudaTensor_set2d(state, ddist, i, j, val);
+                    THCudaTensor_set2d(state, ddist, j, i, val);
+                }
             }
 
             A = THCudaTensor_newWithSize1d(state, num_angles*16);
             this->a2c = new cAngles2CoordsAB(state, A, angles, NULL, num_angles);
             B = THCudaTensor_newWithSize2d(state, 2, num_angles*num_atoms*3);
             this->a2b = new cAngles2BMatrix(state, num_angles);
+            this->dd2f = new cDdist2Forces(state, coords, num_angles);
         };
         ~ProteinMover(){
             THCudaTensor_free(state, coords);
             THCudaTensor_free(state, angles);
             THCudaTensor_free(state, dangles);
+            THCudaTensor_free(state, ddist);
             THCudaTensor_free(state, A);
             THCudaTensor_free(state, B);
             delete a2c;
             delete a2b;
+            delete dd2f;
         };
         THCudaTensor * get_coords(){
             return coords;
@@ -135,12 +144,15 @@ class ProteinMover: public Object{
                         
             glLineWidth(3);
             glBegin(GL_LINES);
-            glColor3f(1.0,0.0,0.0);
-
+            
             THCudaTensor_fill(state, B, 0.0);
             THCudaTensor_fill(state, coords, 0.0);
             THCudaTensor_fill(state, dangles, 0.0);
+            THCudaTensor_fill(state, force, 0.0);
+            // THCudaTensor_fill(state, ddist, 0.0);
+
             a2c->computeForward(angles, coords);
+            dd2f->computeForward(ddist, force);
             a2b->computeB(angles, coords, B);
             a2b->computeForward(force, dangles);
             
@@ -153,6 +165,26 @@ class ProteinMover: public Object{
                 THCudaTensor_set2d(state, angles, 1, i, beta);
             }
 
+            for(int i=0; i<num_atoms; i++){
+                for(int j=i+1; j<num_atoms; j++){
+                    float x0 = THCudaTensor_get1d(state, coords, 3*j);
+                    float y0 = THCudaTensor_get1d(state, coords, 3*j+1);
+                    float z0 = THCudaTensor_get1d(state, coords, 3*j+2);
+                    float x1 = THCudaTensor_get1d(state, coords, 3*i);
+                    float y1 = THCudaTensor_get1d(state, coords, 3*i+1);
+                    float z1 = THCudaTensor_get1d(state, coords, 3*i+2);
+
+                    if( fabs(THCudaTensor_get2d(state, ddist, i,j))>0.1){
+                        if(THCudaTensor_get2d(state, ddist, i,j)>0)
+                            glColor3f(1.0,0.0,0.0);
+                        else
+                            glColor3f(0.0,0.0,1.0);
+                        glVertex3f(x0,y0,z0);
+                        glVertex3f(x1,y1,z1);
+                    }
+                }          
+            }       
+            glColor3f(0.0,1.0,0.0);
             for(int j=0; j<num_atoms; j++){
                 float fx = THCudaTensor_get1d(state, force, j*3);
                 float fy = THCudaTensor_get1d(state, force, j*3+1);
@@ -165,7 +197,7 @@ class ProteinMover: public Object{
                     glVertex3f(x0,y0,z0);
                     glVertex3f(x1,y1,z1);         
                 }          
-            }          
+            }             
                 
             glEnd();
             glPopAttrib();
@@ -174,7 +206,7 @@ class ProteinMover: public Object{
 
 int main(int argc, char** argv)
 {
-    int num_atoms = 5;
+    int num_atoms = 10;
     int num_angles = num_atoms-1;
     GlutFramework framework;
     THCState* state = (THCState*) malloc(sizeof(THCState));

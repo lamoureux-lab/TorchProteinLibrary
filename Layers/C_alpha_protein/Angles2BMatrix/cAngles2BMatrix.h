@@ -17,10 +17,12 @@ public:
                         int angles_length          // input actual number of angles in the sequence
                     );
         
-    void computeForward(    THCudaTensor *input_angles,     // input angles, 2 x maxlen float tensor
-                            THCudaTensor *input_coords,      // output coords, 3 x maxlen + 1
-                            THCudaTensor *output_B      // output B-matrix 2 x 3 x num_atoms x num_angles
-                            );
+    void computeB(  THCudaTensor *input_angles,     // input angles, 2 x maxlen float tensor
+                    THCudaTensor *input_coords,      // output coords, 3 x maxlen + 1
+                    THCudaTensor *output_B      // output B-matrix 2 x 3 x num_atoms x num_angles
+                    );
+
+    void computeForward(THCudaTensor *input_forces, THCudaTensor *output_dangles);
                         
 	// void computeBackward(   THCudaTensor *gradInput,            //output gradient of the input angles
     //                         THCudaTensor *gradOutput_coords    //input gradient of the coordinates

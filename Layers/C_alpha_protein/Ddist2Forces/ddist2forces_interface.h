@@ -1,0 +1,1 @@
+int Ddist2Forces_forward(   THCudaTensor *input_ddist,THCudaTensor *input_coords, THCudaTensor *output_forces, THIntTensor *angles_length);

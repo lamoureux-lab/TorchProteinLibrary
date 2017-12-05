@@ -3,7 +3,7 @@
 #include "cMathCUDAKernels.cu"
 
 
-#define EPS 1E-5
+#define EPS 1E-3
 
 __device__ void getABRotationMatrix(float *d_data, float alpha, float beta){
 	d_data[0]=cos(alpha);   d_data[1]=-sin(alpha)*cos(beta);d_data[2]=sin(alpha)*sin(beta);	d_data[3]=cos(alpha);
@@ -153,7 +153,10 @@ __global__ void computeBMatrixBend( float *d_alpha, float *d_beta,
 	vec3Normalize(u);
 	vec3Normalize(v);
 
+	// if( atom_id<(angle_id-1) || atom_id>(angle_id+1) )
+	// 	return;
 	if(atom_id<(angle_id)){
+		return;
 		vec3Minus(d_coords + 3*(atom_id), d_coords + 3*(angle_id), r);
 		compute_w(v,u,w);// vec3Cross(v, u, w);
 		vec3Cross(w, r, a);
@@ -164,17 +167,19 @@ __global__ void computeBMatrixBend( float *d_alpha, float *d_beta,
 			vec3Mul(a,0.);
 		setVec3(a, d_B_bend+deriv_flat_index);
 	}else if(atom_id>(angle_id)){
+		// return;
 		vec3Minus(d_coords + 3*(atom_id), d_coords + 3*(angle_id), r);
-		compute_w(u,v,w);//vec3Cross(u, v, w);
+		compute_w(u,v,w); //vec3Cross(u, v, w);
 		vec3Cross(w, r, a);
 		lambda = vec3Dot(r,r) - vec3Dot(r,w);
-		if(lambda>EPS)
+		if(fabs(lambda)>EPS)
 			vec3Mul(a,-1./lambda);
 		else
-			vec3Mul(a,0.);
+			return;
 		
 		setVec3(a, d_B_bend+deriv_flat_index);
 	}else{
+		return;
 		if(angle_id>0)
 			vec3Minus(d_coords + 3*(angle_id), d_coords + 3*(angle_id-1), r);
 		else
@@ -183,18 +188,19 @@ __global__ void computeBMatrixBend( float *d_alpha, float *d_beta,
 		vec3Cross(w, r, a);
 		lambda = vec3Dot(r,r) - vec3Dot(r,w);
 		if(lambda>EPS)
-			vec3Mul(a,-1./lambda);
+			vec3Mul(a,1./lambda);
 		else
 			vec3Mul(a,0.);
 		vec3Minus(d_coords + 3*(angle_id), d_coords + 3*(angle_id+1), r);
-		compute_w(v,u,w);// vec3Cross(v, u, w);
+		compute_w(v,u,w); //vec3Cross(v, u, w);
 		vec3Cross(w, r, b);
 		lambda = vec3Dot(r,r) - vec3Dot(r,w);
 		if(lambda>EPS)
 			vec3Mul(b,-1./lambda);
 		else
 			vec3Mul(b,0.);
-		vec3Plus(a, b, d_B_bend+deriv_flat_index);
+		// vec3Plus(a, b, d_B_bend+deriv_flat_index);
+		setVec3(a,d_B_bend+deriv_flat_index);
 		// printf("a = %f, %f, %f\n", a[0], a[1], a[2]);
 	}
 }
@@ -212,6 +218,7 @@ __global__ void computeBMatrixRot( float *d_alpha, float *d_beta,
 
 	
 	if(atom_id<(angle_id)){
+		return;
 		vec3Minus(d_coords + 3*(atom_id), d_coords + 3*(angle_id+1), r);
 		vec3Minus(d_coords + 3*(angle_id), d_coords + 3*(angle_id+1), w);
 		vec3Normalize(w);
@@ -228,20 +235,24 @@ __global__ void computeBMatrixRot( float *d_alpha, float *d_beta,
 		vec3Normalize(w);
 		vec3Cross(w, r, a);
 		lambda = vec3Dot(r,r) - vec3Dot(r,w);
-		if(lambda>EPS)
+		if(fabs(lambda)>EPS)
 			vec3Mul(a,1./lambda);
 		else
-			vec3Mul(a,0.);
+			return;
 		
 		setVec3(a, d_B_rot+deriv_flat_index);
 	}else{
+		return;
 		float uw[3], vw[3], wv[3], mod_uw, mod_wv, beta;
 		beta = d_beta[angle_id];
-		if (beta<EPS){
+		if (fabs(sin(beta))<EPS){
 			setVec3(d_B_rot+deriv_flat_index, 0.0, 0.0, 0.0);
 			return;
 		}else{
-			vec3Minus(d_coords + 3*(angle_id-1), d_coords + 3*(angle_id), u);
+			if(angle_id==0)
+				setVec3(u, 0, -1, 0);
+			else
+				vec3Minus(d_coords + 3*(angle_id-1), d_coords + 3*(angle_id), u);
 			vec3Minus(d_coords + 3*(angle_id), d_coords + 3*(angle_id+1), w);
 			vec3Minus(d_coords + 3*(angle_id+2), d_coords + 3*(angle_id+1), v);
 			//computing a
@@ -411,13 +422,72 @@ __global__ void computeBMatrixRot_MODELLER( 	float *d_alpha, float *d_beta,
 }
 
 
+__global__ void computeDAngles( float *d_forces,
+								float *d_dangles,
+								float *d_B_bend,	// L x L + 1 x 3 matrix
+								float *d_B_rot,	// L x L + 1 x 3 matrix
+								int L){
+	int angles_size = L;
+	int atoms_size = L+1;
+	uint angle_type = blockIdx.x;
+	uint angle_id = threadIdx.x;
+
+
+	uint deriv_flat_index_all = angle_id *(atoms_size*3);
+	uint deriv_flat_index;
+	for(uint atom_id=0; atom_id<atoms_size; atom_id++){
+		deriv_flat_index = deriv_flat_index_all + atom_id*3;
+		if(angle_type==0)
+			d_dangles[angle_type*angles_size + angle_id] += vec3Dot(d_forces+atom_id*3, d_B_bend+deriv_flat_index);
+		else
+			d_dangles[angle_type*angles_size + angle_id] += vec3Dot(d_forces+atom_id*3, d_B_rot+deriv_flat_index);
+	}
+}
+
+
+__global__ void computeForces( 	float *d_ddist, // atoms_size x atoms_size
+								float *d_forces, // atoms_size x 3
+								float *d_coords, // atoms_size x 3
+								int L){
+	int angles_size = L;
+	int atoms_size = L+1;
+	uint atom_id1 = threadIdx.x;
+
+	uint ddist_flat_index;
+	float rij[3];
+	for(uint atom_id2=0; atom_id2<atoms_size; atom_id2++){
+		if(atom_id1==atom_id2) continue;
+		ddist_flat_index = atom_id1*atoms_size + atom_id2;
+		vec3Minus(d_coords+atom_id1*3, d_coords+atom_id2*3, rij);
+		vec3Normalize(rij);
+		vec3Mul(rij, d_ddist[ddist_flat_index]);
+		vec3Plus(d_forces+atom_id1*3, rij, d_forces+atom_id1*3);
+	}
+}
+
+
 void cpu_computeBMatrix( 	float *d_alpha, float *d_beta,
 							float *d_coords,
 							float *d_B_bend,	// L x L + 1 x 3 matrix
 							float *d_B_rot,	// L x L + 1 x 3 matrix
 							int L){
 	computeBMatrixBend<<<L,L+1>>>(d_alpha, d_beta, d_coords, d_B_bend, L);
-	// computeBMatrixRot<<<L-1,L+1>>>(d_alpha, d_beta, d_coords, d_B_rot, L);
+	computeBMatrixRot<<<L,L+1>>>(d_alpha, d_beta, d_coords, d_B_rot, L);
+	// computeBMatrixBend_MODELLER<<<1, L>>>(d_alpha, d_beta, d_coords, d_B_bend, L);
 	// computeBMatrixBend_MODELLER<<<1, L-1>>>(d_alpha, d_beta, d_coords, d_B_bend, L);
-	// computeBMatrixBend_MODELLER<<<1, L-1>>>(d_alpha, d_beta, d_coords, d_B_bend, L);
+}
+
+void cpu_computeDAngles( 	float *d_forces,
+							float *d_dangles,
+							float *d_B_bend,	// L x L + 1 x 3 matrix
+							float *d_B_rot,	// L x L + 1 x 3 matrix
+							int L){
+	computeDAngles<<<2,L>>>(d_forces, d_dangles, d_B_bend, d_B_rot, L);
+}
+
+void cpu_computeForces( 	float *d_ddist,
+							float *d_forces,
+							float *d_coords,
+							int L){
+	computeForces<<<1,L+1>>>(d_ddist, d_forces, d_coords, L);
 }

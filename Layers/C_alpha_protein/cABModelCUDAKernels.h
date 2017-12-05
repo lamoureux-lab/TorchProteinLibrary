@@ -21,3 +21,14 @@ void cpu_computeBMatrix( 	float *d_dalpha, float *d_dbeta,
 							float *d_B_bend,	// L x L + 1 x 3 matrix
 							float *d_B_rot,	// L x L + 1 x 3 matrix
 							int L);
+
+void cpu_computeDAngles( 	float *d_forces,
+							float *d_dangles,
+							float *d_B_bend,	// L x L + 1 x 3 matrix
+							float *d_B_rot,	// L x L + 1 x 3 matrix
+							int L);
+
+void cpu_computeForces( 	float *d_ddist,
+							float *d_forces,
+							float *d_coords,
+							int L);

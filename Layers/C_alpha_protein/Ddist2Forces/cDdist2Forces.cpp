@@ -5,49 +5,24 @@
 #include <math.h>
 #include <set>
 
-#include "cAngles2BMatrix.h"
+#include "cDdist2Forces.h"
 #include "../cABModelCUDAKernels.h"
 
-cAngles2BMatrix::cAngles2BMatrix( THCState *state, int angles_length){
+cDdist2Forces::cDdist2Forces( THCState *state, THCudaTensor *coords, int angles_length){
     this->angles_length = angles_length;
-
-    this->d_alpha = THCudaTensor_new(state);
-    this->d_beta = THCudaTensor_new(state);
-    this->d_B_rot = THCudaTensor_new(state);
-	this->d_B_bend = THCudaTensor_new(state);
-    
+    this->coords = coords;
     
 }
-cAngles2BMatrix::~cAngles2BMatrix(){
-    THCudaTensor_free(state, this->d_alpha);
-    THCudaTensor_free(state, this->d_beta);
-    THCudaTensor_free(state, this->d_B_rot);
-	THCudaTensor_free(state, this->d_B_bend);
+cDdist2Forces::~cDdist2Forces(){
     
 }
-void cAngles2BMatrix::computeB( THCudaTensor *input_angles,     // input angles, 2 x maxlen float tensor
-                                THCudaTensor *input_coords,       // output coords, 3 x maxlen + 1
-                                THCudaTensor *output_B){
 
-    THCudaTensor_select(state, this->d_alpha, input_angles, 0, 0);
-    THCudaTensor_select(state, this->d_beta, input_angles, 0, 1);
-    THCudaTensor_select(state, this->d_B_bend, output_B, 0, 0);
-    THCudaTensor_select(state, this->d_B_rot, output_B, 0, 1);
-    
-    cpu_computeBMatrix(	THCudaTensor_data(state, this->d_alpha), THCudaTensor_data(state, this->d_beta),
-                        THCudaTensor_data(state, input_coords),
-                        THCudaTensor_data(state, this->d_B_bend),
-                        THCudaTensor_data(state, this->d_B_rot),
-                        this->angles_length);
-}   
+void cDdist2Forces::computeForward( THCudaTensor *input_ddist, 
+                                    THCudaTensor *output_forces){
 
-void cAngles2BMatrix::computeForward(   THCudaTensor *input_forces, 
-                                        THCudaTensor *output_dangles){
-
-    cpu_computeDAngles(	THCudaTensor_data(state, input_forces),
-                        THCudaTensor_data(state, output_dangles),
-                        THCudaTensor_data(state, this->d_B_bend),
-                        THCudaTensor_data(state, this->d_B_rot),
+    cpu_computeForces(	THCudaTensor_data(state, input_ddist),
+                        THCudaTensor_data(state, output_forces),
+                        THCudaTensor_data(state, this->coords),
                         this->angles_length);
 
 }
