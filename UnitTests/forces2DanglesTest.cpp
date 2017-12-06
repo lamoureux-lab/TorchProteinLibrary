@@ -3,7 +3,7 @@
 #include <GlutFramework.h>
 #include <cVector3.h>
 #include <Angles2CoordsAB/cAngles2CoordsAB.h>
-#include <Angles2BMatrix/cAngles2BMatrix.h>
+#include <Forces2Dangles/cForces2Dangles.h>
 
 using namespace glutFramework;
 
@@ -88,7 +88,7 @@ class ProteinMover: public Object{
     THCudaTensor *coords, *angles, *dangles, *A, *B;
     THCudaTensor *force;
     cAngles2CoordsAB *a2c;
-    cAngles2BMatrix *a2b;
+    cForces2Dangles *a2b;
     int num_angles, num_atoms;
     public:
         ProteinMover(THCState* state, int num_angles){
@@ -115,7 +115,7 @@ class ProteinMover: public Object{
             A = THCudaTensor_newWithSize1d(state, num_angles*16);
             this->a2c = new cAngles2CoordsAB(state, A, angles, NULL, num_angles);
             B = THCudaTensor_newWithSize2d(state, 2, num_angles*num_atoms*3);
-            this->a2b = new cAngles2BMatrix(state, num_angles);
+            this->a2b = new cForces2Dangles(state, num_angles);
         };
         ~ProteinMover(){
             THCudaTensor_free(state, coords);

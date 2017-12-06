@@ -5,10 +5,10 @@
 #include <math.h>
 #include <set>
 
-#include "cAngles2BMatrix.h"
+#include "cForces2Dangles.h"
 #include "../cABModelCUDAKernels.h"
 
-cAngles2BMatrix::cAngles2BMatrix( THCState *state, int angles_length){
+cForces2Dangles::cForces2Dangles( THCState *state, int angles_length){
     this->angles_length = angles_length;
 
     this->d_alpha = THCudaTensor_new(state);
@@ -18,14 +18,14 @@ cAngles2BMatrix::cAngles2BMatrix( THCState *state, int angles_length){
     
     
 }
-cAngles2BMatrix::~cAngles2BMatrix(){
+cForces2Dangles::~cForces2Dangles(){
     THCudaTensor_free(state, this->d_alpha);
     THCudaTensor_free(state, this->d_beta);
     THCudaTensor_free(state, this->d_B_rot);
 	THCudaTensor_free(state, this->d_B_bend);
     
 }
-void cAngles2BMatrix::computeB( THCudaTensor *input_angles,     // input angles, 2 x maxlen float tensor
+void cForces2Dangles::computeB( THCudaTensor *input_angles,     // input angles, 2 x maxlen float tensor
                                 THCudaTensor *input_coords,       // output coords, 3 x maxlen + 1
                                 THCudaTensor *output_B){
 
@@ -41,7 +41,7 @@ void cAngles2BMatrix::computeB( THCudaTensor *input_angles,     // input angles,
                         this->angles_length);
 }   
 
-void cAngles2BMatrix::computeForward(   THCudaTensor *input_forces, 
+void cForces2Dangles::computeForward(   THCudaTensor *input_forces, 
                                         THCudaTensor *output_dangles){
 
     cpu_computeDAngles(	THCudaTensor_data(state, input_forces),

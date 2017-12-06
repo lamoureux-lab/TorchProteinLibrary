@@ -100,11 +100,11 @@ target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
 
 
 #Test backbone computation
-add_executable(angles2BMatrixTest UnitTests/bmatrixTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Angles2BMatrix/cAngles2BMatrix.cpp)
-target_link_libraries (angles2BMatrixTest TH THC AB_MODEL GLFRAMEWORK)
+add_executable(forces2DanglesTest UnitTests/forces2DanglesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp)
+target_link_libraries (forces2DanglesTest TH THC AB_MODEL GLFRAMEWORK)
 
 #Test backbone computation
-add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Angles2BMatrix/cAngles2BMatrix.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
+add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
 target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
 
 

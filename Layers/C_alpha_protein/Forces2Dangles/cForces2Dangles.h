@@ -1,10 +1,10 @@
-#ifndef CANGLES2BMATRIX_H_
-#define CANGLES2BMATRIX_H_
+#ifndef CFORCES2DANGLES_H_
+#define CFORCES2DANGLES_H_
 #include <TH.h>
 #include <THC.h>
 
 
-class cAngles2BMatrix{
+class cForces2Dangles{
 
 	THCudaTensor *d_alpha, *d_beta, *d_B_rot, *d_B_bend;	
 	THCState *state;
@@ -13,7 +13,7 @@ class cAngles2BMatrix{
 	    	
 public:
 
-	cAngles2BMatrix(    THCState *state, 
+	cForces2Dangles(    THCState *state, 
                         int angles_length          // input actual number of angles in the sequence
                     );
         
@@ -28,7 +28,7 @@ public:
     //                         THCudaTensor *gradOutput_coords    //input gradient of the coordinates
     //                         );
                             
-	~cAngles2BMatrix();
+	~cForces2Dangles();
 
 };
 
