@@ -456,7 +456,7 @@ __global__ void computeForces( 	float *d_ddist, // atoms_size x atoms_size
 	uint ddist_flat_index;
 	float rij[3];
 	for(uint atom_id2=0; atom_id2<atoms_size; atom_id2++){
-		if(atom_id1==atom_id2) continue;
+		if(atom_id1<=atom_id2) continue;
 		ddist_flat_index = atom_id1*atoms_size + atom_id2;
 		vec3Minus(d_coords+atom_id1*3, d_coords+atom_id2*3, rij);
 		vec3Normalize(rij);

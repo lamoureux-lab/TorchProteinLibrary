@@ -1,3 +1,14 @@
+#Temp files
+*~
+
+#Python 
+*.pyc
+
+#Build directories
+*Exposed*
+*build*
+
+
 # Prerequisites
 *.d
 

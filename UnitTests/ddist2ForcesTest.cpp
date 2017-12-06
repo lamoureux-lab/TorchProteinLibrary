@@ -174,7 +174,7 @@ class ProteinMover: public Object{
                     float y1 = THCudaTensor_get1d(state, coords, 3*i+1);
                     float z1 = THCudaTensor_get1d(state, coords, 3*i+2);
 
-                    if( fabs(THCudaTensor_get2d(state, ddist, i,j))>0.1){
+                    if( fabs(THCudaTensor_get2d(state, ddist, i,j))>0.0){
                         if(THCudaTensor_get2d(state, ddist, i,j)>0)
                             glColor3f(1.0,0.0,0.0);
                         else
