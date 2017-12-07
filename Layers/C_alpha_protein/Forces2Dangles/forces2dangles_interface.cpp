@@ -4,13 +4,14 @@
 
 extern THCState *state;
 extern "C" {
-    int cForces2Dangles_forward( THCudaTensor *input_angles, 
+    int Forces2Dangles_forward( THCudaTensor *input_angles, 
                                 THCudaTensor *input_coords, 
                                 THCudaTensor *input_forces,
                                 THCudaTensor *output_B, 
                                 THCudaTensor *output_dangles,
                                 THIntTensor *angles_length
                             ){
+        
         if(input_angles->nDimension == 2){
             cForces2Dangles a2B(state, THIntTensor_get1d(angles_length, 0));
             a2B.computeB(input_angles, input_coords, output_B);
