@@ -46,7 +46,6 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-//#include <BALL/KERNEL/system.h>
 #include <TH/TH.h>
 
 
@@ -60,8 +59,7 @@ public:
 	cVector3(double x);
 	cVector3(double x, double y, double z);
 	cVector3(double val[3]);
-    //cVector3(const BALL::Vector3& v3);
-   
+       
 	double				operator|(const cVector3& u) const;
 	cVector3			operator^(const cVector3& u) const;
 	cVector3			operator+(const cVector3 &u) const;
