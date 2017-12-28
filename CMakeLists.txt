@@ -71,6 +71,10 @@ add_subdirectory(Layers/Angles2Backbone)
 include_directories("Layers/C_alpha_protein")
 add_subdirectory(Layers/C_alpha_protein)
 
+#FULL-ATOM MODEL
+include_directories("Layers/FullAtomModel")
+add_subdirectory(Layers/FullAtomModel)
+
 
 
 
@@ -107,4 +111,7 @@ target_link_libraries (forces2DanglesTest TH THC AB_MODEL GLFRAMEWORK)
 add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
 target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
 
+#Test FullAtomModel
+add_executable(fullAtomModelTest UnitTests/fullAtomModelTest.cpp)
+target_link_libraries (fullAtomModelTest TH MATH FULL_ATOM_MODEL GLFRAMEWORK)
 
