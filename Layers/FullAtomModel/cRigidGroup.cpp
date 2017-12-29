@@ -17,3 +17,9 @@ void cRigidGroup::applyTransform(cMatrix44 &mat){
         atoms[i] = mat*atoms[i];
     }
 }
+
+cRigidGroup makeAtom(){
+    cRigidGroup g;
+    g.addAtom(cVector3(0,0,0));
+    return g;
+}

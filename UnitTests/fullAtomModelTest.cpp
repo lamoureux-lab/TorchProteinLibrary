@@ -5,12 +5,13 @@
 
 using namespace glutFramework;
 
-class ProteinVis: public Object{
-    
+class RigidGroupVis: public Object{
+    cRigidGroup *rg;
     public:
-        ProteinVis(){
+        RigidGroupVis(cRigidGroup *rg){
+            this->rg = rg;
         };
-        ~ProteinVis(){
+        ~RigidGroupVis(){
         
         };
         void display(){
@@ -18,40 +19,45 @@ class ProteinVis: public Object{
             glDisable(GL_LIGHTING);
             glPointSize(5);
             glBegin(GL_POINTS);
-                glColor3f(1.0,0.0,0.0);
-                for(int i=0; i<num_atoms; i++){
-                    float x = THFloatTensor_get1d(cpu_coords, 3*i);
-                    float y = THFloatTensor_get1d(cpu_coords, 3*i+1);
-                    float z = THFloatTensor_get1d(cpu_coords, 3*i+2);
-                    glVertex3f(x,y,z);
-                }
-            glEnd();
-
-            glLineWidth(3);
-            glBegin(GL_LINES);
                 glColor3f(1.0,1.0,1.0);
-                for(int i=0; i<(num_atoms-1); i++){
-                    float x0 = THFloatTensor_get1d(cpu_coords, 3*i);
-                    float y0 = THFloatTensor_get1d(cpu_coords, 3*i+1);
-                    float z0 = THFloatTensor_get1d(cpu_coords, 3*i+2);
-                    float x1 = THFloatTensor_get1d(cpu_coords, 3*(i+1));
-                    float y1 = THFloatTensor_get1d(cpu_coords, 3*(i+1)+1);
-                    float z1 = THFloatTensor_get1d(cpu_coords, 3*(i+1)+2);
-                    glVertex3f(x0,y0,z0);
-                    glVertex3f(x1,y1,z1);
+                for(int i=0; i<rg->atoms.size(); i++){
+                    float x = rg->atoms[i].v[0];
+                    float y = rg->atoms[i].v[1];
+                    float z = rg->atoms[i].v[2];
+                    glVertex3f(x,y,z);
                 }
             glEnd();
             glPopAttrib();
         };
 };
 
+class ConformationVis: public Object{
+    cConformation *c;
+    vector<RigidGroupVis> groupsVis;
+    public:
+        ConformationVis(cConformation *c){
+            this->c = c;
+            for(int i=0; i<c->groups.size(); i++){
+                groupsVis.push_back(&(c->groups[i]));
+            }
+        };
+        ~ConformationVis(){};
+        void display(){
+            for(int i=0; i<groupsVis.size(); i++){
+                groupsVis[i].display();
+            }
+        };
+};
+
+
 int main(int argc, char** argv)
 {
     int num_atoms = 10;
     int num_angles = num_atoms-1;
     GlutFramework framework;
-       
-    ProteinVis pV();
+    
+    
+    ConformationVis pV();
     
     Vector<double> lookAtPos(0,0,0);
     framework.setLookAt(20.0, 20.0, 20.0, lookAtPos.x, lookAtPos.y, lookAtPos.z, 0.0, 1.0, 0.0);

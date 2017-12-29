@@ -6,28 +6,16 @@
 
 
 class cRigidGroup{
-    std::vector<cVector3> atoms;
-	
-public:
-
-	cRigidGroup();
-    ~cRigidGroup();
-    void addAtom(cVector3 &pos);
-    void applyTransform(cMatrix44 &mat);
-
+    private:
+        std::vector<cVector3> atoms;
+    public:
+        cRigidGroup();
+        ~cRigidGroup();
+        void addAtom(cVector3 &pos);
+        void applyTransform(cMatrix44 &mat);
 };
 
-cRigidGroup makeAtom(){
-    cRigidGroup g;
-    g.addAtom(cVector3(0,0,0));
-    return g;
-}
-
-cRigidGroup makeRing(){
-    cRigidGroup g;
-    g.addAtom(cVector3(0,0,0));
-    return g;
-}
+cRigidGroup makeAtom();
 
 
 #endif
