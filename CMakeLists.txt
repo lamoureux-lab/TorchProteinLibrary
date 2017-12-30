@@ -113,5 +113,5 @@ target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
 
 #Test FullAtomModel
 add_executable(fullAtomModelTest UnitTests/fullAtomModelTest.cpp)
-target_link_libraries (fullAtomModelTest TH MATH FULL_ATOM_MODEL GLFRAMEWORK)
+target_link_libraries (fullAtomModelTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
 

@@ -1,21 +1,24 @@
 #ifndef CRIGIDGROUP_H_
 #define CRIGIDGROUP_H_
 #include <cVector3.h>
-#include <cVector44.h>
+#include <cMatrix44.h>
 #include <vector>
-
+#include <iostream>
 
 class cRigidGroup{
-    private:
-        std::vector<cVector3> atoms;
+    // private:
+    //     std::vector<cVector3> atoms;
     public:
+        std::vector<cVector3> atoms;
+        std::vector<std::string> atomNames;
         cRigidGroup();
         ~cRigidGroup();
-        void addAtom(cVector3 &pos);
-        void applyTransform(cMatrix44 &mat);
+        void addAtom(cVector3 pos, std::string atomName);
+        void applyTransform(cMatrix44 mat);
 };
 
-cRigidGroup makeAtom();
+cRigidGroup *makeAtom(std::string atomName);
+std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg);
 
 
 #endif

@@ -1,9 +1,10 @@
-#ifndef CRIGIDGROUP_H_
-#define CRIGIDGROUP_H_
+#ifndef CCONFORMATION_H_
+#define CCONFORMATION_H_
 #include <cVector3.h>
-#include <cVector44.h>
+#include <cMatrix44.h>
 #include <vector>
 #include <string>
+#include <cRigidGroup.h>
 
 class cTransform{
     private:
@@ -23,26 +24,30 @@ class cTransform{
         };
         ~cTransform(){};
         void updateMatrix();
-}
+        void print();
+};
 
 class cNode{
     public:
         cRigidGroup *group;
         cTransform *T; //transform from parent to this node
-        cMatrix44 *M; //aggregate transform from root
+        cMatrix44 M; //aggregate transform from root
         cNode *left;
         cNode *right;
         cNode *parent;
                 
-        cNode(){this->parent = NULL;left=NULL;right=NULL;};
+        cNode(){parent = NULL;left=NULL;right=NULL;};
         ~cNode(){};
 };
 
+std::ostream& operator<<(std::ostream& os, const cNode& node);
+
 class cConformation{
-    private:
-        std::vector<cNode> nodes;
-        std::vector<cRigidGroup> groups;
-        std::vector<cMatrix44> transforms;
+    // private:
+    public:
+        std::vector<cNode*> nodes;
+        std::vector<cRigidGroup*> groups;
+        std::vector<cTransform*> transforms;
         
         double zero_const, omega_const, kappa1, kappa2, kappa3;
 
@@ -53,5 +58,7 @@ class cConformation{
         ~cConformation();
         cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);
         void update(cNode *node);
-    
+        void print(cNode *node);
 };
+
+#endif

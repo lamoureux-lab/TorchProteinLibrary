@@ -22,20 +22,20 @@ cMatrix44::cMatrix44(const cMatrix33 &rot, const cVector3 &shift){
 	
 }
 
-cMatrix44::cMatrix44(const float alpha, const float beta, const float R){
+cMatrix44::cMatrix44(const double alpha, const double beta, const double R){
 	m[0][0]=cos(alpha);            	m[0][1]=-sin(alpha)*cos(beta);  m[0][2]=sin(alpha)*sin(beta);		m[0][3]=-R*sin(alpha)*cos(beta);
 	m[1][0]=sin(alpha);				m[1][1]=cos(alpha)*cos(beta); 	m[1][2]=-cos(alpha)*sin(beta); 		m[1][3]=R*cos(alpha)*cos(beta);
 	m[2][0]=0.0;   					m[2][1]=sin(beta);				m[2][2]=cos(beta); 					m[2][3]=R*sin(beta);
 	m[3][0]=0.0;				    m[3][1]=0.0;					m[3][2]=0.0;		 				m[3][3]=1.0;
 }
 
-void cMatrix44::setGradAlpha(const float alpha, const float beta, const float R){
+void cMatrix44::setGradAlpha(const double alpha, const double beta, const double R){
 	m[0][0]=-sin(alpha);            m[0][1]=-cos(alpha)*cos(beta);  m[0][2]=cos(alpha)*sin(beta);		m[0][3]=-R*cos(alpha)*cos(beta);
 	m[1][0]=cos(alpha);  			m[1][1]=-sin(alpha)*cos(beta); 	m[1][2]=sin(alpha)*sin(beta);		m[1][3]=-R*sin(alpha)*cos(beta);
 	m[2][0]=0.0;   					m[2][1]=0.0;				 	m[2][2]=0.0; 						m[2][3]=0.0;
 	m[3][0]=0.0;				    m[3][1]=0.0;					m[3][2]=0.0;		 				m[3][3]=0.0;
 }
-void cMatrix44::setGradBeta(const float alpha, const float beta, const float R){
+void cMatrix44::setGradBeta(const double alpha, const double beta, const double R){
 	m[0][0]=0.0;		            m[0][1]=sin(alpha)*sin(beta);	m[0][2]=sin(alpha)*cos(beta);		m[0][3]=R*sin(alpha)*sin(beta);
 	m[1][0]=0.0;					m[1][1]=-cos(alpha)*sin(beta); 	m[1][2]=-cos(alpha)*cos(beta); 		m[1][3]=-R*cos(alpha)*sin(beta);
 	m[2][0]=0.0;   					m[2][1]=cos(beta); 				m[2][2]=-sin(beta); 				m[2][3]=R*cos(beta);
