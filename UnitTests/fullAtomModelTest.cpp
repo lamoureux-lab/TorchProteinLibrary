@@ -9,8 +9,9 @@ using namespace glutFramework;
 
 class RigidGroupVis: public Object{
     cRigidGroup *rg;
-    
+    friend class ConformationVis;
     public:
+        
         RigidGroupVis(cRigidGroup *rg){
             this->rg = rg;
         };
@@ -27,12 +28,16 @@ class RigidGroupVis: public Object{
                     float x = rg->atoms[i].v[0];
                     float y = rg->atoms[i].v[1];
                     float z = rg->atoms[i].v[2];
-                    if(rg->atomNames[i]=="C"){
-                        glColor3f(0.5,0.5,0.5);
+                    if(rg->atomNames[i]=="C" || rg->atomNames[i]=="CB"){
+                        glColor3f(0.0,0.5,0.0);
+                        glVertex3f(x,y,z);
+                    }
+                    if(rg->atomNames[i]=="O"){
+                        glColor3f(0.8,0.,0.);
                         glVertex3f(x,y,z);
                     }
                     if(rg->atomNames[i]=="CA"){
-                        glColor3f(0.8,0.8,0.8);
+                        glColor3f(0.0,0.8,0.0);
                         glVertex3f(x,y,z);
                     }
                     if(rg->atomNames[i]=="N"){
@@ -63,6 +68,19 @@ class ConformationVis: public Object{
             for(int i=0; i<groupsVis.size(); i++){
                 groupsVis[i].display();
             }
+            glPushAttrib(GL_LIGHTING_BIT);
+            glDisable(GL_LIGHTING);
+            glLineWidth(2);
+            glBegin(GL_LINES);
+                glColor3f(1.0,1.0,1.0);
+                for(int i=0; i<groupsVis.size()-1; i++){
+                    // cVector3 x0 = groupsVis[i].rg->atoms[0];
+                    // cVector3 x1 = groupsVis[i+1].rg->atoms[0];
+                    // glVertex3f(x0.v[0],x0.v[1],x0.v[2]);
+                    // glVertex3f(x1.v[0],x1.v[1],x1.v[2]);
+                }
+            glEnd();
+            glPopAttrib();
         };
 };
 
@@ -77,8 +95,8 @@ int main(int argc, char** argv)
     double beta[3];
     std::string aa("AAA");
     for(int i=0;i<3;i++){
-        alpha[i] = i*0.12;
-        beta[i] = i*0.30;
+        alpha[i] = -1.047;
+        beta[i] = -0.698;
     }
     
     cConformation conf(aa, &alpha[0], &beta[0]);

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <cRigidGroup.h>
+#include <cGeometry.h>
 
 class cTransform{
     private:
@@ -50,15 +51,22 @@ class cConformation{
         std::vector<cTransform*> transforms;
         
         double zero_const, omega_const, kappa1, kappa2, kappa3;
+        cGeometry geo;
 
     public:
         cNode *root;
 
         cConformation(std::string aa, double *alpha, double *beta);
         ~cConformation();
-        cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);
+        
         void update(cNode *node);
         void print(cNode *node);
+
+    private:
+        cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);
+        
+        cNode *addGly(cNode *parentC, std::vector<double*> params);
+        cNode *addAla(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

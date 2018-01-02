@@ -1,2 +1,2 @@
-ADD_LIBRARY(FULL_ATOM_MODEL cRigidGroup.cpp cConformation.cpp)
+ADD_LIBRARY(FULL_ATOM_MODEL cRigidGroup.cpp cConformation.cpp cGeometry.cpp)
 TARGET_LINK_LIBRARIES(FULL_ATOM_MODEL TH TH_MATH)

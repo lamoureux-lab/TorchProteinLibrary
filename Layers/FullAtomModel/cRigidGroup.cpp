@@ -31,3 +31,10 @@ cRigidGroup *makeAtom(std::string atomName){
     g->addAtom(cVector3(0,0,0), atomName);
     return g;
 }
+
+cRigidGroup *makeCarbonyl(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "C");
+    g->addAtom(cVector3(cos(geo.CA_C_O_angle),0,sin(geo.CA_C_O_angle)), "O");
+    return g;
+}

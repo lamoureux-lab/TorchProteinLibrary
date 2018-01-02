@@ -4,6 +4,7 @@
 #include <cMatrix44.h>
 #include <vector>
 #include <iostream>
+#include <cGeometry.h>
 
 class cRigidGroup{
     // private:
@@ -18,6 +19,7 @@ class cRigidGroup{
 };
 
 cRigidGroup *makeAtom(std::string atomName);
+cRigidGroup *makeCarbonyl(cGeometry &geo);
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg);
 
 
