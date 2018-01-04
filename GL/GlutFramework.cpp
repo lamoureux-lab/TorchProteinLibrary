@@ -224,6 +224,11 @@ namespace glutFramework {
 		glEnable(GL_LIGHT0);
 		glShadeModel(GL_SMOOTH);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_POINT_SMOOTH);
+        glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 		
 		load();
 	}

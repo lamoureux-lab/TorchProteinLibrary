@@ -56,7 +56,7 @@ class cConformation{
     public:
         cNode *root;
 
-        cConformation(std::string aa, double *alpha, double *beta);
+        cConformation(std::string aa, double *data, int length);
         ~cConformation();
         
         void update(cNode *node);
@@ -67,6 +67,9 @@ class cConformation{
         
         cNode *addGly(cNode *parentC, std::vector<double*> params);
         cNode *addAla(cNode *parentC, std::vector<double*> params);
+        cNode *addSer(cNode *parentC, std::vector<double*> params);
+        cNode *addCys(cNode *parentC, std::vector<double*> params);
+        cNode *addVal(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

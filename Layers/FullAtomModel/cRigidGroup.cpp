@@ -9,18 +9,19 @@ cRigidGroup::~cRigidGroup(){
 }
 
 void cRigidGroup::addAtom(cVector3 pos, std::string atomName){
-    this->atoms.push_back(pos);
+    this->atoms_local.push_back(pos);
+    this->atoms_global.push_back(pos);
     this->atomNames.push_back(atomName);
 }
 
 void cRigidGroup::applyTransform(cMatrix44 mat){
-    for(int i=0; i<this->atoms.size(); i++){
-        atoms[i] = mat*atoms[i];
+    for(int i=0; i<this->atoms_local.size(); i++){
+        atoms_global[i] = mat*atoms_local[i];
     }
 }
 
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg){
-    for(int i=0; i<rg.atoms.size(); i++){
+    for(int i=0; i<rg.atomNames.size(); i++){
         os<<rg.atomNames[i];
     }
     return os;

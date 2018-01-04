@@ -10,7 +10,8 @@ class cRigidGroup{
     // private:
     //     std::vector<cVector3> atoms;
     public:
-        std::vector<cVector3> atoms;
+        std::vector<cVector3> atoms_local;
+        std::vector<cVector3> atoms_global;
         std::vector<std::string> atomNames;
         cRigidGroup();
         ~cRigidGroup();
