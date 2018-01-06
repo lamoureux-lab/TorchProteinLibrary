@@ -70,6 +70,7 @@ class cConformation{
         cNode *addSer(cNode *parentC, std::vector<double*> params);
         cNode *addCys(cNode *parentC, std::vector<double*> params);
         cNode *addVal(cNode *parentC, std::vector<double*> params);
+        cNode *addIle(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

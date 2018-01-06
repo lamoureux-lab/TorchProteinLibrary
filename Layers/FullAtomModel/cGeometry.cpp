@@ -32,6 +32,7 @@ cGeometry::cGeometry(){
     R_CB_CG = 1.527;
     CA_CB_CG1_angle =  M_PI*110.7/180.0;
     CG1_CB_CG2_angle = 1.88444687881;
+    //Isoleucine
 }
 
 cGeometry::~cGeometry(){

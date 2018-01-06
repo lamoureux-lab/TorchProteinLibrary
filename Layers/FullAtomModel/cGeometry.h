@@ -22,6 +22,8 @@ class cGeometry{
         //Valine
         double R_CB_CG;
         double CG1_CB_CG2_angle, CA_CB_CG1_angle;
+        //Isoleucine
+        
         
 
         cGeometry();

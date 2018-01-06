@@ -33,5 +33,13 @@ def getCG1_CB_CG2_angle():
 	CG1_CB_CG2_angle = calc_angle(v1,v3,v2)
 	print(CG1_CB_CG2_angle)
 
+def getIleAngles():
+	residue = generateAA('I')
+	v1 = residue['CA'].get_vector()
+	v2 = residue['CG1'].get_vector()
+	v3 = residue['CB'].get_vector()
+	CG1_CB_CG2_angle = calc_angle(v1,v3,v2)
+
 if __name__=='__main__':
-	generateAA('I')
+	getIleAngles()
+	
