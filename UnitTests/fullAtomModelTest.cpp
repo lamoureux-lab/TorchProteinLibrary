@@ -51,8 +51,8 @@ class RigidGroupVis: public Object{
                     
                 }
             glEnd();
-            if(rg->atoms_global.size()>1){
-                glBegin(GL_LINE_LOOP);
+            if(rg->atoms_global.size()>2){
+                glBegin(GL_POLYGON);
                     glColor3f(0.5,0.5,0.5);
                     for(int i=0; i<rg->atoms_global.size(); i++){
                         float x = rg->atoms_global[i].v[0];
@@ -60,6 +60,18 @@ class RigidGroupVis: public Object{
                         float z = rg->atoms_global[i].v[2];
                         glVertex3f(x,y,z);
                     }
+                glEnd();
+            }else if(rg->atoms_global.size()>1){
+                glBegin(GL_LINES);
+                    glColor3f(0.5,0.5,0.5);
+                    float x = rg->atoms_global[0].v[0];
+                    float y = rg->atoms_global[0].v[1];
+                    float z = rg->atoms_global[0].v[2];
+                    glVertex3f(x,y,z);
+                    x = rg->atoms_global[1].v[0];
+                    y = rg->atoms_global[1].v[1];
+                    z = rg->atoms_global[1].v[2];
+                    glVertex3f(x,y,z);
                 glEnd();
             }
             

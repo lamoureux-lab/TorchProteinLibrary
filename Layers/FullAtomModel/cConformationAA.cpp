@@ -66,9 +66,9 @@ cNode *cConformation::addAla(cNode *parentC, std::vector<double*> params){
 }
 
 cNode *cConformation::addSer(cNode *parentC, std::vector<double*> params){
-    cNode *nC, *nCA, *nN, *nCB, *nOG;
-    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbOG_transform;
-    cRigidGroup *bbCA, *bbC, *bbN, *bbCB, *bbOG;
+    cNode *nC, *nCA, *nN, *nCB;
+    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform;
+    cRigidGroup *bbCA, *bbC, *bbN, *bbCB;
     // geo.ala();
 
     bbN = makeAtom("N");
@@ -93,26 +93,20 @@ cNode *cConformation::addSer(cNode *parentC, std::vector<double*> params){
     nC = addNode(nCA, groups.back(), transforms.back());
 
     //TODO: Should be unified in a single rigid group
-    bbCB = makeAtom("CB");
-    bbCB_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.C_CA_CB_angle, geo.R_CA_CB);
+    bbCB = makeSerGroup(geo);
+    bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
     nCB = addNode(nCA, groups.back(), transforms.back());
-
-    bbOG = makeAtom("OG");
-    bbOG_transform = new cTransform(params[2], &geo.CA_CB_OG_angle, geo.R_CB_OG);
-    this->groups.push_back(bbOG);
-    this->transforms.push_back(bbOG_transform);
-    nOG = addNode(nCB, groups.back(), transforms.back());
 
     return nC;
 }
 
 
 cNode *cConformation::addCys(cNode *parentC, std::vector<double*> params){
-    cNode *nC, *nCA, *nN, *nCB, *nSG;
-    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbSG_transform;
-    cRigidGroup *bbCA, *bbC, *bbN, *bbCB, *bbSG;
+    cNode *nC, *nCA, *nN, *nCB;
+    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform;
+    cRigidGroup *bbCA, *bbC, *bbN, *bbCB;
     // geo.ala();
 
     bbN = makeAtom("N");
@@ -136,26 +130,19 @@ cNode *cConformation::addCys(cNode *parentC, std::vector<double*> params){
     this->transforms.push_back(bbC_transform);
     nC = addNode(nCA, groups.back(), transforms.back());
 
-    //TODO: Should be unified in a single rigid group
-    bbCB = makeAtom("CB");
+    bbCB = makeCysGroup(geo);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
     nCB = addNode(nCA, groups.back(), transforms.back());
-
-    bbSG = makeAtom("SG");
-    bbSG_transform = new cTransform(&zero_const, &geo.CA_CB_SG_angle, geo.R_CB_SG);
-    this->groups.push_back(bbSG);
-    this->transforms.push_back(bbSG_transform);
-    nSG = addNode(nCB, groups.back(), transforms.back());
 
     return nC;
 }
 
 cNode *cConformation::addVal(cNode *parentC, std::vector<double*> params){
-    cNode *nC, *nCA, *nN, *nCB, *nCG1, *nCG2;
-    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbCG1_transform, *bbCG2_transform;
-    cRigidGroup *bbCA, *bbC, *bbN, *bbCB, *bbCG1, *bbCG2;
+    cNode *nC, *nCA, *nN, *nCB;
+    cTransform *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform;
+    cRigidGroup *bbCA, *bbC, *bbN, *bbCB;
     // geo.ala();
 
     bbN = makeAtom("N");
@@ -180,23 +167,11 @@ cNode *cConformation::addVal(cNode *parentC, std::vector<double*> params){
     nC = addNode(nCA, groups.back(), transforms.back());
 
     //TODO: Should be unified in a single rigid group
-    bbCB = makeAtom("CB");
+    bbCB = makeValGroup(geo);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
     nCB = addNode(nCA, groups.back(), transforms.back());
-
-    bbCG1 = makeAtom("CG1");
-    bbCG1_transform = new cTransform(&zero_const, &geo.CA_CB_CG1_angle, geo.R_CB_CG);
-    this->groups.push_back(bbCG1);
-    this->transforms.push_back(bbCG1_transform);
-    nCG1 = addNode(nCB, groups.back(), transforms.back());
-
-    bbCG2 = makeAtom("CG2");
-    bbCG2_transform = new cTransform(&zero_const, &geo.CA_CB_CG2_angle, geo.R_CB_CG);
-    this->groups.push_back(bbCG2);
-    this->transforms.push_back(bbCG2_transform);
-    nCG2 = addNode(nCB, groups.back(), transforms.back());
 
     return nC;
 }

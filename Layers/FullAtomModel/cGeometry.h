@@ -13,15 +13,15 @@ class cGeometry{
         //C-beta atom
         double R_CA_CB;
 
-        //Serine OG
+        //Serine
         double CA_CB_OG_angle;
         double R_CB_OG;
-        //Cysteine SG
+        //Cysteine
         double CA_CB_SG_angle;
         double R_CB_SG;
         //Valine
         double R_CB_CG;
-        double CA_CB_CG1_angle, CA_CB_CG2_angle;
+        double CG1_CB_CG2_angle, CA_CB_CG1_angle;
         
 
         cGeometry();

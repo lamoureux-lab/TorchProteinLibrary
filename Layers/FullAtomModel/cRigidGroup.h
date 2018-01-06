@@ -21,6 +21,9 @@ class cRigidGroup{
 
 cRigidGroup *makeAtom(std::string atomName);
 cRigidGroup *makeCarbonyl(cGeometry &geo);
+cRigidGroup *makeSerGroup(cGeometry &geo);
+cRigidGroup *makeCysGroup(cGeometry &geo);
+cRigidGroup *makeValGroup(cGeometry &geo);
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg);
 
 
