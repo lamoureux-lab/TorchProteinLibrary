@@ -46,8 +46,6 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <TH/TH.h>
-
 
 class cVector3 {
 
@@ -90,7 +88,7 @@ public:
     void                scale(const cVector3 &u);
 	cVector3			normalizedVersion()	const;
 	void				updateMinMax(cVector3 &min, cVector3 &max) const;
-    void                makeUniformVector(THGenerator *gen);
+    // void                makeUniformVector(THGenerator *gen);
 
     void save(std::ofstream &outFile);
     void save(std::string fileName);

@@ -33,6 +33,41 @@ cGeometry::cGeometry(){
     CA_CB_CG1_angle =  M_PI*110.7/180.0;
     CG1_CB_CG2_angle = 1.88444687881;
     //Isoleucine
+    R_CG1_CD1 = 1.52;
+    CB_CG1_CD1_angle = M_PI*113.97/180.0;
+    //Threonine
+    R_CB_OG1 = 1.43;
+    CA_CB_OG1_angle = M_PI*109.18/180.0;
+    OG1_CB_CG2_angle = 1.90291866134;
+    //Arginine
+    R_C_C = R_CA_CB;
+    C_C_C_angle = C_CA_CB_angle;
+    R_CD_NE = 1.46;
+    R_NE_CZ = 1.33;
+    R_CZ_NH = 1.33;
+    CA_CB_CG_angle = -(M_PI - M_PI*113.83/180.0);
+    CB_CG_CD_angle = -(M_PI - M_PI*111.79/180.0);
+    CG_CD_NE_angle = -(M_PI - M_PI*111.68/180.0);
+    CD_NE_CZ_angle = -(M_PI - M_PI*124.79/180.0);
+    NE_CZ_NH_angle = M_PI*124.79/180.0;
+    //Lysine
+    R_CD_CE = 1.46;
+    R_CE_NZ = 1.33;
+    CD_CE_NZ_angle = -(M_PI - M_PI*124.79/180.0);
+    //Aspartic acid
+    R_CG_OD = 1.25;
+    CB_CG_OD_angle = M_PI*119.22/180.0;
+    OD1_CG_OD2_angle = 2.13911043783;
+    //Asparagine
+    R_CG_OD1 = 1.23;
+    R_CG_ND2 = 1.33;
+    CB_CG_OD1_angle = M_PI*120.85/180.0;
+    CB_CG_ND2_angle = M_PI*116.48/180.0;
+    //Methionine
+    R_CG_SD = 1.81;
+    R_SD_CE = 1.79;
+    CB_CG_SD_angle = -(M_PI - M_PI*112.69/180.0);
+    CG_SD_CE_angle = -(M_PI - M_PI*100.61/180.0);
 }
 
 cGeometry::~cGeometry(){

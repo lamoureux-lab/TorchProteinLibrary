@@ -4,7 +4,7 @@ import sys
 def make_cuda_lib():
 	os.system("mkdir build")
 	os.chdir('build')
-	os.system("cmake ..")
+	os.system("cmake -DFAM_ONLY:BOOL=OFF ..")
 	os.system("make")
 	os.chdir('..')
 

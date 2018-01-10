@@ -65,7 +65,10 @@ cConformation::cConformation(std::string aa, double *data, int length){
         double *psi = data + i + length*1;
         double *xi1 = data + i + length*2;
         double *xi2 = data + i + length*3;
-        std::vector<double*> params({phi, psi, xi1, xi2});
+        double *xi3 = data + i + length*4;
+        double *xi4 = data + i + length*5;
+        double *xi5 = data + i + length*6;
+        std::vector<double*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
         switch(aa[i]){
             case 'G':
                 lastC = addGly(lastC, params);
@@ -81,6 +84,36 @@ cConformation::cConformation(std::string aa, double *data, int length){
                 break;
             case 'V':
                 lastC = addVal(lastC, params);
+                break;
+            case 'I':
+                lastC = addIle(lastC, params);
+                break;
+            case 'L':
+                lastC = addLeu(lastC, params);
+                break;
+            case 'T':
+                lastC = addThr(lastC, params);
+                break;
+            case 'R':
+                lastC = addArg(lastC, params);
+                break;
+            case 'K':
+                lastC = addLys(lastC, params);
+                break;
+            case 'D':
+                lastC = addAsp(lastC, params);
+                break;
+            case 'N':
+                lastC = addAsn(lastC, params);
+                break;
+            case 'E':
+                lastC = addGlu(lastC, params);
+                break;
+            case 'Q':
+                lastC = addGln(lastC, params);
+                break;
+            case 'M':
+                lastC = addMet(lastC, params);
                 break;
         }
     }

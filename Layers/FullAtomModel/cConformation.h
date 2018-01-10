@@ -71,6 +71,15 @@ class cConformation{
         cNode *addCys(cNode *parentC, std::vector<double*> params);
         cNode *addVal(cNode *parentC, std::vector<double*> params);
         cNode *addIle(cNode *parentC, std::vector<double*> params);
+        cNode *addLeu(cNode *parentC, std::vector<double*> params);
+        cNode *addThr(cNode *parentC, std::vector<double*> params);
+        cNode *addArg(cNode *parentC, std::vector<double*> params);
+        cNode *addLys(cNode *parentC, std::vector<double*> params);
+        cNode *addAsp(cNode *parentC, std::vector<double*> params);
+        cNode *addAsn(cNode *parentC, std::vector<double*> params);
+        cNode *addGlu(cNode *parentC, std::vector<double*> params);
+        cNode *addGln(cNode *parentC, std::vector<double*> params);
+        cNode *addMet(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

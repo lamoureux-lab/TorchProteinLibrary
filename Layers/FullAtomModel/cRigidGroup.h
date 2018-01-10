@@ -24,6 +24,13 @@ cRigidGroup *makeCarbonyl(cGeometry &geo);
 cRigidGroup *makeSerGroup(cGeometry &geo);
 cRigidGroup *makeCysGroup(cGeometry &geo);
 cRigidGroup *makeValGroup(cGeometry &geo);
+cRigidGroup *makeIleGroup1(cGeometry &geo);
+cRigidGroup *makeIleGroup2(cGeometry &geo);
+cRigidGroup *makeLeuGroup(cGeometry &geo);
+cRigidGroup *makeThrGroup(cGeometry &geo);
+cRigidGroup *makeArgGroup(cGeometry &geo);
+cRigidGroup *makeAspGroup(cGeometry &geo, std::string O1, std::string O2);
+cRigidGroup *makeAsnGroup(cGeometry &geo, std::string O1, std::string N2);
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg);
 
 
