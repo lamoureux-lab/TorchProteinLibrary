@@ -22,7 +22,7 @@ void cRigidGroup::applyTransform(cMatrix44 mat){
 
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg){
     for(int i=0; i<rg.atomNames.size(); i++){
-        os<<rg.atomNames[i];
+        os<<rg.atomNames[i]<<" "<<rg.atoms_global[i]<<"\n";
     }
     return os;
 }
@@ -144,5 +144,24 @@ cRigidGroup *makeAsnGroup(cGeometry &geo, std::string O1, std::string N2){
     g->addAtom(geo.R_CG_ND2*cVector3(sin(geo.CB_CG_ND2_angle-M_PI/2.0),
                         0,
                         -cos(geo.CB_CG_ND2_angle-M_PI/2.0)), N2);
+    return g;
+}
+
+cRigidGroup *makeHisGroup(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "CG");
+    g->addAtom(geo.R_CG_CD2*cVector3(cos(geo.CB_CG_CD2_angle), sin(geo.CB_CG_CD2_angle), 0), "CD2");
+    g->addAtom(geo.R_CG_NE2*cVector3(cos(geo.CB_CG_NE2_angle), sin(geo.CB_CG_NE2_angle), 0), "NE2");
+    g->addAtom(geo.R_CG_CE1*cVector3(cos(geo.CB_CG_CE1_angle), sin(geo.CB_CG_CE1_angle), 0), "CE1");
+    g->addAtom(geo.R_CG_ND1*cVector3(cos(geo.CB_CG_ND1_angle), sin(geo.CB_CG_ND1_angle), 0), "ND1");
+    return g;
+}
+
+cRigidGroup *makeProGroup(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "CA");
+    g->addAtom(cVector3(0.36842372, -1.29540981, 0.70468246), "CB");
+    g->addAtom(cVector3(-0.76137817, -2.21546205, 0.39299099), "CG");
+    g->addAtom(cVector3(-1.97838492, -1.33927458, 0.35849352), "CD");
     return g;
 }

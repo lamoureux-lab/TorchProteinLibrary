@@ -137,6 +137,8 @@ class ConformationUpdate: public Object{
         ~ConformationUpdate(){};
         void display(){
             for(int i=0;i<length;i++){
+                data[0*length + i]+=0.01;
+                data[1*length + i]+=0.01;
                 data[2*length + i]+=0.01;
                 data[3*length + i]+=0.01;
                 data[4*length + i]+=0.01;
@@ -150,15 +152,17 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("M");
+    std::string aa("P");
 
     int length = aa.length();
     int num_angles = 7;
     double th_data[length*num_angles];
         
     for(int i=0;i<length;i++){
-        th_data[i + length*0] = -1.047;
-        th_data[i + length*1] = -0.698;
+        // th_data[i + length*0] = -1.047;
+        th_data[i + length*0] = 0.0;
+        // th_data[i + length*1] = -0.698;
+        th_data[i + length*1] = 0.0;
         th_data[i + length*2] = 110.4*M_PI/180.0;
         th_data[i + length*3] = -63.3*M_PI/180.0;
         th_data[i + length*4] = -61.6*M_PI/180.0;
@@ -168,8 +172,8 @@ int main(int argc, char** argv)
     
     cConformation conf(aa, &th_data[0], length);
     std::cout<<"lalala"<<std::endl;
-    conf.print( conf.root );
     conf.update( conf.root );
+    conf.print( conf.root );
     std::cout<<"lalala"<<std::endl;
     ConformationVis pV(&conf);
     ConformationUpdate cU(&conf, th_data, length);

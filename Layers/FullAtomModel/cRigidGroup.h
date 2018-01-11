@@ -31,6 +31,8 @@ cRigidGroup *makeThrGroup(cGeometry &geo);
 cRigidGroup *makeArgGroup(cGeometry &geo);
 cRigidGroup *makeAspGroup(cGeometry &geo, std::string O1, std::string O2);
 cRigidGroup *makeAsnGroup(cGeometry &geo, std::string O1, std::string N2);
+cRigidGroup *makeHisGroup(cGeometry &geo);
+cRigidGroup *makeProGroup(cGeometry &geo);
 std::ostream& operator<<(std::ostream& os, const cRigidGroup& rg);
 
 

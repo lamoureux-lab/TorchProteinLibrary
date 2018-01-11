@@ -115,6 +115,12 @@ cConformation::cConformation(std::string aa, double *data, int length){
             case 'M':
                 lastC = addMet(lastC, params);
                 break;
+            case 'H':
+                lastC = addHis(lastC, params);
+                break;
+            case 'P':
+                lastC = addPro(lastC, params);
+                break;
         }
     }
 }

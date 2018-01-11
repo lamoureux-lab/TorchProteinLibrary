@@ -80,6 +80,8 @@ class cConformation{
         cNode *addGlu(cNode *parentC, std::vector<double*> params);
         cNode *addGln(cNode *parentC, std::vector<double*> params);
         cNode *addMet(cNode *parentC, std::vector<double*> params);
+        cNode *addHis(cNode *parentC, std::vector<double*> params);
+        cNode *addPro(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

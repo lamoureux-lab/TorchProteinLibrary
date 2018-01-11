@@ -68,6 +68,15 @@ cGeometry::cGeometry(){
     R_SD_CE = 1.79;
     CB_CG_SD_angle = -(M_PI - M_PI*112.69/180.0);
     CG_SD_CE_angle = -(M_PI - M_PI*100.61/180.0);
+    //Histidine
+    R_CG_CD2 = 1.35; 
+    R_CG_ND1 = 1.38; 
+    R_CG_NE2 = 2.1912; 
+    R_CG_CE1 = 2.1915;
+    CB_CG_CD2_angle = -(M_PI - 2.27957453603);
+    CB_CG_ND1_angle = (M_PI - 2.14413698608);
+    CB_CG_NE2_angle = -(M_PI - 2.90352974362);
+    CB_CG_CE1_angle = (M_PI - 2.75209584734);
 }
 
 cGeometry::~cGeometry(){

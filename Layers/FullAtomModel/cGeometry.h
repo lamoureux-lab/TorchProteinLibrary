@@ -46,6 +46,9 @@ class cGeometry{
         //Methionine
         double R_CG_SD, R_SD_CE;
         double CB_CG_SD_angle, CG_SD_CE_angle;
+        //Histidine
+        double R_CG_CD2, R_CG_ND1, R_CG_NE2, R_CG_CE1;
+        double CB_CG_CD2_angle, CB_CG_ND1_angle, CB_CG_NE2_angle, CB_CG_CE1_angle;
 
         cGeometry();
         ~cGeometry();
