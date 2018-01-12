@@ -165,3 +165,41 @@ cRigidGroup *makeProGroup(cGeometry &geo){
     g->addAtom(cVector3(-1.97838492, -1.33927458, 0.35849352), "CD");
     return g;
 }
+
+cRigidGroup *makePheGroup(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "CG");
+    g->addAtom(cVector3(0.69229424, -1.20533343, 0), "CD1");
+    g->addAtom(cVector3(2.08228309, -1.20846014, 0), "CE1");
+    g->addAtom(cVector3(2.77997771, -0.00625341, 0), "CZ");
+    g->addAtom(cVector3(2.08768347,  1.19908002, 0), "CE2");
+    g->addAtom(cVector3(0.69769462,  1.20220673, 0), "CD2");
+    
+    return g;
+}
+cRigidGroup *makeTyrGroup(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "CG");
+    g->addAtom(cVector3(0.69229424, -1.20533343, 0), "CD1");
+    g->addAtom(cVector3(2.08228309, -1.20846014, 0), "CE1");
+    g->addAtom(cVector3(2.77997771, -0.00625341, 0), "CZ");
+    g->addAtom(cVector3(2.08768347,  1.19908002, 0), "CE2");
+    g->addAtom(cVector3(0.69769462,  1.20220673, 0), "CD2");
+    g->addAtom(cVector3(4.16960749,  0.05377697, 0), "OH");
+    
+    return g;
+}
+
+cRigidGroup *makeTrpGroup(cGeometry &geo){
+    cRigidGroup *g = new cRigidGroup();
+    g->addAtom(cVector3(0,0,0), "CG");
+    g->addAtom(cVector3(0.829890578, -1.09003744, 0), "CD1");
+    g->addAtom(cVector3(0.84949676,  1.15028973, 0), "CD2");
+    g->addAtom(cVector3(2.1363699,  -0.64570528, 0), "NE1");
+    g->addAtom(cVector3(2.18136443,  0.71889842, 0), "CE2");
+    g->addAtom(cVector3(0.61303306,  2.5301684, 0), "CE3");
+    g->addAtom(cVector3(3.22086556,  1.65663275, 0), "CZ2");
+    g->addAtom(cVector3(1.68979906,  3.42486545, 0), "CZ3");
+    g->addAtom(cVector3(2.92849902,  3.0257584, 0), "CH2");
+    return g;
+}

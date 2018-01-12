@@ -82,6 +82,9 @@ class cConformation{
         cNode *addMet(cNode *parentC, std::vector<double*> params);
         cNode *addHis(cNode *parentC, std::vector<double*> params);
         cNode *addPro(cNode *parentC, std::vector<double*> params);
+        cNode *addPhe(cNode *parentC, std::vector<double*> params);
+        cNode *addTyr(cNode *parentC, std::vector<double*> params);
+        cNode *addTrp(cNode *parentC, std::vector<double*> params);
 };
 
 #endif

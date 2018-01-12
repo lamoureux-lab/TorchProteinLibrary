@@ -97,9 +97,96 @@ def getPro():
 
 def getPhe():
 	residue = generateAA('F')
-	
+	vCB = residue['CB'].get_coord()
+	vCG = residue['CG'].get_coord()
+	vCD1 = residue['CD1'].get_coord()
+	vCD2 = residue['CD2'].get_coord()
+	vCE1 = residue['CE1'].get_coord()
+	vCE2 = residue['CE2'].get_coord()
+	vCZ = residue['CZ'].get_coord()
+	atoms = [vCB, vCG, vCD1, vCD2, vCE1, vCE2, vCZ]
+	#center around CG
+	atoms_c = [ x - vCG for x in atoms]
+	print(atoms_c[0], atoms_c[1], atoms_c[2])
+	#rotate around z
+	angle = np.pi-np.arccos(atoms_c[0][0]/(residue['CB']-residue['CG']))
+	rotMatZ = np.array([[np.cos(angle), -np.sin(angle),0], [np.sin(angle), np.cos(angle), 0], [0,0,1]])
+	atoms_rz = [ np.dot(rotMatZ,x) for x in atoms_c]
+	print(atoms_rz[0], atoms_rz[1], atoms_rz[2])
+	#rotate around x
+	angle = np.arcsin(atoms_rz[2][2]/(np.sqrt(atoms_rz[2][2]*atoms_rz[2][2] + atoms_rz[2][1]*atoms_rz[2][1] )))
+	print (angle)
+	rotMatX = np.array([[1,0,0], [0, np.cos(angle),-np.sin(angle)], [0, np.sin(angle), np.cos(angle)]])
+	atoms_rx = [ np.dot(rotMatX,x) for x in atoms_rz]
+	print(atoms_rx[0], atoms_rx[1], atoms_rx[2])
+	atoms_nm = ['CB', 'CG', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ']
+	for at, nm in zip(atoms_rx, atoms_nm):
+		print (nm, at)
+
+def getTyr():
+	residue = generateAA('Y')
+	vCB = residue['CB'].get_coord()
+	vCG = residue['CG'].get_coord()
+	vCD1 = residue['CD1'].get_coord()
+	vCD2 = residue['CD2'].get_coord()
+	vCE1 = residue['CE1'].get_coord()
+	vCE2 = residue['CE2'].get_coord()
+	vCZ = residue['CZ'].get_coord()
+	vOH = residue['OH'].get_coord()
+	atoms = [vCB, vCG, vCD1, vCD2, vCE1, vCE2, vCZ, vOH]
+	#center around CG
+	atoms_c = [ x - vCG for x in atoms]
+	print(atoms_c[0], atoms_c[1], atoms_c[2])
+	#rotate around z
+	angle = np.pi-np.arccos(atoms_c[0][0]/(residue['CB']-residue['CG']))
+	rotMatZ = np.array([[np.cos(angle), -np.sin(angle),0], [np.sin(angle), np.cos(angle), 0], [0,0,1]])
+	atoms_rz = [ np.dot(rotMatZ,x) for x in atoms_c]
+	print(atoms_rz[0], atoms_rz[1], atoms_rz[2])
+	#rotate around x
+	angle = np.arcsin(atoms_rz[2][2]/(np.sqrt(atoms_rz[2][2]*atoms_rz[2][2] + atoms_rz[2][1]*atoms_rz[2][1] )))
+	print (angle)
+	rotMatX = np.array([[1,0,0], [0, np.cos(angle),-np.sin(angle)], [0, np.sin(angle), np.cos(angle)]])
+	atoms_rx = [ np.dot(rotMatX,x) for x in atoms_rz]
+	print(atoms_rx[0], atoms_rx[1], atoms_rx[2])
+	atoms_nm = ['CB', 'CG', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'OH']
+	for at, nm in zip(atoms_rx, atoms_nm):
+		print (nm, at)
+
+def getTrp():
+	residue = generateAA('W')
+	vCB = residue['CB'].get_coord()
+	vCG = residue['CG'].get_coord()
+	vCD1 = residue['CD1'].get_coord()
+	vCD2 = residue['CD2'].get_coord()
+	vNE1 = residue['NE1'].get_coord()
+	vCE2 = residue['CE2'].get_coord()
+	vCE3 = residue['CE3'].get_coord()
+	vCZ2 = residue['CZ2'].get_coord()
+	vCZ3 = residue['CZ3'].get_coord()
+	vCH2 = residue['CH2'].get_coord()
+	atoms = [vCB, vCG, vCD1, vCD2, vNE1, vCE2, vCE3, vCZ2, vCZ3, vCH2]
+	#center around CG
+	atoms_c = [ x - vCG for x in atoms]
+	print(atoms_c[0], atoms_c[1], atoms_c[2])
+	#rotate around z
+	angle = np.pi-np.arccos(atoms_c[0][0]/(residue['CB']-residue['CG']))
+	rotMatZ = np.array([[np.cos(angle), -np.sin(angle),0], [np.sin(angle), np.cos(angle), 0], [0,0,1]])
+	atoms_rz = [ np.dot(rotMatZ,x) for x in atoms_c]
+	print(atoms_rz[0], atoms_rz[1], atoms_rz[2])
+	#rotate around x
+	angle = np.arcsin(atoms_rz[2][2]/(np.sqrt(atoms_rz[2][2]*atoms_rz[2][2] + atoms_rz[2][1]*atoms_rz[2][1] )))
+	print (angle)
+	rotMatX = np.array([[1,0,0], [0, np.cos(angle),-np.sin(angle)], [0, np.sin(angle), np.cos(angle)]])
+	atoms_rx = [ np.dot(rotMatX,x) for x in atoms_rz]
+	print(atoms_rx[0], atoms_rx[1], atoms_rx[2])
+	atoms_nm = ['CB', 'CG', 'CD1', 'CD2', 'NE1', 'CE2', 'CE3', 'CZ2', 'CZ3', 'CH2']
+	for at, nm in zip(atoms_rx, atoms_nm):
+		print (nm, at)
+
+
+
 
 
 if __name__=='__main__':
-	getPhe()
+	getTrp()
 	

@@ -137,8 +137,8 @@ class ConformationUpdate: public Object{
         ~ConformationUpdate(){};
         void display(){
             for(int i=0;i<length;i++){
-                data[0*length + i]+=0.01;
-                data[1*length + i]+=0.01;
+                // data[0*length + i]+=0.01;
+                // data[1*length + i]+=0.01;
                 data[2*length + i]+=0.01;
                 data[3*length + i]+=0.01;
                 data[4*length + i]+=0.01;
@@ -152,17 +152,17 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("P");
+    std::string aa("W");
 
     int length = aa.length();
     int num_angles = 7;
     double th_data[length*num_angles];
         
     for(int i=0;i<length;i++){
-        // th_data[i + length*0] = -1.047;
-        th_data[i + length*0] = 0.0;
-        // th_data[i + length*1] = -0.698;
-        th_data[i + length*1] = 0.0;
+        th_data[i + length*0] = -1.047;
+        // th_data[i + length*0] = 0.0;
+        th_data[i + length*1] = -0.698;
+        // th_data[i + length*1] = 0.0;
         th_data[i + length*2] = 110.4*M_PI/180.0;
         th_data[i + length*3] = -63.3*M_PI/180.0;
         th_data[i + length*4] = -61.6*M_PI/180.0;

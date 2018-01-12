@@ -121,6 +121,15 @@ cConformation::cConformation(std::string aa, double *data, int length){
             case 'P':
                 lastC = addPro(lastC, params);
                 break;
+            case 'F':
+                lastC = addPhe(lastC, params);
+                break;
+            case 'Y':
+                lastC = addTyr(lastC, params);
+                break;
+            case 'W':
+                lastC = addTrp(lastC, params);
+                break;
         }
     }
 }
