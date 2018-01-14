@@ -13,11 +13,12 @@ class cTransform{
         double d;
         
         cMatrix44 getRx(double angle);
+        cMatrix44 getDRx(double angle);
         cMatrix44 getRy(double angle);
         cMatrix44 getRz(double angle);
         cMatrix44 getT(double dist, char axis);
     public:
-        cMatrix44 mat;
+        cMatrix44 mat, dmat;
         cTransform(double *param_alpha, double *param_beta, double d){
             this->alpha = param_alpha;
             this->beta = param_beta;
@@ -25,6 +26,7 @@ class cTransform{
         };
         ~cTransform(){};
         void updateMatrix();
+        void updateDMatrix();
         void print();
 };
 

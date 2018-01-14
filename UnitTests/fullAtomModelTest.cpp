@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("W");
+    std::string aa("MDRKW");
 
     int length = aa.length();
     int num_angles = 7;

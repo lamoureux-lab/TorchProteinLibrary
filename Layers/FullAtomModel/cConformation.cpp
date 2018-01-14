@@ -45,8 +45,19 @@ cMatrix44 cTransform::getRx(double angle){
 	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=1;
     return m;
 }
+cMatrix44 cTransform::getDRx(double angle){
+    cMatrix44 m;
+    m.m[0][0]=0;    m.m[0][1]=0;	        m.m[0][2]=0;            m.m[0][3]=0;
+	m.m[1][0]=0;	m.m[1][1]=-sin(angle);	m.m[1][2]=-cos(angle);  m.m[1][3]=0;
+	m.m[2][0]=0;    m.m[2][1]=cos(angle);   m.m[2][2]=-sin(angle);  m.m[2][3]=0;
+	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=1;
+    return m;
+}
 void cTransform::updateMatrix(){
     mat = getRy(*beta)*getRx(*alpha)*getT(d, 'x');
+}
+void cTransform::updateDMatrix(){
+    dmat = getRy(*beta)*getDRx(*alpha)*getT(d, 'x');
 }
 void cTransform::print(){
     mat.print();
