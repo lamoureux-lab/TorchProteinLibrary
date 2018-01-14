@@ -51,7 +51,7 @@ class RigidGroupVis: public Object{
                     
                 }
             glEnd();
-            if(rg->atoms_global.size()>2){
+            if(rg->atoms_global.size()>2 && rg->atoms_global.size()<8){
                 glBegin(GL_POLYGON);
                     glColor3f(0.5,0.5,0.5);
                     for(int i=0; i<rg->atoms_global.size(); i++){
@@ -62,17 +62,23 @@ class RigidGroupVis: public Object{
                     }
                 glEnd();
             }else if(rg->atoms_global.size()>1){
+                
                 glBegin(GL_LINES);
-                    glColor3f(0.5,0.5,0.5);
-                    float x = rg->atoms_global[0].v[0];
-                    float y = rg->atoms_global[0].v[1];
-                    float z = rg->atoms_global[0].v[2];
-                    glVertex3f(x,y,z);
-                    x = rg->atoms_global[1].v[0];
-                    y = rg->atoms_global[1].v[1];
-                    z = rg->atoms_global[1].v[2];
-                    glVertex3f(x,y,z);
+                for(int i=0; i<rg->atoms_global.size()-1; i++){
+                    for(int j=i+1; j<rg->atoms_global.size(); j++){
+                        glColor3f(0.5,0.5,0.5);
+                        float x = rg->atoms_global[i].v[0];
+                        float y = rg->atoms_global[i].v[1];
+                        float z = rg->atoms_global[i].v[2];
+                        glVertex3f(x,y,z);
+                        x = rg->atoms_global[j].v[0];
+                        y = rg->atoms_global[j].v[1];
+                        z = rg->atoms_global[j].v[2];
+                        glVertex3f(x,y,z);
+                    }
+                }
                 glEnd();
+                
             }
             
             glPopAttrib();
