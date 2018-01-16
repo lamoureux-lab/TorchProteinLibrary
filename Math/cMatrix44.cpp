@@ -76,6 +76,21 @@ void cMatrix44::ones(){
 	}}
 			
 }
+
+cMatrix44 invertTransform44(const cMatrix44 &mat){
+	
+	cMatrix33 invRot(mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[0][2], mat.m[1][2], mat.m[2][2]);
+	cVector3 trans(mat.m[0][3], mat.m[1][3], mat.m[2][3]);
+	cVector3 invTrans = invRot*trans*(-1);
+	double m[4][4];
+	m[0][0] = invRot.m[0][0]; m[0][1] = invRot.m[0][1]; m[0][2] = invRot.m[0][2]; m[0][3] = invTrans.v[0];
+	m[1][0] = invRot.m[1][0]; m[1][1] = invRot.m[1][1]; m[1][2] = invRot.m[1][2]; m[1][3] = invTrans.v[1];
+	m[2][0] = invRot.m[2][0]; m[2][1] = invRot.m[2][1]; m[2][2] = invRot.m[2][2]; m[2][3] = invTrans.v[2];
+	m[3][0] = 0; m[3][1] = 0; m[3][2] = 0; m[3][3] = 1;
+	return cMatrix44(m);
+}
+
+
 void cMatrix44::print()	{
 
 	double SMALL_VALUE=10e-200;

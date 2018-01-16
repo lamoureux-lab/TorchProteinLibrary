@@ -172,13 +172,16 @@ cNode *cConformation::addNode(cNode *parent, cRigidGroup *group, cTransform *t){
 }
 
 void cConformation::update(cNode *node){
-    if(node->parent!=NULL){
-        node->T->updateMatrix();
+    node->T->updateMatrix();
+    node->T->updateDMatrix();
+    if(node->parent!=NULL){    
         node->M = (node->parent->M) * (node->T->mat);
+        node->F = (node->parent->M) * (node->T->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
+
     }else{
-        node->T->updateMatrix();
         node->M.ones();
+        node->F = (node->T->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
     }
     if(node->left!=NULL){
@@ -186,6 +189,26 @@ void cConformation::update(cNode *node){
     }
     if(node->right!=NULL){
         update(node->right);
+    }
+}
+
+double cConformation::backward(cNode *root_node, cNode *node){
+    double grad = 0.0;
+    if(node->left!=NULL){
+        grad += backward(root_node, node->left);
+    }
+    if(node->right!=NULL){
+        grad += backward(root_node, node->right);
+    }
+    for(int i=0;i<node->group->atoms_global.size(); i++){
+        grad += node->group->atoms_grad[i] | (root_node->F * node->group->atoms_global[i]);
+    }
+    return grad;
+}
+
+void cConformation::backward(cNode *node){
+    for(int i=0; i<nodes.size();i++){
+        nodes[i]->T->grad_alpha = backward(nodes[i], nodes[i]);
     }
 }
 

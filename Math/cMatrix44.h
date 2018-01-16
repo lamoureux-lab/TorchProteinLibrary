@@ -30,3 +30,4 @@ public:
 };
 
 
+cMatrix44 invertTransform44(const cMatrix44 &mat);

@@ -8,8 +8,9 @@
 #include <cGeometry.h>
 
 class cTransform{
-    private:
+    public:
         double *alpha, *beta;
+        double grad_alpha;
         double d;
         
         cMatrix44 getRx(double angle);
@@ -35,6 +36,7 @@ class cNode{
         cRigidGroup *group;
         cTransform *T; //transform from parent to this node
         cMatrix44 M; //aggregate transform from root
+        cMatrix44 F; //matrix for computing gradient
         cNode *left;
         cNode *right;
         cNode *parent;
@@ -63,6 +65,8 @@ class cConformation{
         
         void update(cNode *node);
         void print(cNode *node);
+        double backward(cNode *root_node, cNode *node);
+        void backward(cNode *node);
 
     private:
         cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);

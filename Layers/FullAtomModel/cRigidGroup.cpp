@@ -1,7 +1,6 @@
 #include <cRigidGroup.h>
 
 cRigidGroup::cRigidGroup(){
-
 }
 
 cRigidGroup::~cRigidGroup(){
@@ -12,6 +11,7 @@ void cRigidGroup::addAtom(cVector3 pos, std::string atomName){
     this->atoms_local.push_back(pos);
     this->atoms_global.push_back(pos);
     this->atomNames.push_back(atomName);
+    this->atoms_grad.push_back(cVector3(0.0,0.0,0.0));
 }
 
 void cRigidGroup::applyTransform(cMatrix44 mat){

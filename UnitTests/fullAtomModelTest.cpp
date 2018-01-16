@@ -142,14 +142,20 @@ class ConformationUpdate: public Object{
         };
         ~ConformationUpdate(){};
         void display(){
-            for(int i=0;i<length;i++){
-                // data[0*length + i]+=0.01;
-                // data[1*length + i]+=0.01;
-                data[2*length + i]+=0.01;
-                data[3*length + i]+=0.01;
-                data[4*length + i]+=0.01;
-            }
             c->update(c->root);
+            for(int i =0;i< c->nodes.size(); i++){
+                for(int j=0;j< c->nodes[i]->group->atoms_global.size(); j++){
+                    cVector3 gr;
+                    cVector3 pt(0.0,0.0,0.0);
+                    gr = c->nodes[i]->group->atoms_global[j] - pt;
+                    gr.normalize();
+                    c->nodes[i]->group->atoms_grad[j] = gr;
+                }
+            }
+            c->backward(c->root);
+            for(int i=0; i<c->nodes.size();i++){
+                *(c->nodes[i]->T->alpha) += 0.0001*c->nodes[i]->T->grad_alpha;
+            }
         };
 };
 
@@ -158,7 +164,7 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("MDRKW");
+    std::string aa("GGGGGGG");
 
     int length = aa.length();
     int num_angles = 7;

@@ -12,6 +12,7 @@ class cRigidGroup{
     public:
         std::vector<cVector3> atoms_local;
         std::vector<cVector3> atoms_global;
+        std::vector<cVector3> atoms_grad;
         std::vector<std::string> atomNames;
         cRigidGroup();
         ~cRigidGroup();
