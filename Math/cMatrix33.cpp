@@ -152,7 +152,7 @@ cVector3 cMatrix33::operator*(const cVector3 &vec) const {
 	res[1]=m[1][0]*vec.v[0]+m[1][1]*vec.v[1]+m[1][2]*vec.v[2];
 	res[2]=m[2][0]*vec.v[0]+m[2][1]*vec.v[1]+m[2][2]*vec.v[2];
 
-	return cVector3(res);
+	return cVector3(res[0], res[1], res[2]);
 
 }
 
@@ -764,9 +764,9 @@ void cMatrix33::computeEulerDecompositionZY(const double &theta, double &phi) {
 	//
 	// R=R(z,psi)R(y,theta)R(z,phi)
 
-	cVector3 x(m[0]);
-	cVector3 y(m[1]);
-	cVector3 z(m[2]);
+	cVector3 x(m[0][0], m[0][1], m[0][2]);
+	cVector3 y(m[1][0], m[1][1], m[1][2]);
+	cVector3 z(m[2][0], m[2][1], m[2][2]);
 
 	cVector3 x0(1.0,0.0,0.0);
 	cVector3 y0(0.0,1.0,0.0);

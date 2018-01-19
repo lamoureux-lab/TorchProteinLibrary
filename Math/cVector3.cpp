@@ -42,11 +42,41 @@
 
 #include "cVector3.h"
 
-cVector3::cVector3() {}//{ v[0]=v[1]=v[2]=double(0); }
-cVector3::cVector3(double x) { v[0]=v[1]=v[2]=x; }
-cVector3::cVector3(double x, double y, double z) { v[0]=x;v[1]=y;v[2]=z; }
-cVector3::cVector3(double val[3]) { v[0]=val[0];v[1]=val[1];v[2]=val[2]; }
-//cVector3::cVector3(const BALL::Vector3& v3){ v[0]=v3.x;v[1]=v3.y;v[2]=v3.z; }
+cVector3::cVector3() {
+    external = false;
+    v = new double[3];
+}
+cVector3::cVector3(double *v){
+    external = true;
+    this->v = v;
+}
+cVector3::cVector3(double x){ 
+    external = false;
+    v = new double[3];
+    v[0]=x;v[1]=x;v[2]=x;
+}
+cVector3::cVector3(double x, double y, double z){ 
+    external = false;
+    v = new double[3];
+    v[0]=x;v[1]=y;v[2]=z;
+}
+cVector3::~cVector3(){
+    
+    if(!external){
+        delete [] v;
+    }else{
+    }
+}
+
+cVector3::cVector3(const cVector3& u){
+    this->external = u.external;
+    if(u.external)
+        this->v = u.v;
+    else{
+        v = new double[3];
+        v[0]=u.v[0];v[1]=u.v[1];v[2]=u.v[2];
+    }
+}
 
 
 void cVector3::setZero() { v[0]=v[1]=v[2]=0.0; }
@@ -71,7 +101,9 @@ cVector3 cVector3::operator-() { return cVector3(-v[0],-v[1],-v[2]); }
 bool cVector3::operator==(const cVector3& u) const { return (v[0]==u.v[0])&&(v[1]==u.v[1])&&(v[2]==u.v[2]); }
 bool cVector3::operator!=(const cVector3& u) const { return (v[0]!=u.v[0])||(v[1]!=u.v[1])||(v[2]!=u.v[2]); }
 bool cVector3::operator<(const cVector3& u) const { if (v[0]>=u.v[0]) return false;if (v[1]>=u.v[1]) return false;if (v[2]>=u.v[2]) return false;return true; }
-void cVector3::operator=(const cVector3& u) {v[0]=u.v[0];v[1]=u.v[1];v[2]=u.v[2];}
+void cVector3::operator=(const cVector3& u){
+    v[0]=u.v[0];v[1]=u.v[1];v[2]=u.v[2];
+}
 void cVector3::updateMinMax(cVector3 &min, cVector3 &max) const {
 
 	if (v[0]<min.v[0]) min.v[0]=v[0]; else if (v[0]>max.v[0]) max.v[0]=v[0];

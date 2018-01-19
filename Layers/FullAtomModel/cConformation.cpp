@@ -68,82 +68,93 @@ std::ostream& operator<<(std::ostream& os, const cNode& node){
     return os<<*(node.group);
 }
 
-cConformation::cConformation(std::string aa, double *data, int length){
+cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global){
     cNode *lastC = NULL;
-
+    this->atoms_global = atoms_global;
     for(int i=0; i<aa.length(); i++){
-        double *phi = data + i + length*0;
-        double *psi = data + i + length*1;
-        double *xi1 = data + i + length*2;
-        double *xi2 = data + i + length*3;
-        double *xi3 = data + i + length*4;
-        double *xi4 = data + i + length*5;
-        double *xi5 = data + i + length*6;
+        double *phi = angles + i + angles_length*0;double *dphi = angles_grad + i + angles_length*0;
+        double *psi = angles + i + angles_length*1;double *dpsi = angles_grad + i + angles_length*1;
+        double *xi1 = angles + i + angles_length*2;double *dxi1 = angles_grad + i + angles_length*2;
+        double *xi2 = angles + i + angles_length*3;double *dxi2 = angles_grad + i + angles_length*3;
+        double *xi3 = angles + i + angles_length*4;double *dxi3 = angles_grad + i + angles_length*4;
+        double *xi4 = angles + i + angles_length*5;double *dxi4 = angles_grad + i + angles_length*5;
+        double *xi5 = angles + i + angles_length*6;double *dxi5 = angles_grad + i + angles_length*6;
         std::vector<double*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
+        std::vector<double*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
         switch(aa[i]){
             case 'G':
-                lastC = addGly(lastC, params);
+                lastC = addGly(lastC, params, params_grad);
                 break;
             case 'A':
-                lastC = addAla(lastC, params);
+                lastC = addAla(lastC, params, params_grad);
                 break;
             case 'S':
-                lastC = addSer(lastC, params);
+                lastC = addSer(lastC, params, params_grad);
                 break;
             case 'C':
-                lastC = addCys(lastC, params);
+                lastC = addCys(lastC, params, params_grad);
                 break;
             case 'V':
-                lastC = addVal(lastC, params);
+                lastC = addVal(lastC, params, params_grad);
                 break;
             case 'I':
-                lastC = addIle(lastC, params);
+                lastC = addIle(lastC, params, params_grad);
                 break;
             case 'L':
-                lastC = addLeu(lastC, params);
+                lastC = addLeu(lastC, params, params_grad);
                 break;
             case 'T':
-                lastC = addThr(lastC, params);
+                lastC = addThr(lastC, params, params_grad);
                 break;
             case 'R':
-                lastC = addArg(lastC, params);
+                lastC = addArg(lastC, params, params_grad);
                 break;
             case 'K':
-                lastC = addLys(lastC, params);
+                lastC = addLys(lastC, params, params_grad);
                 break;
             case 'D':
-                lastC = addAsp(lastC, params);
+                lastC = addAsp(lastC, params, params_grad);
                 break;
             case 'N':
-                lastC = addAsn(lastC, params);
+                lastC = addAsn(lastC, params, params_grad);
                 break;
             case 'E':
-                lastC = addGlu(lastC, params);
+                lastC = addGlu(lastC, params, params_grad);
                 break;
             case 'Q':
-                lastC = addGln(lastC, params);
+                lastC = addGln(lastC, params, params_grad);
                 break;
             case 'M':
-                lastC = addMet(lastC, params);
+                lastC = addMet(lastC, params, params_grad);
                 break;
             case 'H':
-                lastC = addHis(lastC, params);
+                lastC = addHis(lastC, params, params_grad);
                 break;
             case 'P':
-                lastC = addPro(lastC, params);
+                lastC = addPro(lastC, params, params_grad);
                 break;
             case 'F':
-                lastC = addPhe(lastC, params);
+                lastC = addPhe(lastC, params, params_grad);
                 break;
             case 'Y':
-                lastC = addTyr(lastC, params);
+                lastC = addTyr(lastC, params, params_grad);
                 break;
             case 'W':
-                lastC = addTrp(lastC, params);
+                lastC = addTrp(lastC, params, params_grad);
                 break;
         }
     }
+    
+    //Computing conformation
+    this->update(this->root);
+    //Computing number of atoms
+    this->num_atoms = 0;
+    for(int i=0; i<groups.size();i++){
+        num_atoms += groups[i]->atoms_global.size();
+    }
+    
 }
+
 cConformation::~cConformation(){
     for(int i=0; i<nodes.size(); i++)
         delete nodes[i];
@@ -192,23 +203,30 @@ void cConformation::update(cNode *node){
     }
 }
 
-double cConformation::backward(cNode *root_node, cNode *node){
+double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad){
     double grad = 0.0;
     if(node->left!=NULL){
-        grad += backward(root_node, node->left);
+        grad += backward(root_node, node->left, atoms_grad);
     }
     if(node->right!=NULL){
-        grad += backward(root_node, node->right);
+        grad += backward(root_node, node->right, atoms_grad);
     }
     for(int i=0;i<node->group->atoms_global.size(); i++){
-        grad += node->group->atoms_grad[i] | (root_node->F * node->group->atoms_global[i]);
+        cVector3 gradVec(
+            atoms_grad[node->group->atomIndexes[i]*3 + 0],
+            atoms_grad[node->group->atomIndexes[i]*3 + 1],
+            atoms_grad[node->group->atomIndexes[i]*3 + 2]
+        );
+        grad += gradVec | (root_node->F * node->group->atoms_global[i]);
     }
     return grad;
 }
 
-void cConformation::backward(cNode *node){
+
+void cConformation::backward(cNode *node, double *atoms_grad){
     for(int i=0; i<nodes.size();i++){
-        nodes[i]->T->grad_alpha = backward(nodes[i], nodes[i]);
+        if(nodes[i]->T->grad_alpha!=NULL) 
+            *(nodes[i]->T->grad_alpha) = backward(nodes[i], nodes[i], atoms_grad);
     }
 }
 

@@ -51,12 +51,16 @@ class cVector3 {
 
 public:
 
-	double				v[3];
+	double				*v;
+    bool external;
 
 	cVector3();
+    cVector3(const cVector3& u);
+    cVector3(double *v);
+    ~cVector3();
 	cVector3(double x);
 	cVector3(double x, double y, double z);
-	cVector3(double val[3]);
+	//cVector3(double val[3]);
        
 	double				operator|(const cVector3& u) const;
 	cVector3			operator^(const cVector3& u) const;

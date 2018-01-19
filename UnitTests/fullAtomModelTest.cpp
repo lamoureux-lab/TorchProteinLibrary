@@ -90,6 +90,7 @@ class ConformationVis: public Object{
     std::vector<RigidGroupVis> groupsVis;
     public:
         ConformationVis(cConformation *c){
+            
             this->c = c;
             for(int i=0; i<c->groups.size(); i++){
                 RigidGroupVis vis(c->groups[i]);
@@ -114,6 +115,7 @@ class ConformationVis: public Object{
             }
         }
         void display(){
+            
             glPushAttrib(GL_LIGHTING_BIT);
             glDisable(GL_LIGHTING);
             glLineWidth(2);
@@ -132,12 +134,15 @@ class ConformationVis: public Object{
 
 class ConformationUpdate: public Object{
     cConformation *c;
-    double *data;
+    double *angles, *angles_grad;
+    double *atoms_grad;
     int length;
     public:
-        ConformationUpdate(cConformation *c, double *data, int length){
+        ConformationUpdate(cConformation *c, double *angles, double *angles_grad, double *atoms_grad, int length){
             this->c = c;
-            this->data = data;
+            this->angles = angles;
+            this->angles_grad = angles_grad;
+            this->atoms_grad = atoms_grad;
             this->length = length;
         };
         ~ConformationUpdate(){};
@@ -149,12 +154,16 @@ class ConformationUpdate: public Object{
                     cVector3 pt(0.0,0.0,0.0);
                     gr = c->nodes[i]->group->atoms_global[j] - pt;
                     gr.normalize();
-                    c->nodes[i]->group->atoms_grad[j] = gr;
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 0] = gr.v[0];
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 1] = gr.v[1];
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 2] = gr.v[2];
                 }
             }
-            c->backward(c->root);
-            for(int i=0; i<c->nodes.size();i++){
-                *(c->nodes[i]->T->alpha) += 0.0001*c->nodes[i]->T->grad_alpha;
+            c->backward(c->root, atoms_grad);
+            for(int i=0; i<length;i++){
+                for(int j=0; i<7;i++){
+                    angles[i*length + j] += angles_grad[i*length + j]*0.0001;
+                }
             }
         };
 };
@@ -164,34 +173,35 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("GGGGGGG");
+    std::string aa("GGGG");
 
     int length = aa.length();
     int num_angles = 7;
-    double th_data[length*num_angles];
-        
+    double th_angles[length*num_angles];
+    double th_angles_grad[length*num_angles];
+    double th_atoms[500*3];
+
     for(int i=0;i<length;i++){
-        th_data[i + length*0] = -1.047;
+        th_angles[i + length*0] = -1.047;
         // th_data[i + length*0] = 0.0;
-        th_data[i + length*1] = -0.698;
+        th_angles[i + length*1] = -0.698;
         // th_data[i + length*1] = 0.0;
-        th_data[i + length*2] = 110.4*M_PI/180.0;
-        th_data[i + length*3] = -63.3*M_PI/180.0;
-        th_data[i + length*4] = -61.6*M_PI/180.0;
-        th_data[i + length*5] = -61.6*M_PI/180.0;
-        th_data[i + length*6] = -61.6*M_PI/180.0;
+        th_angles[i + length*2] = 110.4*M_PI/180.0;
+        th_angles[i + length*3] = -63.3*M_PI/180.0;
+        th_angles[i + length*4] = -61.6*M_PI/180.0;
+        th_angles[i + length*5] = -61.6*M_PI/180.0;
+        th_angles[i + length*6] = -61.6*M_PI/180.0;
     }
     
-    cConformation conf(aa, &th_data[0], length);
-    std::cout<<"lalala"<<std::endl;
-    conf.update( conf.root );
-    conf.print( conf.root );
-    std::cout<<"lalala"<<std::endl;
-    ConformationVis pV(&conf);
-    ConformationUpdate cU(&conf, th_data, length);
+    cConformation conf(aa, th_angles, th_angles_grad, length, th_atoms);
+    double th_atoms_grad[3*conf.num_atoms];
     
+    ConformationVis pV(&conf);
+    ConformationUpdate cU(&conf, th_angles, th_angles_grad, th_atoms_grad, length);
+        
     Vector<double> lookAtPos(0,0,0);
     framework.setLookAt(20.0, 20.0, 20.0, lookAtPos.x, lookAtPos.y, lookAtPos.z, 0.0, 1.0, 0.0);
+    
 	framework.addObject(&pV);
     framework.addObject(&cU);
     framework.startFramework(argc, argv);

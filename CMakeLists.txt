@@ -4,8 +4,8 @@ project(MainProj)
 option(FAM_ONLY "FAM_ONLY" ON)
 
 
-set(CMAKE_BUILD_TYPE Release)
-#set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-std=c++11 -fPIC)
 
 if(NOT FAM_ONLY)
