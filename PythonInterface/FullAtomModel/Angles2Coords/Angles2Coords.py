@@ -39,6 +39,9 @@ class Angles2CoordsFunction(Function):
 			
 
 	def backward(self, grad_atoms_cpu):
+		# ATTENTION! It passes non-contiguous tensor
+		grad_atoms_cpu = grad_atoms_cpu.contiguous()
+		
 		input_angles_cpu, = self.saved_tensors
 		if len(input_angles_cpu.size()) == 2:
 			grad_angles_cpu = torch.DoubleTensor(input_angles_cpu.size(0), input_angles_cpu.size(1))
@@ -48,9 +51,8 @@ class Angles2CoordsFunction(Function):
 
 		else:
 			raise ValueError('Angles2CoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
-
-		grad_angles_cpu.fill_(0.0)
 		
+		grad_angles_cpu.fill_(0.0)
 		cppAngles2Coords.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, self.sequence, input_angles_cpu)
 		
 		if math.isnan(grad_angles_cpu.sum()):

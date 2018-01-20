@@ -11,7 +11,6 @@ extern "C" {
         if(input_angles->nDimension == 2){
             std::string aa(sequence);
             uint length = aa.length();
-            std::cout<<length<<"\n";
             THDoubleTensor *dummy_grad = THDoubleTensor_newWithSize2d(input_angles->size[0], input_angles->size[1]);
             cConformation conf( aa, THDoubleTensor_data(input_angles), THDoubleTensor_data(dummy_grad), 
                                 length, THDoubleTensor_data(output_coords));
@@ -20,7 +19,7 @@ extern "C" {
             std::cout<<"Not implemented\n";
         }
     }
-    void Angles2Coords_backward(     THDoubleTensor *grad_atoms,
+    void Angles2Coords_backward(    THDoubleTensor *grad_atoms,
                                     THDoubleTensor *grad_angles,
                                     const char* sequence,
                                     THDoubleTensor *input_angles

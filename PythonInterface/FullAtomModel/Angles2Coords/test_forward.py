@@ -14,12 +14,12 @@ from Angles2Coords import Angles2Coords
 if __name__=='__main__':
 
 	sequence = 'GGGGGG'
-	angles = Variable(torch.DoubleTensor(len(sequence),7).zero_())
-	angles[:,0] = -1.047
-	angles[:,1] = -0.698
-	angles[:,2:] = 110.4*np.pi/180.0
-	a2c = Angles2Coords()
-	protein = a2c(sequence, angles)
+	angles = Variable(torch.DoubleTensor(7,len(sequence)).zero_())
+	angles[0,:] = -1.047
+	angles[1,:] = -0.698
+	angles[2:,:] = 110.4*np.pi/180.0
+	a2c = Angles2Coords(sequence)
+	protein = a2c(angles)
 	protein = protein.data.resize_(protein.size(0)/3, 3).numpy()
 	
 	# print protein

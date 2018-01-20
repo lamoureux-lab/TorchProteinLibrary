@@ -50,7 +50,7 @@ cMatrix44 cTransform::getDRx(double angle){
     m.m[0][0]=0;    m.m[0][1]=0;	        m.m[0][2]=0;            m.m[0][3]=0;
 	m.m[1][0]=0;	m.m[1][1]=-sin(angle);	m.m[1][2]=-cos(angle);  m.m[1][3]=0;
 	m.m[2][0]=0;    m.m[2][1]=cos(angle);   m.m[2][2]=-sin(angle);  m.m[2][3]=0;
-	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=1;
+	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=0;
     return m;
 }
 void cTransform::updateMatrix(){
@@ -217,6 +217,7 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
             atoms_grad[node->group->atomIndexes[i]*3 + 1],
             atoms_grad[node->group->atomIndexes[i]*3 + 2]
         );
+        // std::cout<<gradVec<<"|"<<node->group->atomIndexes[i]<<"\n";
         grad += gradVec | (root_node->F * node->group->atoms_global[i]);
     }
     return grad;
@@ -224,6 +225,8 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
 
 
 void cConformation::backward(cNode *node, double *atoms_grad){
+    // for(int i=0;i<108;i++)
+    //     std::cout<<atoms_grad[i]<<"\n";
     for(int i=0; i<nodes.size();i++){
         if(nodes[i]->T->grad_alpha!=NULL) 
             *(nodes[i]->T->grad_alpha) = backward(nodes[i], nodes[i], atoms_grad);

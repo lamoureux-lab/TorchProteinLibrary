@@ -152,17 +152,20 @@ class ConformationUpdate: public Object{
                 for(int j=0;j< c->nodes[i]->group->atoms_global.size(); j++){
                     cVector3 gr;
                     cVector3 pt(0.0,0.0,0.0);
-                    gr = c->nodes[i]->group->atoms_global[j] - pt;
+                    gr = (c->nodes[i]->group->atoms_global[j] - pt);
+                    double norm = gr.norm2();
                     gr.normalize();
-                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 0] = gr.v[0];
-                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 1] = gr.v[1];
-                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 2] = gr.v[2];
+                    gr /= norm;
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 0] = 1.0;//gr.v[0];
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 1] = 1.0;//gr.v[1];
+                    atoms_grad[c->nodes[i]->group->atomIndexes[j]*3 + 2] = 1.0;//gr.v[2];
                 }
             }
             c->backward(c->root, atoms_grad);
             for(int i=0; i<length;i++){
-                for(int j=0; i<7;i++){
-                    angles[i*length + j] += angles_grad[i*length + j]*0.0001;
+                for(int j=0; j<7;j++){
+                    // std::cout<<angles_grad[j*length + i]<<"\n";
+                    angles[j*length + i] += angles_grad[j*length + i]*0.001;
                 }
             }
         };
@@ -173,7 +176,7 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("GGGG");
+    std::string aa("GG");
 
     int length = aa.length();
     int num_angles = 7;
@@ -182,10 +185,10 @@ int main(int argc, char** argv)
     double th_atoms[500*3];
 
     for(int i=0;i<length;i++){
-        th_angles[i + length*0] = -1.047;
-        // th_data[i + length*0] = 0.0;
-        th_angles[i + length*1] = -0.698;
-        // th_data[i + length*1] = 0.0;
+        // th_angles[i + length*0] = -1.047;
+        th_angles[i + length*0] = 0.0;
+        // th_angles[i + length*1] = -0.698;
+        th_angles[i + length*1] = 0.0;
         th_angles[i + length*2] = 110.4*M_PI/180.0;
         th_angles[i + length*3] = -63.3*M_PI/180.0;
         th_angles[i + length*4] = -61.6*M_PI/180.0;
