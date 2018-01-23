@@ -48,11 +48,12 @@
 #include <fstream>
 
 class cVector3 {
-
+private:
+    bool external;
 public:
 
 	double				*v;
-    bool external;
+    
 
 	cVector3();
     cVector3(const cVector3& u);
