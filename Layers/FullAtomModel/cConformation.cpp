@@ -71,6 +71,7 @@ std::ostream& operator<<(std::ostream& os, const cNode& node){
 cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global){
     cNode *lastC = NULL;
     this->atoms_global = atoms_global;
+    bool terminal = false;
     for(int i=0; i<aa.length(); i++){
         double *phi = angles + i + angles_length*0;double *dphi = angles_grad + i + angles_length*0;
         double *psi = angles + i + angles_length*1;double *dpsi = angles_grad + i + angles_length*1;
@@ -81,66 +82,70 @@ cConformation::cConformation(std::string aa, double *angles, double *angles_grad
         double *xi5 = angles + i + angles_length*6;double *dxi5 = angles_grad + i + angles_length*6;
         std::vector<double*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
         std::vector<double*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
+        if(i == (aa.length()-1))
+            terminal = true;
+        else
+            terminal = false;
         switch(aa[i]){
             case 'G':
-                lastC = addGly(lastC, params, params_grad);
+                lastC = addGly(lastC, params, params_grad, terminal);
                 break;
             case 'A':
-                lastC = addAla(lastC, params, params_grad);
+                lastC = addAla(lastC, params, params_grad, terminal);
                 break;
             case 'S':
-                lastC = addSer(lastC, params, params_grad);
+                lastC = addSer(lastC, params, params_grad, terminal);
                 break;
             case 'C':
-                lastC = addCys(lastC, params, params_grad);
+                lastC = addCys(lastC, params, params_grad, terminal);
                 break;
             case 'V':
-                lastC = addVal(lastC, params, params_grad);
+                lastC = addVal(lastC, params, params_grad, terminal);
                 break;
             case 'I':
-                lastC = addIle(lastC, params, params_grad);
+                lastC = addIle(lastC, params, params_grad, terminal);
                 break;
             case 'L':
-                lastC = addLeu(lastC, params, params_grad);
+                lastC = addLeu(lastC, params, params_grad, terminal);
                 break;
             case 'T':
-                lastC = addThr(lastC, params, params_grad);
+                lastC = addThr(lastC, params, params_grad, terminal);
                 break;
             case 'R':
-                lastC = addArg(lastC, params, params_grad);
+                lastC = addArg(lastC, params, params_grad, terminal);
                 break;
             case 'K':
-                lastC = addLys(lastC, params, params_grad);
+                lastC = addLys(lastC, params, params_grad, terminal);
                 break;
             case 'D':
-                lastC = addAsp(lastC, params, params_grad);
+                lastC = addAsp(lastC, params, params_grad, terminal);
                 break;
             case 'N':
-                lastC = addAsn(lastC, params, params_grad);
+                lastC = addAsn(lastC, params, params_grad, terminal);
                 break;
             case 'E':
-                lastC = addGlu(lastC, params, params_grad);
+                lastC = addGlu(lastC, params, params_grad, terminal);
                 break;
             case 'Q':
-                lastC = addGln(lastC, params, params_grad);
+                lastC = addGln(lastC, params, params_grad, terminal);
                 break;
             case 'M':
-                lastC = addMet(lastC, params, params_grad);
+                lastC = addMet(lastC, params, params_grad, terminal);
                 break;
             case 'H':
-                lastC = addHis(lastC, params, params_grad);
+                lastC = addHis(lastC, params, params_grad, terminal);
                 break;
             case 'P':
-                lastC = addPro(lastC, params, params_grad);
+                lastC = addPro(lastC, params, params_grad, terminal);
                 break;
             case 'F':
-                lastC = addPhe(lastC, params, params_grad);
+                lastC = addPhe(lastC, params, params_grad, terminal);
                 break;
             case 'Y':
-                lastC = addTyr(lastC, params, params_grad);
+                lastC = addTyr(lastC, params, params_grad, terminal);
                 break;
             case 'W':
-                lastC = addTrp(lastC, params, params_grad);
+                lastC = addTrp(lastC, params, params_grad, terminal);
                 break;
         }
     }

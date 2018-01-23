@@ -21,7 +21,7 @@ class cRigidGroup{
 };
 
 cRigidGroup *makeAtom(std::string atomName, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
-cRigidGroup *makeCarbonyl(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
+cRigidGroup *makeCarbonyl(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr, bool terminal=false);
 cRigidGroup *makeSerGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeCysGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeValGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
@@ -30,8 +30,8 @@ cRigidGroup *makeIleGroup2(cGeometry &geo, uint atomIndex, char residueName, uin
 cRigidGroup *makeLeuGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeThrGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeArgGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
-cRigidGroup *makeAspGroup(cGeometry &geo, std::string O1, std::string O2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
-cRigidGroup *makeAsnGroup(cGeometry &geo, std::string O1, std::string N2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
+cRigidGroup *makeAspGroup(cGeometry &geo, std::string C, std::string O1, std::string O2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
+cRigidGroup *makeAsnGroup(cGeometry &geo, std::string C, std::string O1, std::string N2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeHisGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makeProGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);
 cRigidGroup *makePheGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr);

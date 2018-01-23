@@ -120,3 +120,8 @@ endif(NOT FAM_ONLY)
 add_executable(fullAtomModelTest UnitTests/fullAtomModelTest.cpp)
 target_link_libraries (fullAtomModelTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
 
+#Test PDBLoader
+add_executable(PDBLoaderTest UnitTests/PDBLoaderTest.cpp)
+target_link_libraries (PDBLoaderTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
+
+

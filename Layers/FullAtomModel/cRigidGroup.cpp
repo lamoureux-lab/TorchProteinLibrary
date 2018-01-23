@@ -34,10 +34,14 @@ cRigidGroup *makeAtom(std::string atomName, uint atomIndex, char residueName, ui
     return g;
 }
 
-cRigidGroup *makeCarbonyl(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
+cRigidGroup *makeCarbonyl(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr, bool terminal){
     cRigidGroup *g = new cRigidGroup();
-    g->addAtom(cVector3(0,0,0), "C", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3(0,0,0), "C", atomIndex, residueName, residueIndex, atoms_global_ptr);   
     g->addAtom(cVector3(cos(geo.CA_C_O_angle),0,sin(geo.CA_C_O_angle)), "O", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
+    if(terminal){
+        g->addAtom(cVector3(cos(geo.CA_C_O_angle),0,-sin(geo.CA_C_O_angle)), "OXT", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
+    }
+    
     return g;
 }
 cRigidGroup *makeSerGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
@@ -85,7 +89,7 @@ cRigidGroup *makeIleGroup2(cGeometry &geo, uint atomIndex, char residueName, uin
 
 cRigidGroup *makeLeuGroup(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
     cRigidGroup *g = new cRigidGroup();
-    g->addAtom(cVector3(0,0,0), "CG1", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3(0,0,0), "CG", atomIndex, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(geo.R_CB_CG*cVector3(sin(geo.CA_CB_CG1_angle-M_PI/2.0),
                         cos(geo.CA_CB_CG1_angle-M_PI/2.0)*sin(geo.CG1_CB_CG2_angle/2.0),
                         cos(geo.CA_CB_CG1_angle-M_PI/2.0)*cos(geo.CG1_CB_CG2_angle/2.0)), "CD1", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
@@ -119,9 +123,9 @@ cRigidGroup *makeArgGroup(cGeometry &geo, uint atomIndex, char residueName, uint
     return g;
 }
 
-cRigidGroup *makeAspGroup(cGeometry &geo, std::string O1, std::string O2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
+cRigidGroup *makeAspGroup(cGeometry &geo, std::string C, std::string O1, std::string O2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
     cRigidGroup *g = new cRigidGroup();
-    g->addAtom(cVector3(0,0,0), "CG", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3(0,0,0), C, atomIndex, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(geo.R_CG_OD*cVector3(sin(geo.CB_CG_OD_angle-M_PI/2.0),
                         0,
                         cos(geo.CB_CG_OD_angle-M_PI/2.0)), O1, atomIndex+1, residueName, residueIndex, atoms_global_ptr);
@@ -131,9 +135,9 @@ cRigidGroup *makeAspGroup(cGeometry &geo, std::string O1, std::string O2, uint a
     return g;
 }
 
-cRigidGroup *makeAsnGroup(cGeometry &geo, std::string O1, std::string N2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
+cRigidGroup *makeAsnGroup(cGeometry &geo, std::string C, std::string O1, std::string N2, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
     cRigidGroup *g = new cRigidGroup();
-    g->addAtom(cVector3(0,0,0), "CG", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3(0,0,0), C, atomIndex, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(geo.R_CG_OD1*cVector3(sin(geo.CB_CG_OD1_angle-M_PI/2.0),
                         0,
                         cos(geo.CB_CG_OD1_angle-M_PI/2.0)), O1, atomIndex+1, residueName, residueIndex, atoms_global_ptr);
