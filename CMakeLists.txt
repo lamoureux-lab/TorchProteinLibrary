@@ -6,7 +6,7 @@ option(FAM_ONLY "FAM_ONLY" ON)
 
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
-add_definitions(-std=c++11 -fPIC)
+add_definitions(-std=c++11 -fPIC -lpthread)
 
 
 #TORCH package
@@ -79,6 +79,10 @@ endif(NOT FAM_ONLY)
 include_directories("Layers/FullAtomModel")
 add_subdirectory(Layers/FullAtomModel)
 
+#Remote visualization
+include_directories("Visualization")
+add_subdirectory(Visualization)
+
 
 
 if(NOT FAM_ONLY)
@@ -123,5 +127,3 @@ target_link_libraries (fullAtomModelTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
 #Test PDBLoader
 add_executable(PDBLoaderTest UnitTests/PDBLoaderTest.cpp)
 target_link_libraries (PDBLoaderTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
-
-
