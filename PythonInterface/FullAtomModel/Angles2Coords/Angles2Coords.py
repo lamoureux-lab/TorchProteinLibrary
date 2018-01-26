@@ -5,18 +5,25 @@ from torch.nn.modules.module import Module
 from Exposed import cppAngles2Coords
 import math
 
+
+
 class Angles2CoordsFunction(Function):
 	"""
 	Protein angles -> coordinates function
 	"""
-	def __init__(self, sequence):
+	def __init__(self, sequence, num_atoms=None):
 		super(Angles2CoordsFunction, self).__init__()
 		self.sequence = sequence
+		self.num_atoms = num_atoms
+		
 				
 	def forward(self, input_angles_cpu):
 		
 		if len(input_angles_cpu.size())==2:
-			output_coords_cpu = torch.DoubleTensor(3*18*len(self.sequence))
+			if self.num_atoms is None:
+				output_coords_cpu = torch.DoubleTensor(3*18*len(self.sequence))
+			else:
+				output_coords_cpu = torch.DoubleTensor(3*self.num_atoms)
 			
 		elif len(input_angles_cpu.size())==3:
 			raise(Exception('Not implemented'))
@@ -61,9 +68,10 @@ class Angles2CoordsFunction(Function):
 		return grad_angles_cpu
 
 class Angles2Coords(Module):
-	def __init__(self, sequence):
+	def __init__(self, sequence, num_atoms=None):
 		super(Angles2Coords, self).__init__()
 		self.sequence = sequence
+		self.num_atoms = num_atoms
 		
 	def forward(self, input_angles_cpu):
-		return Angles2CoordsFunction(self.sequence)(input_angles_cpu)
+		return Angles2CoordsFunction(self.sequence, self.num_atoms)(input_angles_cpu)

@@ -94,9 +94,9 @@ class Coords2RMSDFunction(Function):
 
 
 class Coords2RMSD(Module):
-	def __init__(self, angles_max_length):
+	def __init__(self, max_num_atoms):
 		super(Coords2RMSD, self).__init__()
-		self.angles_max_length = angles_max_length
+		self.max_num_atoms = max_num_atoms
 
-	def forward(self, input, target, angles_length):
-		return Coords2RMSDFunction(self.angles_max_length)(input, target, angles_length)
+	def forward(self, input, target, num_atoms):
+		return Coords2RMSDFunction(self.max_num_atoms)(input, target, num_atoms)
