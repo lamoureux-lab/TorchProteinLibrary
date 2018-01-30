@@ -34,7 +34,6 @@ if __name__=='__main__':
 	
 	v_num_atoms = Variable(torch.IntTensor(1).fill_(num_atoms))
 
-
 	optimizer = optim.Adam([angles], lr = 0.001)
 	for i in range(0,1000):
 		coords = a2c(angles)
