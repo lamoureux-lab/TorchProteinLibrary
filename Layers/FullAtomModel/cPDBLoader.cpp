@@ -47,7 +47,7 @@ cPDBLoader::cPDBLoader(std::string filename) {
     res_atom_names.resize(num_residues);
     res_res_names.resize(num_residues);
     for(int i=0; i<r.size(); i++){
-        res_num = res_nums[i] - 1;
+        res_num = res_nums[i] - res_nums[0];
         res_r[res_num].push_back(r[i]);
         res_atom_names[res_num].push_back(atom_names[i]);
         res_res_names[res_num] = res_names[i];
