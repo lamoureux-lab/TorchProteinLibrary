@@ -188,5 +188,5 @@ def getTrp():
 
 
 if __name__=='__main__':
-	getTrp()
+	residue = generateAA('Y')
 	

@@ -1,4 +1,6 @@
 #include "cConformation.h"
+#include <algorithm>
+#include <memory>
 
 cMatrix44 cTransform::getT(double dist, char axis){
     int ax_ind;
@@ -68,7 +70,7 @@ std::ostream& operator<<(std::ostream& os, const cNode& node){
     return os<<*(node.group);
 }
 
-cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global){
+cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global, bool add_terminal){
     cNode *lastC = NULL;
     this->atoms_global = atoms_global;
     bool terminal = false;
@@ -82,10 +84,12 @@ cConformation::cConformation(std::string aa, double *angles, double *angles_grad
         double *xi5 = angles + i + angles_length*6;double *dxi5 = angles_grad + i + angles_length*6;
         std::vector<double*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
         std::vector<double*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
-        if(i == (aa.length()-1))
-            terminal = true;
-        else
-            terminal = false;
+        if(add_terminal){
+            if(i == (aa.length()-1))
+                terminal = true;
+            else
+                terminal = false;
+        }
         switch(aa[i]){
             case 'G':
                 lastC = addGly(lastC, params, params_grad, terminal);
@@ -251,4 +255,79 @@ void cConformation::print(cNode *node){
     }
     std::cout<<".\n";
     
+}
+
+
+template<typename ... Args>
+std::string string_format( const std::string& format, Args ... args )
+{
+    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    std::unique_ptr<char[]> buf( new char[ size ] ); 
+    std::snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
+void cConformation::save(std::string filename){
+    std::ofstream pfile(filename, std::ofstream::out);
+    
+	for(int i=0; i<groups.size(); i++){
+        for(int j=0; j<groups[i]->atoms_global.size(); j++){
+            cVector3 r;
+            r = groups[i]->atoms_global[j];
+            std::string atom_name;
+            atom_name = groups[i]->atomNames[j];
+            int atom_index = groups[i]->atomIndexes[j];
+            int res_index = groups[i]->residueIndex;
+            std::string res_name = convertRes1to3(groups[i]->residueName);
+            pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n",atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
+    }}
+
+	pfile.close();
+}
+
+std::string cConformation::convertRes1to3(char resName){
+    switch(resName){
+        case 'G':
+            return std::string("GLY");
+        case 'A':
+            return std::string("ALA");
+        case 'S':
+            return std::string("SER");
+        case 'C':
+            return std::string("CYS");
+        case 'V':
+            return std::string("VAL");
+        case 'I':
+            return std::string("ILE");
+        case 'L':
+            return std::string("LEU");   
+        case 'T':
+            return std::string("THR");    
+        case 'R':
+                return std::string("ARG");
+        case 'K':
+            return std::string("LYS");
+        case 'D':
+            return std::string("ASP");
+        case 'N':
+            return std::string("ASN");
+        case 'E':
+            return std::string("GLU");
+        case 'Q':
+            return std::string("GLN");
+        case 'M':
+            return std::string("MET");
+        case 'H':
+            return std::string("HIS");
+        case 'P':
+            return std::string("PRO");
+        case 'F':
+            return std::string("PHE");
+        case 'Y':
+            return std::string("TYR");
+        case 'W':
+            return std::string("TRP");
+        default:
+            throw("Unknown residue name");
+    }
 }

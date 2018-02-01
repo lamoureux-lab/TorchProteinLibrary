@@ -19,25 +19,26 @@ cPDBLoader::cPDBLoader(){
 
 }
 cPDBLoader::cPDBLoader(std::string filename) {
-	std::ifstream pfile(filename);
+    std::ifstream pfile(filename);
 	std::string line, header, xStr, yStr, zStr, atom_name, res_name;
     int res_num;
-
 	// reading raw file
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
-        atom_name = trim(line.substr(13,4));
-        
-        if( header.compare("ATOM")==0 && isHeavyAtom(atom_name)){
-            xStr = line.substr(30,8);
-			yStr = line.substr(38,8);
-			zStr = line.substr(46,8);
-            res_name = trim(line.substr(17,3));
-		    res_num = std::stoi(line.substr(23,4));
-			r.push_back(cVector3(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
-            res_names.push_back(res_name);
-            res_nums.push_back(res_num);
-            atom_names.push_back(atom_name);
+                
+        if( header.compare("ATOM")==0){
+            atom_name = trim(line.substr(13,4));
+            if(isHeavyAtom(atom_name)){
+                xStr = line.substr(30,8);
+                yStr = line.substr(38,8);
+                zStr = line.substr(46,8);
+                res_name = trim(line.substr(17,3));
+                res_num = std::stoi(line.substr(23,4));
+                r.push_back(cVector3(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                res_names.push_back(res_name);
+                res_nums.push_back(res_num);
+                atom_names.push_back(atom_name);
+            }
 		}
 	}
     
@@ -52,14 +53,13 @@ cPDBLoader::cPDBLoader(std::string filename) {
         res_atom_names[res_num].push_back(atom_names[i]);
         res_res_names[res_num] = res_names[i];
     }
-    
 }
 
 cPDBLoader::~cPDBLoader() {
 		
 }
 
-void cPDBLoader::reorder(double *coords){
+void cPDBLoader::reorder(double *coords, bool add_terminal){
     int global_ind=0;
     int local_ind;
     std::string lastO("O");
@@ -73,10 +73,14 @@ void cPDBLoader::reorder(double *coords){
             cVector3 global_r(coords + (global_ind + local_ind)*3);
             global_r = res_r[i][j];
         }
-        if( i<(res_r.size()-1) )
+        if(add_terminal){
+            if( i<(res_r.size()-1) )
+                lastO = "O";
+            else
+                lastO = "OXT";
+        }else{
             lastO = "O";
-        else
-            lastO = "OXT";
+        }
         if(res_r[i].size()!= (getAtomIndex(res_res_names[i], lastO) + 1) ){
             throw std::string("cPDBLoader::reorder: Missing atoms");
         }

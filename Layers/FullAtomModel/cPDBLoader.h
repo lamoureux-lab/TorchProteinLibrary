@@ -25,7 +25,7 @@ public:
 	cPDBLoader(std::string filename);
 	virtual ~cPDBLoader();
     
-    void reorder(double *coords);
+    void reorder(double *coords, bool add_terminal=false);
 	
     bool isHeavyAtom(std::string &atom_name);
     int getAtomIndex(std::string &res_name, std::string &atom_name);

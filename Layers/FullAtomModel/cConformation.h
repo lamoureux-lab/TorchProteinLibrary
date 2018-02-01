@@ -64,7 +64,7 @@ class cConformation{
         cNode *root;
 
         // Construct protein graph and bind grad to the angles
-        cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global);    
+        cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global, bool add_terminal=false);    
         ~cConformation();
         
         void print(cNode *node);
@@ -75,6 +75,11 @@ class cConformation{
 
         //Computes coordinates of the atoms
         void update(cNode *node);
+
+        //Saving to pdb
+        void save(std::string filename);
+
+        std::string convertRes1to3(char resName);
 
     private:
         cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);

@@ -6,7 +6,8 @@
 extern "C" {
     void PDB2Coords( const char *filename, THDoubleTensor *coords ){
         if(coords->nDimension == 1){
-            cPDBLoader pdb(filename);
+            std::string f(filename);
+            cPDBLoader pdb(f);
             pdb.reorder(THDoubleTensor_data(coords));
         }else if(coords->nDimension == 2){
             std::cout<<"Not implemented\n";

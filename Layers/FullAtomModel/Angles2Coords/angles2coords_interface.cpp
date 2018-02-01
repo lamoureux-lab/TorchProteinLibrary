@@ -36,4 +36,22 @@ extern "C" {
             std::cout<<"Not implemented\n";
         }
     }
+    void Angles2Coords_save(  const char* sequence,
+                                THDoubleTensor *input_angles, 
+                                const char* output_filename
+                            ){
+        if(input_angles->nDimension == 2){
+            std::string aa(sequence);
+            uint length = aa.length();
+            THDoubleTensor *dummy_grad = THDoubleTensor_newWithSize2d(input_angles->size[0], input_angles->size[1]);
+            THDoubleTensor *dummy_coords = THDoubleTensor_newWithSize1d( 3*length*18);
+            cConformation conf( aa, THDoubleTensor_data(input_angles), THDoubleTensor_data(dummy_grad), 
+                                length, THDoubleTensor_data(dummy_coords));
+            conf.save(std::string(output_filename));
+            THDoubleTensor_free(dummy_grad);
+            THDoubleTensor_free(dummy_coords);
+        }else{
+            std::cout<<"Not implemented\n";
+        }
+    }
 }
