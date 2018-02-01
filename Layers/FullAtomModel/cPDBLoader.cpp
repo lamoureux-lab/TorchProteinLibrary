@@ -95,15 +95,19 @@ bool cPDBLoader::isHeavyAtom(std::string &atom_name){
         return false;
 }
 
-uint cPDBLoader::getNumAtoms(std::string &sequence){
+uint cPDBLoader::getNumAtoms(std::string &sequence, bool add_terminal){
     uint num_atoms = 0;
     std::string lastO("O");
     for(int i=0; i<sequence.length(); i++){
         std::string AA(1, sequence[i]);
-        if( i<(sequence.length()-1) )
+        if(add_terminal){
+            if( i<(sequence.length()-1) )
+                lastO = "O";
+            else
+                lastO = "OXT";
+        }else{
             lastO = "O";
-        else
-            lastO = "OXT";
+        }
         num_atoms += getAtomIndex(AA, lastO) + 1;
     }
     return num_atoms;

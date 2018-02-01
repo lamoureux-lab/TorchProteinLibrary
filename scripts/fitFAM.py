@@ -18,6 +18,8 @@ from PythonInterface import cppPDB2Coords
 from PythonInterface import Coords2RMSD
 from PythonInterface import Angles2Coords, Angles2Coords_save
 
+from Bio.PDB.PDBParser import PDBParser
+from Bio.PDB.Polypeptide import PPBuilder
 from PeptideBuilder import Geometry
 import PeptideBuilder
 import Bio.PDB
@@ -48,18 +50,20 @@ if __name__=='__main__':
 	cppPDB2Coords.PDB2Coords("example.pdb", target_coords.data)
 	
 	angles = Variable(torch.DoubleTensor(num_angles, len(sequence)).zero_(), requires_grad=True)
+	angles.data[0,0]=np.pi
+	
 	loss = Coords2RMSD(num_atoms)
 	a2c = Angles2Coords(sequence, num_atoms)
 	
 	v_num_atoms = Variable(torch.IntTensor(1).fill_(num_atoms))
-
-	optimizer = optim.Adam([angles], lr = 0.001)
-	for i in range(0,10000):
-		coords = a2c(angles)
-		rmsd = loss(coords, target_coords, v_num_atoms)
-		rmsd_real = np.sqrt(rmsd.data[0])
-		print (rmsd_real)
-		rmsd.backward()
-		optimizer.step()
+	
+	# optimizer = optim.Adam([angles], lr = 0.0005)
+	# for i in range(0,10000):
+	# 	coords = a2c(angles)
+	# 	rmsd = loss(coords, target_coords, v_num_atoms)
+	# 	rmsd_real = np.sqrt(rmsd.data[0])
+	# 	print (rmsd_real)
+	# 	rmsd.backward()
+	# 	optimizer.step()
 
 	Angles2Coords_save(sequence, angles.data, "fitted.pdb")

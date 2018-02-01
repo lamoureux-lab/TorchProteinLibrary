@@ -29,7 +29,7 @@ public:
 	
     bool isHeavyAtom(std::string &atom_name);
     int getAtomIndex(std::string &res_name, std::string &atom_name);
-    uint getNumAtoms(std::string &sequence);
+    uint getNumAtoms(std::string &sequence, bool add_terminal=false);
 };
 
 inline std::string trim(const std::string &s);
