@@ -79,8 +79,6 @@ class cConformation{
         //Saving to pdb
         void save(std::string filename);
 
-        std::string convertRes1to3(char resName);
-
     private:
         cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);
         

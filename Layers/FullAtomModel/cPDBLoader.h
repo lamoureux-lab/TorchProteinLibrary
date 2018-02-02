@@ -4,6 +4,7 @@
 #include <vector>
 #include <cVector3.h>
 #include <cMatrix33.h>
+#include <TH/TH.h>
 
 class cPDBLoader {
 public:
@@ -25,13 +26,17 @@ public:
 	cPDBLoader(std::string filename);
 	virtual ~cPDBLoader();
     
+    //order according to cConformation
     void reorder(double *coords, bool add_terminal=false);
-	
-    bool isHeavyAtom(std::string &atom_name);
-    int getAtomIndex(std::string &res_name, std::string &atom_name);
-    uint getNumAtoms(std::string &sequence, bool add_terminal=false);
-};
+    //order according to atom types
+    void reorder(double *coords, uint *num_atoms_of_type, uint *offsets);
 
-inline std::string trim(const std::string &s);
+    cVector3 getCenterMass();
+    void translate(cVector3 dr);
+    void randRot(THGenerator *gen);
+    inline uint getNumAtoms(){return r.size();};
+
+
+};
 
 #endif /* CPROTEINLOADER_H_ */

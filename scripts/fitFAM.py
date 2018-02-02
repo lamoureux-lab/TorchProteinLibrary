@@ -40,8 +40,8 @@ def generateAA(aaName):
 	return structure[0]['A'][1]
 
 if __name__=='__main__':
-	generateAA('G')
-	sequence = 'G'
+	generateAA('A')
+	sequence = 'A'
 	num_atoms = cppPDB2Coords.getSeqNumAtoms(sequence)
 	num_angles = 7
 	print (num_atoms)
@@ -57,13 +57,13 @@ if __name__=='__main__':
 	
 	v_num_atoms = Variable(torch.IntTensor(1).fill_(num_atoms))
 	
-	# optimizer = optim.Adam([angles], lr = 0.0005)
-	# for i in range(0,10000):
-	# 	coords = a2c(angles)
-	# 	rmsd = loss(coords, target_coords, v_num_atoms)
-	# 	rmsd_real = np.sqrt(rmsd.data[0])
-	# 	print (rmsd_real)
-	# 	rmsd.backward()
-	# 	optimizer.step()
+	optimizer = optim.Adam([angles], lr = 0.0005)
+	for i in range(0,10000):
+		coords = a2c(angles)
+		rmsd = loss(coords, target_coords, v_num_atoms)
+		rmsd_real = np.sqrt(rmsd.data[0])
+		print (rmsd_real)
+		rmsd.backward()
+		optimizer.step()
 
 	Angles2Coords_save(sequence, angles.data, "fitted.pdb")

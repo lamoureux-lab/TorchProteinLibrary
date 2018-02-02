@@ -1,6 +1,8 @@
 #include "cConformation.h"
-#include <algorithm>
-#include <memory>
+
+#include <nUtil.h>
+using namespace StringUtil;
+using namespace ProtUtil;
 
 cMatrix44 cTransform::getT(double dist, char axis){
     int ax_ind;
@@ -15,7 +17,7 @@ cMatrix44 cTransform::getT(double dist, char axis){
             ax_ind=2;
             break;
         default:
-            std::cout<<"cTransform::getT Axis selection error"<<std::endl;
+            throw(std::string("cTransform::getT Axis selection error"));
             break;
     };
     cMatrix44 m;
@@ -186,7 +188,7 @@ cNode *cConformation::addNode(cNode *parent, cRigidGroup *group, cTransform *t){
     }else if(parent->right == NULL){
         parent->right = new_node;
     }else{
-        std::cout<<"cConformation::addNode too many children"<<std::endl;
+       throw(std::string("cConformation::addNode too many children"));
     }
     return new_node;
 }
@@ -226,7 +228,6 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
             atoms_grad[node->group->atomIndexes[i]*3 + 1],
             atoms_grad[node->group->atomIndexes[i]*3 + 2]
         );
-        // std::cout<<gradVec<<"|"<<node->group->atomIndexes[i]<<"\n";
         grad += gradVec | (root_node->F * node->group->atoms_global[i]);
     }
     return grad;
@@ -234,8 +235,6 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
 
 
 void cConformation::backward(cNode *node, double *atoms_grad){
-    // for(int i=0;i<108;i++)
-    //     std::cout<<atoms_grad[i]<<"\n";
     for(int i=0; i<nodes.size();i++){
         if(nodes[i]->T->grad_alpha!=NULL) 
             *(nodes[i]->T->grad_alpha) = backward(nodes[i], nodes[i], atoms_grad);
@@ -257,16 +256,6 @@ void cConformation::print(cNode *node){
     
 }
 
-
-template<typename ... Args>
-std::string string_format( const std::string& format, Args ... args )
-{
-    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    std::unique_ptr<char[]> buf( new char[ size ] ); 
-    std::snprintf( buf.get(), size, format.c_str(), args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-}
-
 void cConformation::save(std::string filename){
     std::ofstream pfile(filename, std::ofstream::out);
     
@@ -279,55 +268,9 @@ void cConformation::save(std::string filename){
             int atom_index = groups[i]->atomIndexes[j];
             int res_index = groups[i]->residueIndex;
             std::string res_name = convertRes1to3(groups[i]->residueName);
-            pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n",atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
+            pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n", atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
     }}
 
 	pfile.close();
 }
 
-std::string cConformation::convertRes1to3(char resName){
-    switch(resName){
-        case 'G':
-            return std::string("GLY");
-        case 'A':
-            return std::string("ALA");
-        case 'S':
-            return std::string("SER");
-        case 'C':
-            return std::string("CYS");
-        case 'V':
-            return std::string("VAL");
-        case 'I':
-            return std::string("ILE");
-        case 'L':
-            return std::string("LEU");   
-        case 'T':
-            return std::string("THR");    
-        case 'R':
-                return std::string("ARG");
-        case 'K':
-            return std::string("LYS");
-        case 'D':
-            return std::string("ASP");
-        case 'N':
-            return std::string("ASN");
-        case 'E':
-            return std::string("GLU");
-        case 'Q':
-            return std::string("GLN");
-        case 'M':
-            return std::string("MET");
-        case 'H':
-            return std::string("HIS");
-        case 'P':
-            return std::string("PRO");
-        case 'F':
-            return std::string("PHE");
-        case 'Y':
-            return std::string("TYR");
-        case 'W':
-            return std::string("TRP");
-        default:
-            throw("Unknown residue name");
-    }
-}

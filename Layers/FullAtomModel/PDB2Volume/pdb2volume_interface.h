@@ -1,0 +1,1 @@
+void PDB2Volume( THByteTensor *filenames, THFloatTensor *volume);
