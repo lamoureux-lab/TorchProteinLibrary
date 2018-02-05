@@ -27,19 +27,31 @@ def convertString(string):
     return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
 class PDB2Volume:
-    def __init__(self):
-        pass
+    def __init__(self, box_size=120, resolution=1.0):
+        self.box_size = box_size
+        self.resolution = resolution
+        self.num_atom_types = 11
+        self.batch_size = None        
+        self.volume = None
 
     def __call__(self, stringList):
 
         if type(stringList)==str:
             stringListTensor = convertString(stringList)
+            volume = torch.FloatTensor(self.num_atom_types, self.box_size, self.box_size, self.box_size)
         elif type(stringList)==list:
             if len(stringList)==1:
                 stringListTensor = convertString(stringList[0])
+                volume = torch.FloatTensor(self.num_atom_types, self.box_size, self.box_size, self.box_size)
             else:
                 stringListTensor = convertStringList(stringList)
+                self.batch_size = len(stringList)
+                volume = torch.FloatTensor(self.batch_size, self.num_atom_types, self.box_size, self.box_size, self.box_size)
         else:
             raise Exception("Unknown input format:", stringList)
 
-        cppPDB2Volume.PDB2Volume(stringListTensor)
+        volume.fill_(0.0)
+
+        cppPDB2Volume.PDB2Volume(stringListTensor, volume)
+
+        return volume

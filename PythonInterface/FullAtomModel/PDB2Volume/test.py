@@ -1,9 +1,14 @@
+import sys
+import os
+import torch
+
 from PDB2Volume import PDB2Volume
 
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
+from Visualization import VisualizeVolume4d
+
 if __name__=='__main__':
-    a = ["1 hello world", "2 hello world", "3 hello world"]
     pdb2v = PDB2Volume()
-    pdb2v(a)
-    pdb2v(["fuck off"])
-    pdb2v("fuck off")
+    volume = pdb2v("TestData/2lzm.pdb")
+    VisualizeVolume4d(volume)
     

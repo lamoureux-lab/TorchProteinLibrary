@@ -57,10 +57,12 @@ endif(NOT FAM_ONLY)
 include_directories("GL")
 add_subdirectory(GL)
 
+#TENSORVIS: tensor visualization library
+include_directories("VolumeVisualization")
+add_subdirectory(VolumeVisualization)
+
 if(NOT FAM_ONLY)
-  #TENSORVIS: tensor visualization library
-  include_directories("VolumeVisualization")
-  add_subdirectory(VolumeVisualization)
+ 
 
   #UTILS: some useful utilities
   include_directories("Utils")

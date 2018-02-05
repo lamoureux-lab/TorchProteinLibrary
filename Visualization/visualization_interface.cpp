@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <nUtil.h>
+
 
 const int RCVBUFSIZE = 128;
 unsigned short echoServPort = 8080;
@@ -52,7 +54,7 @@ void thread_visualization(std::string sequence){
 
     int length = sequence.length();
     int num_angles = 7;
-    int num_atoms = pdb.getNumAtoms(sequence);
+    int num_atoms = ProtUtil::getNumAtoms(sequence, false);
     uint total_angles_length = length*num_angles;
     double th_angles[total_angles_length];
     double th_angles_grad[length*num_angles];

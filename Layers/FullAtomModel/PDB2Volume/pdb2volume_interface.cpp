@@ -3,8 +3,9 @@
 #include <iostream>
 #include <string>
 
-void project(double *coords, uint *num_atoms_of_type, uint *shifts, float *volume, uint spatial_dim){
+void project(double *coords, uint *num_atoms_of_type, uint *offsets, float *volume, uint spatial_dim){
     float res = 1.0;
+    int d = 2;
     for(int atom_type = 0; atom_type<11; atom_type++){
         uint offset = offsets[atom_type];
         float *type_volume = volume + spatial_dim*spatial_dim*spatial_dim*atom_type;
@@ -24,12 +25,12 @@ void project(double *coords, uint *num_atoms_of_type, uint *shifts, float *volum
                             (y - j*res)*(y - j*res)+\
                             (z - k*res)*(z - k*res);
                             type_volume[idx]+=exp(-r2/2.0);
+                            
                         }
             }}}
         }
     }
 }
-
 
 extern "C" {
     void PDB2Volume( THByteTensor *filenames, THFloatTensor *volume){
@@ -44,12 +45,14 @@ extern "C" {
             cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
             pdb.translate(center_volume);
 
-            double coords[3*pdb->getNumAtoms()];
+            double coords[3*pdb.getNumAtoms()];
             uint num_atoms_of_type[11], offsets[11];
             pdb.reorder(coords, num_atoms_of_type, offsets);
-            project(coords, num_atoms_of_type, offsets, volume);
+
+            project(coords, num_atoms_of_type, offsets, THFloatTensor_data(volume), volume->size[1]);
 
         }else if(filenames->nDimension == 2){
+
             for(int i=0; i<filenames->size[0]; i++){
                 THByteTensor *single_filename = THByteTensor_new();
                 THFloatTensor *single_volume = THFloatTensor_new();
@@ -61,17 +64,18 @@ extern "C" {
                 cVector3 center_mass = pdb.getCenterMass() * (-1.0);
                 pdb.translate(center_mass);
                 pdb.randRot(gen);
-                cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
+                cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
                 pdb.translate(center_volume);
 
-                double coords[3*pdb->getNumAtoms()];
+                double coords[3*pdb.getNumAtoms()];
                 uint num_atoms_of_type[11], offsets[11];
                 pdb.reorder(coords, num_atoms_of_type, offsets);
-                project(coords, num_atoms_of_type, offsets, single_volume);
+                project(coords, num_atoms_of_type, offsets, THFloatTensor_data(single_volume), single_volume->size[1]);
 
                 THByteTensor_free(single_filename);
                 THFloatTensor_free(single_volume);
             }
+            
         }
         THGenerator_free(gen);
     }

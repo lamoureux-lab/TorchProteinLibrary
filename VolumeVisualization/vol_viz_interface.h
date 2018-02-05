@@ -1,1 +1,1 @@
-int VisualizeVolume4d(THCudaTensor *gpu_volume);
+int VisualizeVolume4d(THFloatTensor *cpu_volume);
