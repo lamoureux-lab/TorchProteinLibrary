@@ -1,7 +1,11 @@
 #include <TH/TH.h>
+#include <THC/THC.h>
 #include "cPDBLoader.h"
 #include <iostream>
 #include <string>
+#include <Kernels.h>
+
+extern THCState *state;
 
 void project(double *coords, uint *num_atoms_of_type, uint *offsets, float *volume, uint spatial_dim){
     float res = 1.0;
@@ -52,7 +56,7 @@ extern "C" {
             project(coords, num_atoms_of_type, offsets, THFloatTensor_data(volume), volume->size[1]);
 
         }else if(filenames->nDimension == 2){
-
+            #pragma omp parallel for num_threads(10)
             for(int i=0; i<filenames->size[0]; i++){
                 THByteTensor *single_filename = THByteTensor_new();
                 THFloatTensor *single_volume = THFloatTensor_new();
@@ -77,6 +81,91 @@ extern "C" {
             }
             
         }
+        THGenerator_free(gen);
+    }
+
+
+    void PDB2VolumeCUDA( THByteTensor *filenames, THCudaTensor *volume){
+        THGenerator *gen = THGenerator_new();
+ 		THRandom_seed(gen);
+
+        if(filenames->nDimension == 1){
+            std::string filename((const char*)THByteTensor_data(filenames));
+            cPDBLoader pdb(filename);
+            cVector3 center_mass = pdb.getCenterMass() * (-1.0);
+            pdb.translate(center_mass);
+            pdb.randRot(gen);
+            cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
+            pdb.translate(center_volume);
+
+            uint total_size = 3*pdb.getNumAtoms();
+            uint num_atom_types = 11;
+            double coords[total_size];
+            uint num_atoms_of_type[num_atom_types], offsets[num_atom_types];
+            pdb.reorder(coords, num_atoms_of_type, offsets);
+
+            double *d_coords;
+            uint *d_num_atoms_of_type;
+            uint *d_offsets;
+            cudaMalloc( (void**) &d_coords, total_size*sizeof(double) );
+            cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(uint) );
+            cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(uint) );
+
+            cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+	        cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+	        cudaMemcpy( d_coords, coords, total_size*sizeof(double), cudaMemcpyHostToDevice);
+
+            gpu_computeCoords2Volume(d_coords, d_num_atoms_of_type, d_offsets, THCudaTensor_data(state, volume), volume->size[1], num_atom_types, 1.0);
+
+            cudaFree(d_coords);
+		    cudaFree(d_num_atoms_of_type);
+		    cudaFree(d_offsets);
+
+        }else if(filenames->nDimension == 2){
+            #pragma omp parallel for num_threads(10)
+            for(int i=0; i<filenames->size[0]; i++){
+                THByteTensor *single_filename = THByteTensor_new();
+                THCudaTensor *single_volume = THCudaTensor_new(state);
+                THByteTensor_select(single_filename, filenames, 0, i);
+                THCudaTensor_select(state, single_volume, volume, 0, i);
+                std::string filename((const char*)THByteTensor_data(single_filename));
+
+                cPDBLoader pdb(filename);
+                cVector3 center_mass = pdb.getCenterMass() * (-1.0);
+                pdb.translate(center_mass);
+                pdb.randRot(gen);
+                cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
+                pdb.translate(center_volume);
+
+                uint total_size = 3*pdb.getNumAtoms();
+                uint num_atom_types = 11;
+                double coords[total_size];
+                uint num_atoms_of_type[num_atom_types], offsets[num_atom_types];
+                pdb.reorder(coords, num_atoms_of_type, offsets);
+
+                double *d_coords;
+                uint *d_num_atoms_of_type;
+                uint *d_offsets;
+                cudaMalloc( (void**) &d_coords, total_size*sizeof(double) );
+                cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(uint) );
+                cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(uint) );
+
+                cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+                cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+                cudaMemcpy( d_coords, coords, total_size*sizeof(double), cudaMemcpyHostToDevice);
+                
+                gpu_computeCoords2Volume(d_coords, d_num_atoms_of_type, d_offsets, THCudaTensor_data(state, single_volume), 
+                                        single_volume->size[1], num_atom_types, 1.0);
+                
+                THByteTensor_free(single_filename);
+                THCudaTensor_free(state, single_volume);
+                cudaFree(d_coords);
+		        cudaFree(d_num_atoms_of_type);
+		        cudaFree(d_offsets);
+            }
+            
+        }
+
         THGenerator_free(gen);
     }
 }

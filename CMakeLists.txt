@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8)
 project(MainProj)
-option(FAM_ONLY "FAM_ONLY" ON)
+option(FAM_ONLY "FAM_ONLY" OFF)
 
 
 #set(CMAKE_BUILD_TYPE Release)
@@ -41,16 +41,16 @@ include_directories("Math")
 add_subdirectory(Math)
 if(NOT FAM_ONLY)
   #PROTEINLOADER: protein loading layer
-  include_directories("Layers/PDB2Coords")
-  add_subdirectory(Layers/PDB2Coords)
+  #include_directories("Layers/PDB2Coords")
+  #add_subdirectory(Layers/PDB2Coords)
 
   #COORDS2VOLUME: projection of coordinates on a grid on gpu
-  include_directories("Layers/Coords2Volume")
-  add_subdirectory(Layers/Coords2Volume)
+  #include_directories("Layers/Coords2Volume")
+  #add_subdirectory(Layers/Coords2Volume)
 
   #TENSORUPSAMPLE: upsampling a tensor on cpu
-  include_directories("Layers/Upsampling")
-  add_subdirectory(Layers/Upsampling)
+  #include_directories("Layers/Upsampling")
+  #add_subdirectory(Layers/Upsampling)
 endif(NOT FAM_ONLY)
 
 #GLFRAMEWORK: freeglut visualization library
@@ -65,8 +65,8 @@ if(NOT FAM_ONLY)
  
 
   #UTILS: some useful utilities
-  include_directories("Utils")
-  add_subdirectory(Utils)
+  #include_directories("Utils")
+  #add_subdirectory(Utils)
 
   #ANGLES2BACKBONE: convert backbone dihedral angles to coordinates
   include_directories("Layers/Angles2Backbone")
@@ -89,24 +89,24 @@ add_subdirectory(Visualization)
 
 if(NOT FAM_ONLY)
   #Test tensor visualization using protein loading and visualizing it's density
-  cuda_add_executable(cpuProteinLoaderTest UnitTests/cpuProteinLoaderTest.cpp)
-  target_link_libraries (cpuProteinLoaderTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
+  #cuda_add_executable(cpuProteinLoaderTest UnitTests/cpuProteinLoaderTest.cpp)
+  #target_link_libraries (cpuProteinLoaderTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
 
   #Test PDB2Coords layer
-  cuda_add_executable(pdb2CoordsTest UnitTests/pdb2CoordsTest.cpp)
-  target_link_libraries (pdb2CoordsTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
+  #cuda_add_executable(pdb2CoordsTest UnitTests/pdb2CoordsTest.cpp)
+  #target_link_libraries (pdb2CoordsTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
 
   #Test PDB2Coords layer
-  cuda_add_executable(coords2VolumeTest UnitTests/coords2VolumeTest.cpp)
-  target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK COORDS2VOLUME)
+  #cuda_add_executable(coords2VolumeTest UnitTests/coords2VolumeTest.cpp)
+  #target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK COORDS2VOLUME)
 
   #Test Utils saving 3d tensor to xplor
-  add_executable(densityMapSaveTest UnitTests/densityMapSaveTest.cpp)
-  target_link_libraries (densityMapSaveTest TH UTILS TH_MATH)
+  #add_executable(densityMapSaveTest UnitTests/densityMapSaveTest.cpp)
+  #target_link_libraries (densityMapSaveTest TH UTILS TH_MATH)
 
   #Test upsampling of tensor on cpu
-  add_executable(tensorUpsampleTest UnitTests/tensorUpsampleTest.cpp)
-  target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
+  #add_executable(tensorUpsampleTest UnitTests/tensorUpsampleTest.cpp)
+  #target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
 
   #Test backbone computation
   #add_executable(angles2BackboneTest UnitTests/angles2BackboneTest.cpp)

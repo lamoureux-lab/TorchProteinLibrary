@@ -33,6 +33,10 @@ class PDB2Volume:
         self.num_atom_types = 11
         self.batch_size = None        
         self.volume = None
+        self.use_cuda = False
+
+    def cuda(self):
+        self.use_cuda=True
 
     def __call__(self, stringList):
 
@@ -50,8 +54,13 @@ class PDB2Volume:
         else:
             raise Exception("Unknown input format:", stringList)
 
-        volume.fill_(0.0)
+        if self.use_cuda:
+            volume = volume.cuda()
 
-        cppPDB2Volume.PDB2Volume(stringListTensor, volume)
+        volume.fill_(0.0)
+        if self.use_cuda:
+            cppPDB2Volume.PDB2VolumeCUDA(stringListTensor, volume)
+        else:    
+            cppPDB2Volume.PDB2Volume(stringListTensor, volume)
 
         return volume
