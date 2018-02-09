@@ -1,4 +1,5 @@
 #include <nUtil.h>
+#include <iostream>
 
 std::string StringUtil::trim(const std::string &s){
    auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){return std::isspace(c);});
@@ -356,7 +357,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
         if(atom_name == std::string("OXT"))
             return 14;
     }
-
+    std::cout<<"Unknown atom/res names"<<std::endl;
     throw(std::string("Unknown atom/res names"));
 }
 
@@ -403,6 +404,7 @@ std::string ProtUtil::convertRes1to3(char resName){
         case 'W':
             return std::string("TRP");
         default:
+            std::cout<<"Unknown residue name"<<std::endl;
             throw("Unknown residue name");
     }
 }
@@ -419,9 +421,9 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 			assignedType = 8;
 		else
 			assignedType = 6;
-	}else if(atom_name==std::string("OXT") and terminal){
+	}else if(atom_name==std::string("OXT")){
 			assignedType = 8;
-	}else if(atom_name==std::string("OT2") and terminal){
+	}else if(atom_name==std::string("OT2")){
 			assignedType = 8;
 	}else if(atom_name==std::string("N")){
 		assignedType = 2;
@@ -538,6 +540,7 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 			fullAtomName == std::string("CYSCB") ){
 			assignedType = 11;
 		}else{
+            std::cout<<std::string("Unknown atom type") + res_name + atom_name<<std::endl;
 			throw std::string("Unknown atom type") + res_name + atom_name;
 		}
 
