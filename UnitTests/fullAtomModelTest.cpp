@@ -100,17 +100,25 @@ class ConformationVis: public Object{
         ~ConformationVis(){};
         void walk(cNode *node){
             if(node->left!=NULL){
-                cVector3 x0 = node->group->atoms_global[0];
-                cVector3 x1 = node->left->group->atoms_global[0];
-                glVertex3f(x0.v[0],x0.v[1],x0.v[2]);
-                glVertex3f(x1.v[0],x1.v[1],x1.v[2]);
+                if (node->group->atoms_global.size()>0){
+                    cVector3 x0 = node->group->atoms_global[0];
+                    glVertex3f(x0.v[0],x0.v[1],x0.v[2]);
+                }
+                if (node->left->group->atoms_global.size()>0){
+                    cVector3 x1 = node->left->group->atoms_global[0];
+                    glVertex3f(x1.v[0],x1.v[1],x1.v[2]);
+                }
                 walk(node->left);
             }
             if(node->right!=NULL){
-                cVector3 x0 = node->group->atoms_global[0];
-                cVector3 x1 = node->right->group->atoms_global[0];
-                glVertex3f(x0.v[0],x0.v[1],x0.v[2]);
-                glVertex3f(x1.v[0],x1.v[1],x1.v[2]);
+                if (node->group->atoms_global.size()>0){
+                    cVector3 x0 = node->group->atoms_global[0];
+                    glVertex3f(x0.v[0],x0.v[1],x0.v[2]);
+                }
+                if (node->right->group->atoms_global.size()>0){
+                    cVector3 x1 = node->right->group->atoms_global[0];
+                    glVertex3f(x1.v[0],x1.v[1],x1.v[2]);
+                }
                 walk(node->right);
             }
         }
@@ -176,7 +184,7 @@ int main(int argc, char** argv)
 {
     GlutFramework framework;
     
-    std::string aa("GG");
+    std::string aa("C");
 
     int length = aa.length();
     int num_angles = 7;
@@ -203,7 +211,7 @@ int main(int argc, char** argv)
     ConformationUpdate cU(&conf, th_angles, th_angles_grad, th_atoms_grad, length);
         
     Vector<double> lookAtPos(0,0,0);
-    framework.setLookAt(20.0, 20.0, 20.0, lookAtPos.x, lookAtPos.y, lookAtPos.z, 0.0, 1.0, 0.0);
+    framework.setLookAt(10.0, 10.0, 10.0, lookAtPos.x, lookAtPos.y, lookAtPos.z, 0.0, 1.0, 0.0);
     
 	framework.addObject(&pV);
     framework.addObject(&cU);

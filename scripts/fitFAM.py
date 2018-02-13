@@ -28,10 +28,10 @@ from Bio.PDB.Vector import calc_angle
 
 def generateAA(aaName):
 	geo = Geometry.geometry(aaName)
-	# geo.phi=-60
-	geo.phi=0
-	# geo.psi_im1=-40
-	geo.psi_im1=0
+	geo.phi=-60
+	# geo.phi=0
+	geo.psi_im1=-40
+	# geo.psi_im1=0
 	structure = PeptideBuilder.initialize_res(geo)
 	out = Bio.PDB.PDBIO()
 	out.set_structure(structure)
@@ -40,9 +40,9 @@ def generateAA(aaName):
 	return structure[0]['A'][1]
 
 if __name__=='__main__':
-	generateAA('A')
-	sequence = 'A'
-	num_atoms = cppPDB2Coords.getSeqNumAtoms(sequence)
+	generateAA('C')
+	sequence = 'C'
+	num_atoms = cppPDB2Coords.getSeqNumAtoms(sequence, 0)
 	num_angles = 7
 	print (num_atoms)
 	
@@ -51,18 +51,20 @@ if __name__=='__main__':
 	
 	angles = Variable(torch.DoubleTensor(num_angles, len(sequence)).zero_(), requires_grad=True)
 	angles.data[0,0]=np.pi
+	angles.data[1,0]=0.0
+	angles.data[2,0]=2*np.pi/3
+	angles.data[3,0]=-4*np.pi/3
 	
 	loss = Coords2RMSD(num_atoms)
 	a2c = Angles2Coords(sequence, num_atoms)
 	
 	v_num_atoms = Variable(torch.IntTensor(1).fill_(num_atoms))
 	
-	optimizer = optim.Adam([angles], lr = 0.0005)
-	for i in range(0,10000):
+	optimizer = optim.Adam([angles], lr = 0.001)
+	for i in range(0,1000):
 		coords = a2c(angles)
 		rmsd = loss(coords, target_coords, v_num_atoms)
-		rmsd_real = np.sqrt(rmsd.data[0])
-		print (rmsd_real)
+		print (rmsd.data[0], np.sqrt(rmsd.data[0]))
 		rmsd.backward()
 		optimizer.step()
 

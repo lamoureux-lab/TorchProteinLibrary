@@ -4,13 +4,9 @@ CMAKE_POLICY(VERSION 2.8)
 project(MainProj)
 option(FAM_ONLY "FAM_ONLY" OFF)
 
-SET(CMAKE_C_COMPILER /usr/bin/gcc-6)
-SET(CMAKE_CXX_COMPILER /usr/bin/g++-6)
-
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-std=c++11 -fPIC -lpthread)
-
 
 #TORCH package
 FIND_PACKAGE(Torch REQUIRED)
@@ -26,7 +22,8 @@ INCLUDE_DIRECTORIES(
 )
 
 if(NOT FAM_ONLY)
-  
+  SET(CMAKE_C_COMPILER /usr/bin/gcc-6)
+  SET(CMAKE_CXX_COMPILER /usr/bin/g++-6)
   FIND_PACKAGE(CUDA 9.1 REQUIRED)
   INCLUDE_DIRECTORIES("${CUDA_INCLUDE_DIRS}")
 

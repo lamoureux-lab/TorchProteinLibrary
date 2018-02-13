@@ -20,7 +20,10 @@ cGeometry::cGeometry(){
 
     //C-beta
     R_CA_CB = 1.52;
-    C_CA_CB_angle = -(M_PI - 1.9111);
+    // C_CA_CB_angle = -(M_PI - 1.9111);
+    C_CA_CB_angle = -(M_PI -M_PI*109.5/180.0);
+    N_C_CA_CB_diangle = 0.5*M_PI*122.6860/180.0;
+    correction_angle = 0.0;//-C_CA_CB_angle/2.0;
 
     //OG serine
     R_CB_OG = 1.417;
@@ -77,6 +80,9 @@ cGeometry::cGeometry(){
     CB_CG_ND1_angle = (M_PI - 2.14413698608);
     CB_CG_NE2_angle = -(M_PI - 2.90352974362);
     CB_CG_CE1_angle = (M_PI - 2.75209584734);
+    
+    
+    
 }
 
 cGeometry::~cGeometry(){
@@ -111,5 +117,5 @@ void cGeometry::ala(){
     //C-beta
     R_CA_CB = 1.52;
     C_CA_CB_angle = -(3.14159 - 1.9111);//(3.14159 - 1.9111);
-    N_C_CA_CB_diangle = 0.0;//(3.14159 - 2.1413);
+    N_C_CA_CB_diangle = M_PI*111.0/180.0;;
 }

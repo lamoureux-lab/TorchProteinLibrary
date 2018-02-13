@@ -58,10 +58,10 @@ cMatrix44 cTransform::getDRx(double angle){
     return m;
 }
 void cTransform::updateMatrix(){
-    mat = getRy(*beta)*getRx(*alpha)*getT(d, 'x');
+    mat = getRy(*beta)*getT(d, 'x')*getRx(*alpha);
 }
 void cTransform::updateDMatrix(){
-    dmat = getRy(*beta)*getDRx(*alpha)*getT(d, 'x');
+    dmat = getRy(*beta)*getT(d, 'x')*getDRx(*alpha);
 }
 void cTransform::print(){
     mat.print();

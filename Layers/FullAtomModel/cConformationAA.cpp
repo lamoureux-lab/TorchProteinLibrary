@@ -69,11 +69,17 @@ cNode *cConformation::addAla(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(&zero_const, &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbC = makeCarbonyl(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global, terminal);
     bbC_transform = new cTransform(params[1], &geo.N_CA_C_angle, geo.R_CA_C, params_grad[1]);
@@ -114,11 +120,17 @@ cNode *cConformation::addSer(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeSerGroup(geo, firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[1]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbC = makeCarbonyl(geo, firstAtomIndex+4, residueName, residueIndex, atoms_global, terminal);
     bbC_transform = new cTransform(params[1], &geo.N_CA_C_angle, geo.R_CA_C, params_grad[1]);
@@ -159,12 +171,18 @@ cNode *cConformation::addCys(cNode *parentC, std::vector<double*> params, std::v
     groups.push_back(bbCA);
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
+    
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
 
     bbCB = makeCysGroup(geo, firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbC = makeCarbonyl(geo, firstAtomIndex+4, residueName, residueIndex, atoms_global, terminal);
     bbC_transform = new cTransform(params[1], &geo.N_CA_C_angle, geo.R_CA_C, params_grad[1]);
@@ -205,11 +223,17 @@ cNode *cConformation::addVal(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeValGroup(geo, firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbC = makeCarbonyl(geo, firstAtomIndex+5, residueName, residueIndex, atoms_global, terminal);
     bbC_transform = new cTransform(params[1], &geo.N_CA_C_angle, geo.R_CA_C, params_grad[1]);
@@ -250,11 +274,17 @@ cNode *cConformation::addIle(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeIleGroup1(geo, firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbCG1 = makeIleGroup2(geo, firstAtomIndex+4, residueName, residueIndex, atoms_global);
     bbCG1_transform = new cTransform(params[3], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[3]);
@@ -301,11 +331,17 @@ cNode *cConformation::addLeu(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbCG1 = makeLeuGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG1_transform = new cTransform(params[3], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[3]);
@@ -352,11 +388,17 @@ cNode *cConformation::addThr(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeThrGroup(geo, firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbC = makeCarbonyl(geo, firstAtomIndex+5, residueName, residueIndex, atoms_global, terminal);
     bbC_transform = new cTransform(params[1], &geo.N_CA_C_angle, geo.R_CA_C, params_grad[1]);
@@ -397,11 +439,17 @@ cNode *cConformation::addArg(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbCG = makeAtom("CG", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -466,11 +514,17 @@ cNode *cConformation::addLys(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbCG = makeAtom("CG", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -535,11 +589,17 @@ cNode *cConformation::addAsp(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeAspGroup(geo, "CG", "OD1", "OD2", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -586,12 +646,18 @@ cNode *cConformation::addAsn(cNode *parentC, std::vector<double*> params, std::v
     groups.push_back(bbCA);
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
+
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
     
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeAsnGroup(geo, "CG", "OD1", "ND2", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -638,11 +704,17 @@ cNode *cConformation::addGlu(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
 
     bbCG = makeAtom("CG", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -695,11 +767,17 @@ cNode *cConformation::addGln(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeAtom("CG", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -753,11 +831,17 @@ cNode *cConformation::addMet(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeAtom("CG", firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -817,11 +901,17 @@ cNode *cConformation::addHis(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeHisGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -908,11 +998,17 @@ cNode *cConformation::addPhe(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makePheGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -959,11 +1055,17 @@ cNode *cConformation::addTyr(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeTyrGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
@@ -1010,11 +1112,17 @@ cNode *cConformation::addTrp(cNode *parentC, std::vector<double*> params, std::v
     transforms.push_back(bbCA_transform);
     nCA = addNode(nN, groups.back(), transforms.back());
 
+    cTransform *dummy_transform = new cTransform(&geo.N_C_CA_CB_diangle, &geo.correction_angle, 0.0, NULL);
+    cRigidGroup *dummy_group = new cRigidGroup();
+    this->groups.push_back(dummy_group);
+    this->transforms.push_back(dummy_transform);
+    cNode *dummy_node = addNode(nCA, groups.back(), transforms.back());
+
     bbCB = makeAtom("CB", firstAtomIndex+2, residueName, residueIndex, atoms_global);
     bbCB_transform = new cTransform(params[2], &geo.C_CA_CB_angle, geo.R_CA_CB, params_grad[2]);
     this->groups.push_back(bbCB);
     this->transforms.push_back(bbCB_transform);
-    nCB = addNode(nCA, groups.back(), transforms.back());
+    nCB = addNode(dummy_node, groups.back(), transforms.back());
     
     bbCG = makeTrpGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
     bbCG_transform = new cTransform(params[3], &geo.C_C_C_angle, geo.R_C_C, params_grad[3]);
