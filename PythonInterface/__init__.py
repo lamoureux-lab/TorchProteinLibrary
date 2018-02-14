@@ -10,4 +10,4 @@ from FullAtomModel import Coords2RMSD
 from FullAtomModel import cppPDB2Coords
 # from FullAtomModel import PDB2Volume
 
-# from Visualization import VisualizeVolume4d, visSequence, updateAngles
+from Visualization import VisualizeVolume4d, visSequence, updateAngles

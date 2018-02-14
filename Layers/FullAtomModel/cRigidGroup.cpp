@@ -74,7 +74,7 @@ cRigidGroup *makeIleGroup1(cGeometry &geo, uint atomIndex, char residueName, uin
     cRigidGroup *g = new cRigidGroup();
     g->addAtom(cVector3(0,0,0), "CB", atomIndex, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(geo.R_CB_CG*cVector3(sin(geo.CA_CB_CG1_angle - M_PI/2.0),
-                        -cos(geo.CA_CB_CG1_angle - M_PI/2.0)*sin(geo.CG1_CB_CG2_angle),
+                        cos(geo.CA_CB_CG1_angle - M_PI/2.0)*sin(geo.CG1_CB_CG2_angle),
                         cos(geo.CA_CB_CG1_angle - M_PI/2.0)*cos(geo.CG1_CB_CG2_angle)), "CG2", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
     return g;
 }
@@ -82,8 +82,8 @@ cRigidGroup *makeIleGroup1(cGeometry &geo, uint atomIndex, char residueName, uin
 cRigidGroup *makeIleGroup2(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr){
     cRigidGroup *g = new cRigidGroup();
     g->addAtom(cVector3(0,0,0), "CG1", atomIndex, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(geo.R_CG1_CD1*cVector3(cos(-(M_PI-geo.CB_CG1_CD1_angle)),0,
-                        sin(-(M_PI-geo.CB_CG1_CD1_angle))), "CD1", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(geo.R_CG1_CD1*cVector3(cos((M_PI-geo.CB_CG1_CD1_angle)),0,
+                        -sin((M_PI-geo.CB_CG1_CD1_angle))), "CD1", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
     return g;
 }
 
