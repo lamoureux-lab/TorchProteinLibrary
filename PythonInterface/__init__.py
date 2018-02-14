@@ -8,6 +8,9 @@
 from FullAtomModel import Angles2Coords, Angles2Coords_save
 from FullAtomModel import Coords2RMSD
 from FullAtomModel import cppPDB2Coords
-# from FullAtomModel import PDB2Volume
+try:
+    from FullAtomModel import PDB2Volume
+except:
+    pass
 
 from Visualization import VisualizeVolume4d, visSequence, updateAngles
