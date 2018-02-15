@@ -37,15 +37,23 @@ cRigidGroup *makeAtom(std::string atomName, uint atomIndex, char residueName, ui
 cRigidGroup *makeCarbonyl(cGeometry &geo, uint atomIndex, char residueName, uint residueIndex, double *atoms_global_ptr, bool terminal){
     cRigidGroup *g = new cRigidGroup();
     g->addAtom(cVector3(0,0,0), "C", atomIndex, residueName, residueIndex, atoms_global_ptr);   
+    // g->addAtom(geo.R_CB_OG*cVector3(
+    //     cos(geo.CA_C_O_angle),
+    //     sin(geo.CA_C_O_angle)*cos(geo.CA_C_O_angle/2.0),
+    //     sin(geo.CA_C_O_angle)*sin(geo.CA_C_O_angle/2.0)), "O", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(geo.R_CB_OG*cVector3(
         cos(geo.CA_C_O_angle),
-        sin(geo.CA_C_O_angle)*cos(geo.CA_C_O_angle/2.0),
-        sin(geo.CA_C_O_angle)*sin(geo.CA_C_O_angle/2.0)), "O", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
+        0.0,
+        sin(geo.CA_C_O_angle)), "O", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
     if(terminal){
-        g->addAtom(geo.R_CB_OG*cVector3(
+        // g->addAtom(geo.R_CB_OG*cVector3(
+        //     cos(geo.CA_C_O_angle),
+        //     sin(geo.CA_C_O_angle)*cos(geo.CA_C_O_angle/2.0),
+        //     sin(geo.CA_C_O_angle)*sin(geo.CA_C_O_angle/2.0)), "OXT", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
+         g->addAtom(geo.R_CB_OG*cVector3(
             cos(geo.CA_C_O_angle),
-            sin(geo.CA_C_O_angle)*cos(geo.CA_C_O_angle/2.0),
-            sin(geo.CA_C_O_angle)*sin(geo.CA_C_O_angle/2.0)), "OXT", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
+            0.0,
+            -sin(geo.CA_C_O_angle)), "OXT", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
     }
     
     return g;
