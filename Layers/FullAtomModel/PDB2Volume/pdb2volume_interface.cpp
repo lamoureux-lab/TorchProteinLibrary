@@ -35,7 +35,12 @@ void project(double *coords, uint *num_atoms_of_type, uint *offsets, float *volu
         }
     }
 }
-
+cVector3 getRandomTranslation(THGenerator *gen, double bound){
+    float u1 = THRandom_uniform(gen,-bound,bound);
+    float u2 = THRandom_uniform(gen,-bound,bound);
+    float u3 = THRandom_uniform(gen,-bound,bound);
+    return cVector3(u1, u2, u3);
+}
 extern "C" {
     void PDB2Volume( THByteTensor *filenames, THFloatTensor *volume){
         THGenerator *gen = THGenerator_new();
@@ -48,6 +53,7 @@ extern "C" {
             pdb.randRot(gen);
             cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
             pdb.translate(center_volume);
+            pdb.translate(getRandomTranslation(gen, volume->size[1]/4.0));
 
             double coords[3*pdb.getNumAtoms()];
             uint num_atoms_of_type[11], offsets[11];
@@ -70,6 +76,7 @@ extern "C" {
                 pdb.randRot(gen);
                 cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
                 pdb.translate(center_volume);
+                pdb.translate(getRandomTranslation(gen, single_volume->size[1]/4.0));
 
                 double coords[3*pdb.getNumAtoms()];
                 uint num_atoms_of_type[11], offsets[11];
@@ -97,6 +104,7 @@ extern "C" {
             pdb.randRot(gen);
             cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
             pdb.translate(center_volume);
+            pdb.translate(getRandomTranslation(gen, volume->size[1]/4.0));
 
             uint total_size = 3*pdb.getNumAtoms();
             uint num_atom_types = 11;
@@ -137,6 +145,7 @@ extern "C" {
                 pdb.randRot(gen);
                 cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
                 pdb.translate(center_volume);
+                pdb.translate(getRandomTranslation(gen, single_volume->size[1]/4.0));
             
                 uint total_size = 3*pdb.getNumAtoms();
                 uint num_atom_types = 11;

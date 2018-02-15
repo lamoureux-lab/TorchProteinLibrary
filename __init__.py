@@ -4,4 +4,4 @@
 try:
     from PythonInterface import PDB2Volume
 except:
-    pass
+    print "No PDB2Volume"

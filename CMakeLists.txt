@@ -22,8 +22,8 @@ INCLUDE_DIRECTORIES(
 )
 
 if(NOT FAM_ONLY)
-  SET(CMAKE_C_COMPILER /usr/bin/gcc-6)
-  SET(CMAKE_CXX_COMPILER /usr/bin/g++-6)
+  # SET(CMAKE_C_COMPILER /usr/bin/gcc-6)
+  # SET(CMAKE_CXX_COMPILER /usr/bin/g++-6)
   FIND_PACKAGE(CUDA 9.1 REQUIRED)
   INCLUDE_DIRECTORIES("${CUDA_INCLUDE_DIRS}")
 
@@ -69,8 +69,8 @@ if(NOT FAM_ONLY)
   #add_subdirectory(Utils)
 
   #ANGLES2BACKBONE: convert backbone dihedral angles to coordinates
-  include_directories("Layers/Angles2Backbone")
-  add_subdirectory(Layers/Angles2Backbone)
+  # include_directories("Layers/Angles2Backbone")
+  # add_subdirectory(Layers/Angles2Backbone)
 
   #CALPHA_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for C-alpha protein model
   include_directories("Layers/C_alpha_protein")

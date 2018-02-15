@@ -12,5 +12,7 @@ try:
     from FullAtomModel import PDB2Volume
 except:
     pass
-
-from Visualization import VisualizeVolume4d, visSequence, updateAngles
+try:
+    from Visualization import VisualizeVolume4d, visSequence, updateAngles
+except:
+    pass

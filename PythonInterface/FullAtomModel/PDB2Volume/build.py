@@ -33,7 +33,7 @@ ffi = create_extension(
 	include_dirs = include_dirs,
 	extra_compile_args=["-fopenmp"],
 	extra_link_args = [],
-	libraries = ["FULL_ATOM_MODEL", "TH_MATH", "FULL_ATOM_MODEL_CU"],
+	libraries = ["FULL_ATOM_MODEL", "FULL_ATOM_MODEL_CU", "TH_MATH"],
 	library_dirs = library_dirs
 )
 
