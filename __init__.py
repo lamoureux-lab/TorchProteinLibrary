@@ -5,3 +5,15 @@ try:
     from PythonInterface import PDB2Volume
 except:
     print "No PDB2Volume"
+
+try:
+    from PythonInterface import cppPDB2Coords
+except:
+    print "No PDB2Coords"
+
+try:
+    from PythonInterface import Angles2Coords, Angles2Coords_save
+    from PythonInterface import Coords2RMSD
+    from PythonInterface import cppPDB2Coords
+except:
+    print "No full atom model"
