@@ -99,12 +99,13 @@ extern "C" {
         if(filenames->nDimension == 1){
             std::string filename((const char*)THByteTensor_data(filenames));
             cPDBLoader pdb(filename);
-            cVector3 center_mass = pdb.getCenterMass() * (-1.0);
-            pdb.translate(center_mass);
+            pdb.computeBoundingBox();
+            cVector3 center_box = (pdb.b0 + pdb.b1)*0.5;
+            pdb.translate( -center_box );
             pdb.randRot(gen);
             cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
             pdb.translate(center_volume);
-            pdb.translate(getRandomTranslation(gen, volume->size[1]/4.0));
+            pdb.randTrans(gen, volume->size[1]);
 
             uint total_size = 3*pdb.getNumAtoms();
             uint num_atom_types = 11;
@@ -140,12 +141,13 @@ extern "C" {
                 std::string filename((const char*)THByteTensor_data(single_filename));
                 
                 cPDBLoader pdb(filename);
-                cVector3 center_mass = pdb.getCenterMass() * (-1.0);
-                pdb.translate(center_mass);
+                pdb.computeBoundingBox();
+                cVector3 center_box = (pdb.b0 + pdb.b1)*0.5;
+                pdb.translate( -center_box );
                 pdb.randRot(gen);
                 cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
                 pdb.translate(center_volume);
-                pdb.translate(getRandomTranslation(gen, single_volume->size[1]/4.0));
+                pdb.randTrans(gen, single_volume->size[1]);
             
                 uint total_size = 3*pdb.getNumAtoms();
                 uint num_atom_types = 11;

@@ -20,7 +20,7 @@ public:
     std::vector<std::vector<cVector3> > res_r;
     std::vector<std::vector<std::string> > res_atom_names;
 
-	
+	cVector3 b0, b1;
 public:
     cPDBLoader();
 	cPDBLoader(std::string filename);
@@ -34,7 +34,11 @@ public:
     cVector3 getCenterMass();
     void translate(cVector3 dr);
     void randRot(THGenerator *gen);
+    void randTrans(THGenerator *gen, int spatial_dim);
+    
     inline uint getNumAtoms(){return r.size();};
+    void computeBoundingBox();
+    
 
 
 };

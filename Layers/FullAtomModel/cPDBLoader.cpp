@@ -109,6 +109,36 @@ void cPDBLoader::translate(cVector3 dr){
     }
 }
 
+void cPDBLoader::computeBoundingBox(){
+	b0[0]=std::numeric_limits<float>::infinity(); 
+	b0[1]=std::numeric_limits<float>::infinity(); 
+	b0[2]=std::numeric_limits<float>::infinity();
+	b1[0]=-1*std::numeric_limits<float>::infinity(); 
+	b1[1]=-1*std::numeric_limits<float>::infinity(); 
+	b1[2]=-1*std::numeric_limits<float>::infinity();
+	for(int i=0;i<r.size();i++){
+		if(r[i][0]<b0[0]){
+			b0[0]=r[i][0];
+		}
+		if(r[i][1]<b0[1]){
+			b0[1]=r[i][1];
+		}
+		if(r[i][2]<b0[2]){
+			b0[2]=r[i][2];
+		}
+
+		if(r[i][0]>b1[0]){
+			b1[0]=r[i][0];
+		}
+		if(r[i][1]>b1[1]){
+			b1[1]=r[i][1];
+		}
+		if(r[i][2]>b1[2]){
+			b1[2]=r[i][2];
+		}
+	}
+}
+
 void cPDBLoader::randRot(THGenerator *gen){
     float u1 = THRandom_uniform(gen,0,1.0);
     float u2 = THRandom_uniform(gen,0,1.0);
@@ -135,7 +165,15 @@ void cPDBLoader::randRot(THGenerator *gen){
         r[i] = random_rotation*r[i];
     }
 }
-
+void cPDBLoader::randTrans(THGenerator *gen, int spatial_dim){
+    float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
+    float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
+    float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
+    float dx = THRandom_uniform(gen,-dx_max,dx_max);
+    float dy = THRandom_uniform(gen,-dy_max,dy_max);
+    float dz = THRandom_uniform(gen,-dz_max,dz_max);
+    this->translate(cVector3(dx,dy,dz));
+}
 void cPDBLoader::reorder(double *coords, uint *num_atoms_of_type, uint *offsets){
     std::vector<uint> atom_types;
     uint num_atoms[11];
