@@ -58,7 +58,6 @@ cPDBLoader::cPDBLoader(std::string filename) {
         res_res_names[res_num] = res_names[i];
     }
 }
-
 cPDBLoader::~cPDBLoader() {
 		
 }
