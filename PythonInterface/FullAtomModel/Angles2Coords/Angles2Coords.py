@@ -20,11 +20,12 @@ class Angles2CoordsFunction(Function):
 		self.num_atoms = num_atoms
 		self.add_term = add_term
 		
-				
 	def forward(self, input_angles_cpu):
 		
 		if len(input_angles_cpu.size())==2:
 			output_coords_cpu = torch.DoubleTensor(3*self.num_atoms)
+			output_resnames_cpu = torch.ByteTensor(self.num_atoms, 4)
+			output_atomnames_cpu = torch.ByteTensor(self.num_atoms, 4)
 			
 		elif len(input_angles_cpu.size())==3:
 			raise(Exception('Not implemented'))
@@ -36,18 +37,19 @@ class Angles2CoordsFunction(Function):
 		cppAngles2Coords.Angles2Coords_forward( self.sequence,
 												input_angles_cpu,              #input angles
 												output_coords_cpu,  #output coordinates
+												output_resnames_cpu,
+												output_atomnames_cpu,
 												self.add_term
 												)
 
 		if math.isnan(output_coords_cpu.sum()):
-			raise(Exception('Angles2CoordsFunction: forward Nan'))		
+			raise(Exception('Angles2CoordsFunction: forward Nan'))	
 		
 		self.save_for_backward(input_angles_cpu)
 
-		return output_coords_cpu
+		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu
 			
-
-	def backward(self, grad_atoms_cpu):
+	def backward(self, grad_atoms_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()
 		
@@ -78,6 +80,5 @@ class Angles2Coords(Module):
 		if self.num_atoms is None:
 			self.num_atoms = cppPDB2Coords.getSeqNumAtoms(self.sequence, self.add_term)
 
-		
 	def forward(self, input_angles_cpu):
 		return Angles2CoordsFunction(self.sequence, self.num_atoms, self.add_term)(input_angles_cpu)

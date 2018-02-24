@@ -113,6 +113,6 @@ void gpu_computeVolume2Coords(	double *coords,
 								float res){
 
 	projectFromTensor<<<1, num_atom_types>>>(	coords, grad, num_atoms_of_type, offsets,
-												volume, spatial_dim, num_atom_types, res);
+												volume, spatial_dim, res);
 
 }

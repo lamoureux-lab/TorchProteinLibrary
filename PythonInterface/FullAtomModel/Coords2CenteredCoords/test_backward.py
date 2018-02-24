@@ -10,7 +10,10 @@ import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 
-from Angles2Coords import Angles2Coords
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from Angles2Coords.Angles2Coords import Angles2Coords
+from Coords2TypedCoords.Coords2TypedCoords import Coords2TypedCoords
+from Coords2CenteredCoords import Coords2CenteredCoords
 
 def test_gradient():
 	sequence = 'GGMLGWAHFGY'
@@ -21,12 +24,23 @@ def test_gradient():
 	x0.data[2:,:] = 110.4*np.pi/180.0
 	
 	a2c = Angles2Coords(sequence)
-	y0, res, at = a2c(x0)
-	y0 = y0.sum()
-		
-	y0.backward()
-	back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
+	c2tc = Coords2TypedCoords(num_atoms=a2c.num_atoms)
+	c2cc = Coords2CenteredCoords(120)
 	
+	
+	y0, res, at = a2c(x0)
+	y0 = c2cc(y0)
+	coords, num_atoms_of_type, offsets = c2tc(y0, res, at)
+	z0 = coords.sum()
+		
+	z0.backward()
+	back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
+
+	x1.data.copy_(x0.data)
+	y1, res, at = a2c(x1)
+	coords, num_atoms_of_type, offsets = c2tc(y1, res, at)
+	z0 = coords.sum()
+
 	for i in range(0,7):
 		grads = []
 		for j in range(0,x0.size(1)):
@@ -34,8 +48,9 @@ def test_gradient():
 			x1.data.copy_(x0.data)
 			x1.data[i,j]+=dx
 			y1, res, at = a2c(x1)
-			y1 = y1.sum()
-			dy_dx = (y1.data[0]-y0.data[0])/(dx)
+			coords, num_atoms_of_type, offsets = c2tc(y1, res, at)
+			z1 = coords.sum()
+			dy_dx = (z1.data[0]-z0.data[0])/(dx)
 			grads.append(dy_dx)
 
 		fig = plt.figure()

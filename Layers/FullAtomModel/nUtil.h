@@ -20,6 +20,8 @@ namespace StringUtil{
     //     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     // };
     std::string string_format(const std::string fmt, ...);
+    void string2Tensor(std::string s, THByteTensor *T);
+    std::string tensor2String(THByteTensor *T);
 };
 
 namespace ProtUtil{
@@ -47,6 +49,8 @@ namespace ProtUtil{
     cMatrix33 getRandomRotation(THGenerator *gen);
     cVector3 getRandomTranslation(THGenerator *gen, uint spatial_dim, cVector3 b0, cVector3 b1);
     
+    cMatrix33 tensor2Matrix33(THDoubleTensor *T);
+    void matrix2Tensor(cMatrix33 &mat, THDoubleTensor *T);
 
 };
 

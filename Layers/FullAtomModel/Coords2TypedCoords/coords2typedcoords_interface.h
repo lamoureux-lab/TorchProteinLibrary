@@ -1,0 +1,2 @@
+void Coords2TypedCoords_forward(    THDoubleTensor *input_coords, THByteTensor *res_names,THByteTensor *atom_names,THDoubleTensor *output_coords,THIntTensor *output_num_atoms_of_type,THIntTensor *output_offsets,THIntTensor *output_atom_indexes);
+void Coords2TypedCoords_backward(   THDoubleTensor *grad_typed_coords,THDoubleTensor *grad_flat_coords,THIntTensor *num_atoms_of_type,THIntTensor *offsets,THIntTensor *atom_indexes);

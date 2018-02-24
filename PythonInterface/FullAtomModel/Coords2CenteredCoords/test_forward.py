@@ -9,7 +9,11 @@ import matplotlib.pylab as plt
 import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
-from Angles2Coords import Angles2Coords
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from Angles2Coords.Angles2Coords import Angles2Coords
+from Coords2TypedCoords.Coords2TypedCoords import Coords2TypedCoords
+from Coords2CenteredCoords import Coords2CenteredCoords
 
 if __name__=='__main__':
 
@@ -19,17 +23,19 @@ if __name__=='__main__':
 	angles[1,:] = -0.698
 	angles[2:,:] = 110.4*np.pi/180.0
 	a2c = Angles2Coords(sequence)
+	c2cc = Coords2CenteredCoords(120)
 	protein, res_names, atom_names = a2c(angles)
-	protein = protein.data.resize_(protein.size(0)/3, 3).numpy()
-	
+		
 	for i in range(0, res_names.size(0)):
 		print res_names.data[i,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0], atom_names.data[i,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0]
 
-	# print protein
-	sx, sy, sz = protein[:,0], protein[:,1], protein[:,2]
-	fig = plt.figure()
-	plt.title("Full atom model forward test")
-	ax = p3.Axes3D(fig)
-	ax.plot(sx,sy,sz, 'r.', label = 'atoms')
-	ax.legend()
-	plt.show()
+	protein_centered = c2cc(protein)
+
+	c2tc = Coords2TypedCoords(num_atoms= atom_names.size(0))
+	coords, num_atoms_of_type, offsets = c2tc(protein_centered,res_names,atom_names)
+	
+	for i in range(0,11):
+		print num_atoms_of_type.data[i], offsets.data[i]
+
+	for i,res_name in enumerate(res_names):
+		print protein_centered.data[3*i+0], protein_centered.data[3*i+1], protein_centered.data[3*i+2] 

@@ -1,0 +1,2 @@
+void Coords2CenteredCoords_forward( THDoubleTensor *input_coords, THDoubleTensor *output_coords,int volume_size,THDoubleTensor *R,THDoubleTensor *T);
+void Coords2CenteredCoords_backward(    THDoubleTensor *grad_output_coords, THDoubleTensor *grad_input_coords,THDoubleTensor *R,THDoubleTensor *T);
