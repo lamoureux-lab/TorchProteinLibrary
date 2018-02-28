@@ -74,6 +74,7 @@ std::ostream& operator<<(std::ostream& os, const cNode& node){
 
 cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global, bool add_terminal){
     cNode *lastC = NULL;
+    zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
     for(int i=0; i<aa.length(); i++){

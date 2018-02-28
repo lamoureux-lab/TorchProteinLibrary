@@ -55,7 +55,7 @@ class cConformation{
         std::vector<cRigidGroup*> groups;
         std::vector<cTransform*> transforms;
         
-        double zero_const, omega_const;
+        double zero_const;
         double *atoms_global; //pointer to computed coordinates
         cGeometry geo;
         uint num_atoms;

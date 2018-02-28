@@ -1,3 +1,3 @@
-void Angles2Coords_forward(  const char* sequence,THDoubleTensor *input_angles, THDoubleTensor *output_coords, THByteTensor *res_names, THByteTensor *atom_names, int add_terminal);
-void Angles2Coords_backward( THDoubleTensor *grad_atoms,THDoubleTensor *grad_angles,const char* sequence,THDoubleTensor *input_angles, int add_terminal);
+void Angles2Coords_forward(  THByteTensor *sequences,THDoubleTensor *input_angles, THDoubleTensor *output_coords, THByteTensor *res_names, THByteTensor *atom_names, int add_terminal);
+void Angles2Coords_backward( THDoubleTensor *grad_atoms,THDoubleTensor *grad_angles,THByteTensor *sequences,THDoubleTensor *input_angles, int add_terminal);
 void Angles2Coords_save(  const char* sequence,THDoubleTensor *input_angles, const char* output_filename, int add_terminal);
