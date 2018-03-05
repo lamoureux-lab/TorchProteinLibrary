@@ -64,9 +64,9 @@ add_subdirectory(VolumeVisualization)
 if(NOT FAM_ONLY)
  
 
-  #UTILS: some useful utilities
-  #include_directories("Utils")
-  #add_subdirectory(Utils)
+  # UTILS: some useful utilities
+  include_directories("Utils")
+  add_subdirectory(Utils)
 
   #ANGLES2BACKBONE: convert backbone dihedral angles to coordinates
   # include_directories("Layers/Angles2Backbone")

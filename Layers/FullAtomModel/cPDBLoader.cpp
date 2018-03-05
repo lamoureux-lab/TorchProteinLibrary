@@ -173,9 +173,9 @@ void cPDBLoader::randTrans(THGenerator *gen, int spatial_dim){
     float dz = THRandom_uniform(gen,-dz_max,dz_max);
     this->translate(cVector3(dx,dy,dz));
 }
-void cPDBLoader::reorder(double *coords, uint *num_atoms_of_type, uint *offsets){
-    std::vector<uint> atom_types;
-    uint num_atoms[11];
+void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
+    std::vector<int> atom_types;
+    int num_atoms[11];
     for(int i=0;i<11;i++){
         num_atoms_of_type[i] = 0;
         num_atoms[i] = 0;
@@ -184,7 +184,7 @@ void cPDBLoader::reorder(double *coords, uint *num_atoms_of_type, uint *offsets)
 
     bool terminal = false;
     for(int i=0; i<r.size(); i++){
-        uint type;
+        int type;
         if(res_nums[i] == res_res_names.size())
             terminal = true;
         type = get11AtomType(res_names[i], atom_names[i], terminal);
@@ -196,7 +196,7 @@ void cPDBLoader::reorder(double *coords, uint *num_atoms_of_type, uint *offsets)
     }
 
     for(int i=0; i<r.size(); i++){
-        uint type = atom_types[i];
+        int type = atom_types[i];
         cVector3 r_target(coords + 3*(offsets[type] + num_atoms[type]));
         r_target = r[i];
         num_atoms[type]+=1;

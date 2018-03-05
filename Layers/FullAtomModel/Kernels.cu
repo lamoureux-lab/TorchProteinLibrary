@@ -1,8 +1,8 @@
 #include <Kernels.h>
 
 
-__global__ void projectToTensor(double* coords, uint* num_atoms_of_type, uint* offsets, float *volume, 
-                                uint spatial_dim, float res){
+__global__ void projectToTensor(double* coords, int* num_atoms_of_type, int* offsets, float *volume, 
+                                int spatial_dim, float res){
 	/*
     Input:
         coords: coordinates in a flat array:
@@ -15,11 +15,13 @@ __global__ void projectToTensor(double* coords, uint* num_atoms_of_type, uint* o
         volume: density
     */
 		int d = 2;
-		size_t func_index = threadIdx.x + blockIdx.x*blockDim.x;
-		float *type_volume = volume + func_index * spatial_dim*spatial_dim*spatial_dim;
-		double *atoms_coords = coords + offsets[func_index];
-		uint n_atoms = num_atoms_of_type[func_index];
-		for(int atom_idx = 0; atom_idx<n_atoms; atom_idx+=3){
+		// size_t func_index = threadIdx.x + blockIdx.x*blockDim.x;
+		int type_index = threadIdx.x;
+		float *type_volume = volume + type_index * spatial_dim*spatial_dim*spatial_dim;
+		double *atoms_coords = coords + offsets[type_index];
+		int n_atoms = num_atoms_of_type[type_index];
+		// printf("GPU: thread %d offset %d\n", type_index, offsets[type_index]);
+		for(int atom_idx = 0; atom_idx<3*n_atoms; atom_idx+=3){
 			double 	x = atoms_coords[atom_idx],
 					y = atoms_coords[atom_idx + 1],
 					z = atoms_coords[atom_idx + 2];
@@ -91,11 +93,11 @@ __global__ void projectFromTensor(	double* coords, double* grad, uint* num_atoms
 	}
 
 void gpu_computeCoords2Volume(	double *coords,
-                                uint *num_atoms_of_type,
-							    uint *offsets, 
+                                int *num_atoms_of_type,
+							    int *offsets, 
 								float *volume,
-								uint spatial_dim,
-                                uint num_atom_types,
+								int spatial_dim,
+                                int num_atom_types,
 								float res){
 
 	projectToTensor<<<1, num_atom_types>>>(	coords, num_atoms_of_type, offsets,

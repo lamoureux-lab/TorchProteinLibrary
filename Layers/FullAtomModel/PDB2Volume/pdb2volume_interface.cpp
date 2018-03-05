@@ -7,11 +7,11 @@
 
 extern THCState *state;
 
-void project(double *coords, uint *num_atoms_of_type, uint *offsets, float *volume, uint spatial_dim){
+void project(double *coords, int *num_atoms_of_type, int *offsets, float *volume, uint spatial_dim){
     float res = 1.0;
     int d = 2;
     for(int atom_type = 0; atom_type<11; atom_type++){
-        uint offset = offsets[atom_type];
+        int offset = offsets[atom_type];
         float *type_volume = volume + spatial_dim*spatial_dim*spatial_dim*atom_type;
         for(int atom_idx = 0; atom_idx<num_atoms_of_type[atom_type]; atom_idx++){
             float 	x = coords[3*(atom_idx + offset) + 0],
@@ -56,7 +56,7 @@ extern "C" {
             pdb.translate(getRandomTranslation(gen, volume->size[1]/4.0));
 
             double coords[3*pdb.getNumAtoms()];
-            uint num_atoms_of_type[11], offsets[11];
+            int num_atoms_of_type[11], offsets[11];
             pdb.reorder(coords, num_atoms_of_type, offsets);
 
             project(coords, num_atoms_of_type, offsets, THFloatTensor_data(volume), volume->size[1]);
@@ -79,7 +79,7 @@ extern "C" {
                 pdb.translate(getRandomTranslation(gen, single_volume->size[1]/4.0));
 
                 double coords[3*pdb.getNumAtoms()];
-                uint num_atoms_of_type[11], offsets[11];
+                int num_atoms_of_type[11], offsets[11];
                 pdb.reorder(coords, num_atoms_of_type, offsets);
                 project(coords, num_atoms_of_type, offsets, THFloatTensor_data(single_volume), single_volume->size[1]);
 
@@ -95,7 +95,7 @@ extern "C" {
     void PDB2VolumeCUDA( THByteTensor *filenames, THCudaTensor *volume){
         THGenerator *gen = THGenerator_new();
  		THRandom_seed(gen);
-        try{
+
         if(filenames->nDimension == 1){
             std::string filename((const char*)THByteTensor_data(filenames));
             cPDBLoader pdb(filename);
@@ -107,21 +107,21 @@ extern "C" {
             pdb.translate(center_volume);
             pdb.randTrans(gen, volume->size[1]);
 
-            uint total_size = 3*pdb.getNumAtoms();
-            uint num_atom_types = 11;
+            int total_size = 3*pdb.getNumAtoms();
+            int num_atom_types = 11;
             double coords[total_size];
-            uint num_atoms_of_type[num_atom_types], offsets[num_atom_types];
+            int num_atoms_of_type[num_atom_types], offsets[num_atom_types];
             pdb.reorder(coords, num_atoms_of_type, offsets);
 
             double *d_coords;
-            uint *d_num_atoms_of_type;
-            uint *d_offsets;
+            int *d_num_atoms_of_type;
+            int *d_offsets;
             cudaMalloc( (void**) &d_coords, total_size*sizeof(double) );
-            cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(uint) );
-            cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(uint) );
+            cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(int) );
+            cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(int) );
 
-            cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
-	        cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+            cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
+	        cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
 	        cudaMemcpy( d_coords, coords, total_size*sizeof(double), cudaMemcpyHostToDevice);
 
             gpu_computeCoords2Volume(d_coords, d_num_atoms_of_type, d_offsets, THCudaTensor_data(state, volume), volume->size[1], num_atom_types, 1.0);
@@ -149,22 +149,22 @@ extern "C" {
                 pdb.translate(center_volume);
                 pdb.randTrans(gen, single_volume->size[1]);
             
-                uint total_size = 3*pdb.getNumAtoms();
-                uint num_atom_types = 11;
+                int total_size = 3*pdb.getNumAtoms();
+                int num_atom_types = 11;
                 double coords[total_size];
-                uint num_atoms_of_type[num_atom_types], offsets[num_atom_types];
+                int num_atoms_of_type[num_atom_types], offsets[num_atom_types];
                 
                 pdb.reorder(coords, num_atoms_of_type, offsets);
                 
                 double *d_coords;
-                uint *d_num_atoms_of_type;
-                uint *d_offsets;
+                int *d_num_atoms_of_type;
+                int *d_offsets;
                 cudaMalloc( (void**) &d_coords, total_size*sizeof(double) );
-                cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(uint) );
-                cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(uint) );
+                cudaMalloc( (void**) &d_num_atoms_of_type, num_atom_types*sizeof(int) );
+                cudaMalloc( (void**) &d_offsets, num_atom_types*sizeof(int) );
 
-                cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
-                cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(uint), cudaMemcpyHostToDevice);
+                cudaMemcpy( d_offsets, offsets, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
+                cudaMemcpy( d_num_atoms_of_type, num_atoms_of_type, num_atom_types*sizeof(int), cudaMemcpyHostToDevice);
                 cudaMemcpy( d_coords, coords, total_size*sizeof(double), cudaMemcpyHostToDevice);
                 
 
@@ -180,10 +180,6 @@ extern "C" {
 
             }
             
-        }
-        }catch(const std::exception& e){
-            std::cout<<e.what()<<std::endl;
-            exit(1);
         }
         THGenerator_free(gen);
     }

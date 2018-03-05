@@ -29,7 +29,7 @@ public:
     //order according to cConformation
     void reorder(double *coords, bool add_terminal=false);
     //order according to atom types
-    void reorder(double *coords, uint *num_atoms_of_type, uint *offsets);
+    void reorder(double *coords, int *num_atoms_of_type, int *offsets);
 
     cVector3 getCenterMass();
     void translate(cVector3 dr);
