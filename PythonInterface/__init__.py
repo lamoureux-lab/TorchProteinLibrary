@@ -16,3 +16,5 @@ try:
     from Visualization import VisualizeVolume4d, visSequence, updateAngles
 except:
     pass
+
+from C_alpha_protein import Angles2CoordsAB, Coords2Pairs, Angles2CoordsDihedral

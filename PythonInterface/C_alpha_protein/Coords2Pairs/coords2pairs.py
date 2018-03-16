@@ -3,7 +3,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
 from Exposed import cppCoords2Pairs
-
+import math
 class Coords2PairsFunction(Function):
 	"""
 	Protein coordinates -> pairwise coordinates function
@@ -17,7 +17,7 @@ class Coords2PairsFunction(Function):
 		output_pairs_gpu = None
 		if len(input.size())==1:
 			#allocating output on gpu
-			output_pairs_gpu = torch.FloatTensor(3*self.max_num_atoms*self.max_num_atoms).fill_(0.0).cuda()
+			output_pairs_gpu = torch.FloatTensor(3*self.max_num_atoms*self.max_num_atoms).cuda()
 			
 		elif len(input.size())==2:
 			#allocating output on gpu
@@ -34,6 +34,13 @@ class Coords2PairsFunction(Function):
 												angles_length)
 		
 		self.save_for_backward(input, angles_length)
+
+		if math.isnan(output_pairs_gpu.sum()):
+			print 'Input: ', input
+			print 'Output: ', output_pairs_gpu
+			raise(Exception('Coords2PairsFunction: forward Nan'))		
+		
+
 		return output_pairs_gpu
 			
 
@@ -46,6 +53,12 @@ class Coords2PairsFunction(Function):
 			gradInput_gpu = torch.FloatTensor(batch_size, 3*self.max_num_atoms).cuda()
 		gradInput_gpu.fill_(0.0)
 		cppCoords2Pairs.Coords2Pairs_backward(gradInput_gpu, gradOutput, angles_length)
+		
+		if math.isnan(gradInput_gpu.sum()):
+			print 'GradInput: ', gradInput_gpu
+			print 'GradOutput: ', gradOutput
+			raise(Exception('Coords2PairsFunction: backward Nan'))		
+		
 		return gradInput_gpu, None
 
 class Coords2Pairs(Module):
