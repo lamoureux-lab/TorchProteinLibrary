@@ -27,13 +27,15 @@ def convertString(string):
     return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
 class PDB2Volume:
-    def __init__(self, box_size=120, resolution=1.0):
+    def __init__(self, box_size=120, resolution=1.0, rotate=False, translate=False):
         self.box_size = box_size
         self.resolution = resolution
         self.num_atom_types = 11
         self.batch_size = None        
         self.volume = None
         self.use_cuda = False
+        self.rotate = rotate
+        self.translate = translate
 
     def cuda(self):
         self.use_cuda=True
@@ -59,7 +61,7 @@ class PDB2Volume:
 
         volume.fill_(0.0)
         if self.use_cuda:
-            cppPDB2Volume.PDB2VolumeCUDA(stringListTensor, volume)
+            cppPDB2Volume.PDB2VolumeCUDA(stringListTensor, volume, self.rotate, self.translate)
         else:    
             cppPDB2Volume.PDB2Volume(stringListTensor, volume)
 

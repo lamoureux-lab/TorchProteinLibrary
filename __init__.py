@@ -7,7 +7,7 @@ except:
     print "No PDB2Volume"
 
 try:
-    from PythonInterface import cppPDB2Coords
+    from PythonInterface import cppPDB2Coords, PDB2Coords
 except:
     print "No PDB2Coords"
 

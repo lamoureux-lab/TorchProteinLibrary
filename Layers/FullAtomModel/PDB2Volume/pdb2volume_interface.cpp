@@ -7,6 +7,20 @@
 
 extern THCState *state;
 
+bool int2bool(int var){
+    bool bool_var;
+    if(var == 1){
+        bool_var = true;
+    }else if(var == 0){
+        bool_var = false;
+    }else{
+        std::cout<<"unknown var = "<<var<<std::endl;
+        throw std::string("unknown var");
+    }
+    return bool_var;
+}
+
+
 void project(double *coords, int *num_atoms_of_type, int *offsets, float *volume, uint spatial_dim){
     float res = 1.0;
     int d = 2;
@@ -92,9 +106,11 @@ extern "C" {
     }
 
 
-    void PDB2VolumeCUDA( THByteTensor *filenames, THCudaTensor *volume){
+    void PDB2VolumeCUDA( THByteTensor *filenames, THCudaTensor *volume, int rotate, int translate){
         THGenerator *gen = THGenerator_new();
  		THRandom_seed(gen);
+        bool rot = int2bool(rotate);
+        bool tran = int2bool(translate);
 
         if(filenames->nDimension == 1){
             std::string filename((const char*)THByteTensor_data(filenames));
@@ -102,10 +118,12 @@ extern "C" {
             pdb.computeBoundingBox();
             cVector3 center_box = (pdb.b0 + pdb.b1)*0.5;
             pdb.translate( -center_box );
-            pdb.randRot(gen);
+            if(rot)
+                pdb.randRot(gen);
             cVector3 center_volume(volume->size[1]/2.0, volume->size[2]/2.0, volume->size[3]/2.0);
             pdb.translate(center_volume);
-            pdb.randTrans(gen, volume->size[1]);
+            if(tran)
+                pdb.randTrans(gen, volume->size[1]);
 
             int total_size = 3*pdb.getNumAtoms();
             int num_atom_types = 11;
@@ -144,10 +162,12 @@ extern "C" {
                 pdb.computeBoundingBox();
                 cVector3 center_box = (pdb.b0 + pdb.b1)*0.5;
                 pdb.translate( -center_box );
-                pdb.randRot(gen);
+                if(rot)
+                    pdb.randRot(gen);
                 cVector3 center_volume(single_volume->size[1]/2.0, single_volume->size[2]/2.0, single_volume->size[3]/2.0);
                 pdb.translate(center_volume);
-                pdb.randTrans(gen, single_volume->size[1]);
+                if(tran)
+                    pdb.randTrans(gen, single_volume->size[1]);
             
                 int total_size = 3*pdb.getNumAtoms();
                 int num_atom_types = 11;

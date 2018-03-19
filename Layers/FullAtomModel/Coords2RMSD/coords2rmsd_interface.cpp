@@ -12,7 +12,7 @@ extern "C" {
         if(src->nDimension == 2){
             int batch_size = src->size[0];
 
-            #pragma omp parallel for num_threads(10)
+            // #pragma omp parallel for num_threads(10)
             for(int i=0; i<batch_size; i++){
                 THDoubleTensor *single_src = THDoubleTensor_new();
                 THDoubleTensor *single_dst = THDoubleTensor_new();
@@ -41,7 +41,7 @@ extern "C" {
                 THDoubleTensor_free(single_UT_ce_dst);
             }
         }else{
-            std::cout<<"Not implemented\n";
+            std::cout<<"Coords2RMSD::Not implemented: "<<src->size[0]<<" "<<src->size[1]<<"\n";
         }
     }
     void Coords2RMSD_backward(THDoubleTensor *grad_atoms, THDoubleTensor *grad_output,
@@ -56,19 +56,14 @@ extern "C" {
             for(int i=0; i<batch_size; i++){
                 
                 THDoubleTensor *single_grad_atoms = THDoubleTensor_new();
-                // THDoubleTensor *single_grad_output = THDoubleTensor_new();
                 THDoubleTensor *single_ce_src = THDoubleTensor_new();
                 THDoubleTensor *single_ce_dst = THDoubleTensor_new();
                 THDoubleTensor *single_U_ce_src = THDoubleTensor_new();
                 THDoubleTensor *single_UT_ce_dst = THDoubleTensor_new();
                 
-                std::cout<<'a'<<std::endl;
-                
                 THDoubleTensor_select(single_grad_atoms, grad_atoms, 0, i);
                 
-                // THDoubleTensor_select(single_grad_output, grad_output, 0, i);
                 double single_grad_output = THDoubleTensor_get1d(grad_output, i);
-                std::cout<<'b'<<std::endl;
                 THDoubleTensor_select(single_ce_src, ce_src, 0, i);
                 THDoubleTensor_select(single_ce_dst, ce_dst, 0, i);
                 THDoubleTensor_select(single_U_ce_src, U_ce_src, 0, i);

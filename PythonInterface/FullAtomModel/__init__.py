@@ -5,3 +5,5 @@ from PDB2Coords import cppPDB2Coords
 from PDB2Volume import PDB2Volume
 # except:
 #     print "No PDB2Volume"
+
+from PDB2Coords import PDB2Coords

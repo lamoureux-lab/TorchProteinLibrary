@@ -49,7 +49,7 @@ def convertString(string):
 
 class PDB2Coords:
 	def __init__(self, add_term=False):
-		self.add_term = True
+		self.add_term = add_term
 
 	def __call__(self, filenames):
 		self.filenamesTensor = convertStringList(filenames)
