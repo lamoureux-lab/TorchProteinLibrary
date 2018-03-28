@@ -185,9 +185,14 @@ void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
     bool terminal = false;
     for(int i=0; i<r.size(); i++){
         int type;
-        if(res_nums[i] == res_res_names.size())
+        if(res_nums[i] == res_nums.back()){
             terminal = true;
+        }
         type = get11AtomType(res_names[i], atom_names[i], terminal);
+        // if(type==-1){
+        //     std::cout<<res_names[i]<<" "<<atom_names[i]<<" "<<terminal<<"\n";
+
+        // }
         atom_types.push_back(type);
         num_atoms_of_type[type]+=1;
     }
@@ -201,4 +206,5 @@ void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
         r_target = r[i];
         num_atoms[type]+=1;
     }
+    
 }

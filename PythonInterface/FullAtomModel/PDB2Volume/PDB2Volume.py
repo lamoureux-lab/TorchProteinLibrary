@@ -27,7 +27,7 @@ def convertString(string):
     return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
 class PDB2Volume:
-    def __init__(self, box_size=120, resolution=1.0, rotate=False, translate=False):
+    def __init__(self, box_size=120, resolution=1.0, rotate=True, translate=True):
         self.box_size = box_size
         self.resolution = resolution
         self.num_atom_types = 11

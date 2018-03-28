@@ -111,7 +111,7 @@ extern "C" {
  		THRandom_seed(gen);
         bool rot = int2bool(rotate);
         bool tran = int2bool(translate);
-
+        
         if(filenames->nDimension == 1){
             std::string filename((const char*)THByteTensor_data(filenames));
             cPDBLoader pdb(filename);
