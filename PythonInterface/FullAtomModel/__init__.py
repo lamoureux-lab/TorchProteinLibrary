@@ -7,3 +7,6 @@ from PDB2Volume import PDB2Volume
 #     print "No PDB2Volume"
 
 from PDB2Coords import PDB2Coords
+from Coords2CenteredCoords import Coords2CenteredCoords
+from Coords2TypedCoords import Coords2TypedCoords
+from TypedCoords2Volume import TypedCoords2Volume

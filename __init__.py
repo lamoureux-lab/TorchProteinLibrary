@@ -15,5 +15,13 @@ try:
     from PythonInterface import Angles2Coords, Angles2Coords_save
     from PythonInterface import Coords2RMSD
     from PythonInterface import cppPDB2Coords
+    from PythonInterface import Coords2CenteredCoords
+    from PythonInterface import Coords2TypedCoords
+    from PythonInterface import TypedCoords2Volume
 except:
     print "No full atom model"
+
+try:
+    from PythonInterface import Utils
+except:
+    print "No utils"

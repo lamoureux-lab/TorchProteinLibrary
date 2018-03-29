@@ -14,7 +14,7 @@ class Coords2TypedCoordsFunction(Function):
 	"""
 	def __init__(self, num_atoms, num_atom_types=11):
 		super(Coords2TypedCoordsFunction, self).__init__()
-		self.num_atoms = num_atoms
+		self.num_atoms = num_atoms[0]
 		self.num_atom_types = num_atom_types
 				
 	def forward(self, input_coords_cpu, input_resnames, input_atomnames):
@@ -25,9 +25,13 @@ class Coords2TypedCoordsFunction(Function):
 			self.offsets = torch.IntTensor(self.num_atom_types)
 			self.atom_indexes = torch.IntTensor(self.num_atoms)
 			
-		elif len(input_angles_cpu.size())==2:
-			raise(Exception('Not implemented'))
-
+		elif len(input_coords_cpu.size())==2:
+			batch_size = input_coords_cpu.size(0)
+			output_coords_cpu = torch.DoubleTensor(batch_size, 3*self.num_atoms)
+			self.num_atoms_of_type = torch.IntTensor(batch_size, self.num_atom_types)
+			self.offsets = torch.IntTensor(batch_size, self.num_atom_types)
+			self.atom_indexes = torch.IntTensor(batch_size, self.num_atoms)
+			
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
@@ -51,7 +55,7 @@ class Coords2TypedCoordsFunction(Function):
 			grad_coords_cpu = torch.DoubleTensor(grad_typed_coords_cpu.size(0))
 					
 		elif len(grad_typed_coords_cpu.size()) == 2:
-			raise(Exception('Not implemented'))
+			grad_coords_cpu = torch.DoubleTensor(grad_typed_coords_cpu.size(0), grad_typed_coords_cpu.size(1))
 
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
@@ -64,10 +68,9 @@ class Coords2TypedCoordsFunction(Function):
 		return grad_coords_cpu, None, None
 
 class Coords2TypedCoords(Module):
-	def __init__(self, num_atoms, num_atom_types=11):
+	def __init__(self, num_atom_types=11):
 		super(Coords2TypedCoords, self).__init__()
-		self.num_atoms = num_atoms
 		self.num_atom_types = num_atom_types
 		
-	def forward(self, input_coords_cpu, input_resnames, input_atomnames):
-		return Coords2TypedCoordsFunction(self.num_atoms, self.num_atom_types)(input_coords_cpu, input_resnames, input_atomnames)
+	def forward(self, input_coords_cpu, input_resnames, input_atomnames, num_atoms):
+		return Coords2TypedCoordsFunction(num_atoms, self.num_atom_types)(input_coords_cpu, input_resnames, input_atomnames)

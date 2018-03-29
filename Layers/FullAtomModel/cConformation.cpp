@@ -257,21 +257,39 @@ void cConformation::print(cNode *node){
     
 }
 
-void cConformation::save(std::string filename){
-    std::ofstream pfile(filename, std::ofstream::out);
+void cConformation::save(std::string filename, const char mode){
+    if(mode=='w'){
+        std::ofstream pfile(filename, std::ofstream::out);
     
-	for(int i=0; i<groups.size(); i++){
-        for(int j=0; j<groups[i]->atoms_global.size(); j++){
-            cVector3 r;
-            r = groups[i]->atoms_global[j];
-            std::string atom_name;
-            atom_name = groups[i]->atomNames[j];
-            int atom_index = groups[i]->atomIndexes[j];
-            int res_index = groups[i]->residueIndex;
-            std::string res_name = convertRes1to3(groups[i]->residueName);
-            pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n", atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
-    }}
+        for(int i=0; i<groups.size(); i++){
+            for(int j=0; j<groups[i]->atoms_global.size(); j++){
+                cVector3 r;
+                r = groups[i]->atoms_global[j];
+                std::string atom_name;
+                atom_name = groups[i]->atomNames[j];
+                int atom_index = groups[i]->atomIndexes[j];
+                int res_index = groups[i]->residueIndex;
+                std::string res_name = convertRes1to3(groups[i]->residueName);
+                pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n", atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
+        }}
 
-	pfile.close();
+        pfile.close();
+    }else if(mode=='a'){
+        std::ofstream pfile(filename, std::ofstream::out|std::ofstream::app);
+        pfile<<"MODEL\n";
+        for(int i=0; i<groups.size(); i++){
+            for(int j=0; j<groups[i]->atoms_global.size(); j++){
+                cVector3 r;
+                r = groups[i]->atoms_global[j];
+                std::string atom_name;
+                atom_name = groups[i]->atomNames[j];
+                int atom_index = groups[i]->atomIndexes[j];
+                int res_index = groups[i]->residueIndex;
+                std::string res_name = convertRes1to3(groups[i]->residueName);
+                pfile<<string_format("ATOM  %5d %4s %3s A%4d    %8.3f%8.3f%8.3f\n", atom_index, atom_name.c_str(), res_name.c_str(), res_index, r.v[0],r.v[1],r.v[2]);
+        }}
+        pfile<<"ENDMDL\n";
+        pfile.close();
+    }
 }
 

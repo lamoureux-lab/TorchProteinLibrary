@@ -77,7 +77,7 @@ class cConformation{
         void update(cNode *node);
 
         //Saving to pdb
-        void save(std::string filename);
+        void save(std::string filename, const char mode);
 
     private:
         cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);

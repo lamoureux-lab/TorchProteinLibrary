@@ -126,7 +126,8 @@ extern "C" {
     void Angles2Coords_save(    const char* sequence,
                                 THDoubleTensor *input_angles, 
                                 const char* output_filename,
-                                int add_terminal
+                                int add_terminal,
+                                const char mode
                             ){
         if(input_angles->nDimension == 2){
             std::string aa(sequence);
@@ -137,7 +138,7 @@ extern "C" {
             THDoubleTensor *dummy_coords = THDoubleTensor_newWithSize1d( 3*num_atoms);
             cConformation conf( aa, THDoubleTensor_data(input_angles), THDoubleTensor_data(dummy_grad), 
                                 length, THDoubleTensor_data(dummy_coords));
-            conf.save(std::string(output_filename));
+            conf.save(std::string(output_filename), mode);
             THDoubleTensor_free(dummy_grad);
             THDoubleTensor_free(dummy_coords);
         }else{

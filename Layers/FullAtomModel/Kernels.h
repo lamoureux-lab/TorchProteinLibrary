@@ -10,9 +10,9 @@ void gpu_computeCoords2Volume(	double *coords,
 
 void gpu_computeVolume2Coords(	double *coords,
 								double* grad,
-                                uint *num_atoms_of_type,
-							    uint *offsets, 
+                                int *num_atoms_of_type,
+							    int *offsets, 
 								float *volume,
-								uint spatial_dim,
-                                uint num_atom_types,
+								int spatial_dim,
+                                int num_atom_types,
 								float res);
