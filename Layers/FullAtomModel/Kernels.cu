@@ -15,12 +15,10 @@ __global__ void projectToTensor(double* coords, int* num_atoms_of_type, int* off
         volume: density
     */
 		int d = 2;
-		// size_t func_index = threadIdx.x + blockIdx.x*blockDim.x;
 		int type_index = threadIdx.x;
 		float *type_volume = volume + type_index * spatial_dim*spatial_dim*spatial_dim;
 		double *atoms_coords = coords + 3*offsets[type_index];
 		int n_atoms = num_atoms_of_type[type_index];
-		// printf("GPU: thread %d offset %d\n", type_index, offsets[type_index]);
 		for(int atom_idx = 0; atom_idx<3*n_atoms; atom_idx+=3){
 			double 	x = atoms_coords[atom_idx],
 					y = atoms_coords[atom_idx + 1],
@@ -61,17 +59,18 @@ __global__ void projectFromTensor(	double* coords, double* grad, int* num_atoms_
     */
     {
 		int d = 2;
-		size_t func_index = threadIdx.x + blockIdx.x*blockDim.x;
-		float *type_volume = volume + func_index * spatial_dim*spatial_dim*spatial_dim;
-		double *atoms_coords = coords + 3*offsets[func_index];
-		int n_atoms = num_atoms_of_type[func_index];
-		for(int atom_idx = 0; atom_idx<n_atoms; atom_idx+=3){
+		int type_index = threadIdx.x;
+		float *type_volume = volume + type_index * spatial_dim*spatial_dim*spatial_dim;
+		double *atoms_coords = coords + 3*offsets[type_index];
+		double *grad_coords = grad + 3*offsets[type_index];
+		int n_atoms = num_atoms_of_type[type_index];
+		for(int atom_idx = 0; atom_idx<3*n_atoms; atom_idx+=3){
 			float 	x = atoms_coords[atom_idx],
 					y = atoms_coords[atom_idx + 1],
 					z = atoms_coords[atom_idx + 2];
-            atoms_coords[atom_idx] = 0.0;
-            atoms_coords[atom_idx+1] = 0.0;
-            atoms_coords[atom_idx+2] = 0.0;
+            // grad_coords[atom_idx] = 0.0;
+            // grad_coords[atom_idx+1] = 0.0;
+            // grad_coords[atom_idx+2] = 0.0;
 			int x_i = floor(x/res);
 			int y_i = floor(y/res);
 			int z_i = floor(z/res);
@@ -79,13 +78,13 @@ __global__ void projectFromTensor(	double* coords, double* grad, int* num_atoms_
 				for(int j=y_i-d; j<=(y_i+d);j++){
 					for(int k=z_i-d; k<=(z_i+d);k++){
 						if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
-							int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;							
+							int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
 							float r2 = (x - i*res)*(x - i*res)+\
 							(y - j*res)*(y - j*res)+\
 							(z - k*res)*(z - k*res);
-							atoms_coords[atom_idx] -= i*res*type_volume[idx]*exp(-r2/2.0);
-                            atoms_coords[atom_idx + 1] -= j*res*type_volume[idx]*exp(-r2/2.0);
-                            atoms_coords[atom_idx + 2] -= k*res*type_volume[idx]*exp(-r2/2.0);
+							grad_coords[atom_idx] -= (x - i*res)*type_volume[idx]*exp(-r2/2.0);
+                            grad_coords[atom_idx + 1] -= (y-j*res)*type_volume[idx]*exp(-r2/2.0);
+                            grad_coords[atom_idx + 2] -= (z-k*res)*type_volume[idx]*exp(-r2/2.0);
 						}
 					}
 				}

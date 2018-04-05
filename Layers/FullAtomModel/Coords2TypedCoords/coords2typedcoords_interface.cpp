@@ -82,9 +82,11 @@ extern "C" {
                 //Assign atom types
                 THByteTensor *single_atom_name = THByteTensor_new();
                 THByteTensor *single_res_name = THByteTensor_new();
+                
                 for(uint j=0; j<num_atoms; j++){
                     THByteTensor_select(single_atom_name, single_atom_names, 0, j);
                     THByteTensor_select(single_res_name, single_res_names, 0, j);
+
                     uint type = ProtUtil::get11AtomType( StringUtil::tensor2String(single_res_name), 
                                                         StringUtil::tensor2String(single_atom_name), false);
                     atom_types[j] = type;

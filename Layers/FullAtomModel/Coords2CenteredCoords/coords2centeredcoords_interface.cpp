@@ -70,7 +70,7 @@ extern "C" {
                 uint num_atoms = single_input_coords->size[0]/3;    
                 THDoubleTensor_copy(single_output_coords, single_input_coords);
                 cVector3 b0, b1;
-                ProtUtil::computeBoundingBox(single_input_coords, b0, b1);
+                ProtUtil::computeBoundingBox(single_output_coords, b0, b1);
                 cVector3 center_box = (b0 + b1)*0.5;
                 ProtUtil::translate( single_output_coords, -center_box);
                 if(rot){
@@ -109,8 +109,8 @@ extern "C" {
         if(grad_output_coords->nDimension == 1){
             
             THDoubleTensor_copy(grad_input_coords, grad_output_coords);
-            cVector3 fp_trans(THDoubleTensor_data(grad_output_coords));
-            ProtUtil::translate( grad_input_coords, -fp_trans);
+            // cVector3 fp_trans(THDoubleTensor_data(grad_output_coords));
+            // ProtUtil::translate( grad_input_coords, -fp_trans);
             if(rot){
                 cMatrix33 _R = ProtUtil::tensor2Matrix33(R);
                 _R = _R.getTranspose();
@@ -131,9 +131,11 @@ extern "C" {
                 THDoubleTensor_select(single_R, R, 0, i);
                 THDoubleTensor_select(single_T, T, 0, i);
 
-                THDoubleTensor_copy(single_grad_output_coords, single_grad_input_coords);
-                cVector3 fp_trans(THDoubleTensor_data(single_grad_output_coords));
-                ProtUtil::translate( single_grad_input_coords, -fp_trans);
+                THDoubleTensor_copy(single_grad_input_coords, single_grad_output_coords);
+                // cVector3 fp_trans(  THDoubleTensor_get1d(single_grad_output_coords, 0),
+                //                     THDoubleTensor_get1d(single_grad_output_coords, 1),
+                //                     THDoubleTensor_get1d(single_grad_output_coords, 2) );
+                // ProtUtil::translate( single_grad_input_coords, -fp_trans);
                 if(rot){
                     cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
                     _R = _R.getTranspose();

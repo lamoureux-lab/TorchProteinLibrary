@@ -59,9 +59,11 @@ class Coords2CenteredCoordsFunction(Function):
 
 		else:
 			raise ValueError('Coords2CenteredCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
-
+		
 		cppCoords2CenteredCoords.Coords2CenteredCoords_backward(grad_output_coords_cpu, grad_input_coords_cpu, self.R, self.T, self.rotate, self.translate)
+		
 		if math.isnan(grad_input_coords_cpu.sum()):
+			print grad_output_coords_cpu.sum(), grad_input_coords_cpu.sum()
 			raise(Exception('Coords2CenteredCoordsFunction: backward Nan'))		
 		
 		return grad_input_coords_cpu

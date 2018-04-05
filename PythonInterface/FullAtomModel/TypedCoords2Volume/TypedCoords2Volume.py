@@ -37,7 +37,6 @@ class TypedCoords2VolumeFunction(Function):
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
 		volume_gpu.fill_(0.0)
-		
 		cppTypedCoords2Volume.TypedCoords2Volume_forward(self.input_coords_gpu, volume_gpu, self.num_atoms_of_type_gpu, self.offsets_gpu)
 
 		if math.isnan(volume_gpu.sum()):
@@ -61,6 +60,8 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', grad_volume_gpu.size()) 
 		
+		grad_coords_gpu.fill_(0.0)
+		grad_coords_cpu.fill_(0.0)
 		cppTypedCoords2Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, self.input_coords_gpu, self.num_atoms_of_type_gpu, self.offsets_gpu)
 		
 		if math.isnan(grad_coords_gpu.sum()):

@@ -131,6 +131,10 @@ extern "C" {
             int num_atoms_of_type[num_atom_types], offsets[num_atom_types];
             pdb.reorder(coords, num_atoms_of_type, offsets);
 
+            // for(int i=0; i<num_atom_types;i++){
+            //     std::cout<<num_atoms_of_type[i]<<" "<<offsets[i]<<"\n";
+            // }
+
             double *d_coords;
             int *d_num_atoms_of_type;
             int *d_offsets;
@@ -175,6 +179,10 @@ extern "C" {
                 int num_atoms_of_type[num_atom_types], offsets[num_atom_types];
                 
                 pdb.reorder(coords, num_atoms_of_type, offsets);
+
+                // for(int i=0; i<num_atom_types;i++){
+                //     std::cout<<num_atoms_of_type[i]<<" "<<offsets[i]<<"\n";
+                // }
                 
                 double *d_coords;
                 int *d_num_atoms_of_type;
