@@ -43,12 +43,12 @@ class Angles2CoordsFunction(Function):
 		
 	def forward(self, input_angles_cpu, sequenceTensor):
 		# input_angles_cpu = input_angles_cpu.contiguous()
-
+		
 		max_num_atoms = max(self.num_atoms)
 		batch_size = input_angles_cpu.size(0)
-		output_coords_cpu = torch.DoubleTensor(batch_size, 3*max_num_atoms).fill_(0.0).contiguous()
-		output_resnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous()
-		output_atomnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous()
+		output_coords_cpu = torch.DoubleTensor(batch_size, 3*max_num_atoms).fill_(0.0).contiguous().zero_()
+		output_resnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous().zero_()
+		output_atomnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous().zero_()
 
 		cppAngles2Coords.Angles2Coords_forward( sequenceTensor,
 												input_angles_cpu,   #input angles
@@ -58,6 +58,14 @@ class Angles2CoordsFunction(Function):
 												self.add_term
 												)
 		if math.isnan(output_coords_cpu.sum()):
+			for i in xrange(batch_size):
+				if math.isnan(output_coords_cpu[i,:].sum()):
+					for j in xrange(self.num_atoms[i]):
+						if math.isnan(output_coords_cpu[i, 3*j:3*j+3].sum()):
+							print i, j, self.num_atoms[i], max_num_atoms
+							print output_coords_cpu[i, 3*j-3:3*j]
+							print output_coords_cpu[i, 3*j:3*j+3], output_atomnames_cpu[i, j, :].numpy().tostring(), output_resnames_cpu[i, j, :].numpy().tostring()
+							break
 			raise(Exception('Angles2CoordsFunction: forward Nan'))	
 		
 		self.save_for_backward(input_angles_cpu, sequenceTensor)
@@ -73,11 +81,11 @@ class Angles2CoordsFunction(Function):
 		batch_size = input_angles_cpu.size(0)
 		grad_angles_cpu = torch.DoubleTensor(batch_size, input_angles_cpu.size(1), input_angles_cpu.size(2))
 		grad_angles_cpu.fill_(0.0)
+
 		cppAngles2Coords.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, sequenceTensor, input_angles_cpu, self.add_term)
-				
+
 		if math.isnan(grad_angles_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: backward Nan'))		
-		
 		return grad_angles_cpu, None
 
 class Angles2Coords(Module):
@@ -92,5 +100,7 @@ class Angles2Coords(Module):
 		self.num_atoms = []
 		for seq in sequences:
 			self.num_atoms.append(cppPDB2Coords.getSeqNumAtoms(seq, self.add_term))
+		
+		# print input_angles_cpu, stringListTensor, self.num_atoms
 
 		return Angles2CoordsFunction(self.num_atoms, self.add_term)(input_angles_cpu, stringListTensor)

@@ -46,7 +46,8 @@ extern "C" {
                 THDoubleTensor_select(single_coords, output_coords, 0, i);
             
                 std::string seq((const char*)THByteTensor_data(single_sequence));
-                uint length = seq.length();
+                
+                uint length = single_angles->size[1];
                 
                 THDoubleTensor *dummy_grad = THDoubleTensor_newWithSize2d(input_angles->size[1], input_angles->size[2]);
                 cConformation conf( seq, THDoubleTensor_data(single_angles), THDoubleTensor_data(dummy_grad),
@@ -103,22 +104,23 @@ extern "C" {
                 THDoubleTensor_select(single_grad_angles, grad_angles, 0, i);
                 THDoubleTensor_select(single_grad_coords, grad_atoms, 0, i);
                 std::string seq((const char*)THByteTensor_data(single_sequence));
-                uint length = seq.length();
+                
+                uint length = single_angles->size[1];
                 int num_atoms = ProtUtil::getNumAtoms(seq, add_term);
-                                            
+                
                 THDoubleTensor *dummy_coords = THDoubleTensor_newWithSize1d( 3*num_atoms);
                 cConformation conf( seq, THDoubleTensor_data(single_angles), THDoubleTensor_data(single_grad_angles),
                                     length, THDoubleTensor_data(dummy_coords));
                 conf.backward(conf.root, THDoubleTensor_data(single_grad_coords));
-
                 
                 THByteTensor_free(single_sequence);
                 THDoubleTensor_free(dummy_coords);
                 THDoubleTensor_free(single_angles);
                 THDoubleTensor_free(single_grad_angles);
                 THDoubleTensor_free(single_grad_coords);
+                
             }
-
+        
         }else{
             std::cout<<"Not implemented\n";
         }

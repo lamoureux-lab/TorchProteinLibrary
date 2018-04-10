@@ -164,7 +164,6 @@ cConformation::cConformation(std::string aa, double *angles, double *angles_grad
     for(int i=0; i<groups.size();i++){
         num_atoms += groups[i]->atoms_global.size();
     }
-    
 }
 
 cConformation::~cConformation(){
@@ -201,7 +200,6 @@ void cConformation::update(cNode *node){
         node->M = (node->parent->M) * (node->T->mat);
         node->F = (node->parent->M) * (node->T->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
-
     }else{
         node->M.ones();
         node->F = (node->T->dmat) * invertTransform44(node->M);
