@@ -36,15 +36,12 @@ class Angles2CoordsFunction(Function):
 	"""
 	Protein angles -> coordinates function
 	"""
-	def __init__(self, num_atoms, add_term=False):
-		super(Angles2CoordsFunction, self).__init__()
-		self.num_atoms = num_atoms
-		self.add_term = add_term
 		
-	def forward(self, input_angles_cpu, sequenceTensor):
+	@staticmethod
+	def forward(self, input_angles_cpu, sequenceTensor, num_atoms):
 		# input_angles_cpu = input_angles_cpu.contiguous()
 		
-		max_num_atoms = max(self.num_atoms)
+		max_num_atoms = torch.max(num_atoms)
 		batch_size = input_angles_cpu.size(0)
 		output_coords_cpu = torch.DoubleTensor(batch_size, 3*max_num_atoms).fill_(0.0).contiguous().zero_()
 		output_resnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous().zero_()
@@ -55,7 +52,7 @@ class Angles2CoordsFunction(Function):
 												output_coords_cpu,  #output coordinates
 												output_resnames_cpu,
 												output_atomnames_cpu,
-												self.add_term
+												False
 												)
 		if math.isnan(output_coords_cpu.sum()):
 			for i in xrange(batch_size):
@@ -71,7 +68,8 @@ class Angles2CoordsFunction(Function):
 		self.save_for_backward(input_angles_cpu, sequenceTensor)
 
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu
-			
+	
+	@staticmethod	
 	def backward(self, grad_atoms_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()
@@ -81,12 +79,12 @@ class Angles2CoordsFunction(Function):
 		batch_size = input_angles_cpu.size(0)
 		grad_angles_cpu = torch.DoubleTensor(batch_size, input_angles_cpu.size(1), input_angles_cpu.size(2))
 		grad_angles_cpu.fill_(0.0)
-
-		cppAngles2Coords.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, sequenceTensor, input_angles_cpu, self.add_term)
+		
+		cppAngles2Coords.Angles2Coords_backward(grad_atoms_cpu.data, grad_angles_cpu, sequenceTensor, input_angles_cpu, False)
 
 		if math.isnan(grad_angles_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: backward Nan'))		
-		return grad_angles_cpu, None
+		return Variable(grad_angles_cpu), None, None
 
 class Angles2Coords(Module):
 	def __init__(self, add_term=False):
@@ -100,7 +98,7 @@ class Angles2Coords(Module):
 		self.num_atoms = []
 		for seq in sequences:
 			self.num_atoms.append(cppPDB2Coords.getSeqNumAtoms(seq, self.add_term))
-		
+		num_atoms = Variable(torch.IntTensor(self.num_atoms))
 		# print input_angles_cpu, stringListTensor, self.num_atoms
 
-		return Angles2CoordsFunction(self.num_atoms, self.add_term)(input_angles_cpu, stringListTensor)
+		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms)
