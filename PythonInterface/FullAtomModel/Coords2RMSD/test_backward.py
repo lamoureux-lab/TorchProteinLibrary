@@ -18,7 +18,7 @@ def test_gradient():
 	x1 = Variable(torch.DoubleTensor(x0.size()).random_())
 	length = Variable(torch.IntTensor(1).fill_(L))
 	target = Variable(torch.DoubleTensor([[0,0,0, 1,1,0, 3,0,0]]))
-	loss = Coords2RMSD(L)
+	loss = Coords2RMSD()
 	rmsd_x0 = loss(x0, target, length)
 	
 	rmsd_x0.backward()
