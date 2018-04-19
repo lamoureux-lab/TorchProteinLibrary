@@ -11,7 +11,7 @@ class Coords2RMSDFunction(Function):
 	"""
 		
 	@staticmethod
-	def forward(self, input, target, num_atoms, c_coords_input, c_coords_target, U_coordinates_src, Ut_coordinates_dst):
+	def forward(ctx, input, target, num_atoms, c_coords_input, c_coords_target, U_coordinates_src, Ut_coordinates_dst):
 		
 		batch_size = input.size()[0]
 		output = torch.DoubleTensor(batch_size)
@@ -22,25 +22,25 @@ class Coords2RMSDFunction(Function):
 											U_coordinates_src,
 											Ut_coordinates_dst,
 											num_atoms)
-		self.c_coords_input = c_coords_input
-		self.c_coords_target = c_coords_target
-		self.U_coordinates_src = U_coordinates_src
-		self.Ut_coordinates_dst = Ut_coordinates_dst
+		ctx.c_coords_input = c_coords_input
+		ctx.c_coords_target = c_coords_target
+		ctx.U_coordinates_src = U_coordinates_src
+		ctx.Ut_coordinates_dst = Ut_coordinates_dst
 		
 		if math.isnan(output.sum()):
 			raise(Exception('Coords2RMSDFunction: forward Nan'))
 		
-		self.save_for_backward(output, num_atoms)
+		ctx.save_for_backward(output, num_atoms)
 		return output
 			
 	@staticmethod
-	def backward(self, gradOutput):
+	def backward(ctx, gradOutput):
 
-		output, num_atoms = self.saved_tensors
+		output, num_atoms = ctx.saved_tensors
 		
-		if len(self.c_coords_input.size()) == 2:
-			batch_size = self.c_coords_input.size(0)
-			max_num_coords = self.c_coords_input.size(1)
+		if len(ctx.c_coords_input.size()) == 2:
+			batch_size = ctx.c_coords_input.size(0)
+			max_num_coords = ctx.c_coords_input.size(1)
 			gradInput = torch.DoubleTensor(batch_size, max_num_coords)
 		else:
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', c_coords_input.size())
@@ -48,10 +48,10 @@ class Coords2RMSDFunction(Function):
 		gradInput.fill_(0.0)
 		
 		cppCoords2RMSD.Coords2RMSD_backward(gradInput, gradOutput.data,
-											self.c_coords_input,
-											self.c_coords_target,
-											self.U_coordinates_src,
-											self.Ut_coordinates_dst,
+											ctx.c_coords_input,
+											ctx.c_coords_target,
+											ctx.U_coordinates_src,
+											ctx.Ut_coordinates_dst,
 											num_atoms
 											)
 		

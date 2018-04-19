@@ -38,8 +38,9 @@ class Angles2CoordsFunction(Function):
 	"""
 		
 	@staticmethod
-	def forward(self, input_angles_cpu, sequenceTensor, num_atoms):
-		# input_angles_cpu = input_angles_cpu.contiguous()
+	def forward(ctx, input_angles_cpu, sequenceTensor, num_atoms):
+		ctx.save_for_backward(input_angles_cpu, sequenceTensor)
+		input_angles_cpu = input_angles_cpu.contiguous()
 		
 		max_num_atoms = torch.max(num_atoms)
 		batch_size = input_angles_cpu.size(0)
@@ -55,26 +56,31 @@ class Angles2CoordsFunction(Function):
 												False
 												)
 		if math.isnan(output_coords_cpu.sum()):
+			torch.save(input_angles_cpu, 'input_angles_cpu.th')
+			torch.save(sequenceTensor, 'sequenceTensor.th')
+			torch.save(num_atoms, 'num_atoms.th')
 			for i in xrange(batch_size):
 				if math.isnan(output_coords_cpu[i,:].sum()):
-					for j in xrange(self.num_atoms[i]):
+					print 'Nan in %d  batch index'%i
+					for j in xrange(num_atoms[i]):
 						if math.isnan(output_coords_cpu[i, 3*j:3*j+3].sum()):
-							print i, j, self.num_atoms[i], max_num_atoms
-							print output_coords_cpu[i, 3*j-3:3*j]
-							print output_coords_cpu[i, 3*j:3*j+3], output_atomnames_cpu[i, j, :].numpy().tostring(), output_resnames_cpu[i, j, :].numpy().tostring()
+							# print i, j, num_atoms[i], max_num_atoms
+							# print output_coords_cpu[i, 3*j-3:3*j]
+							# print output_coords_cpu[i, 3*j:3*j+3], output_atomnames_cpu[i, j, :].numpy().tostring(), output_resnames_cpu[i, j, :].numpy().tostring()
 							break
 			raise(Exception('Angles2CoordsFunction: forward Nan'))	
 		
-		self.save_for_backward(input_angles_cpu, sequenceTensor)
+		
 
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu
 	
 	@staticmethod	
-	def backward(self, grad_atoms_cpu, *kwargs):
+	def backward(ctx, grad_atoms_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()
 		
-		input_angles_cpu, sequenceTensor = self.saved_tensors
+		input_angles_cpu, sequenceTensor = ctx.saved_tensors
+		input_angles_cpu = input_angles_cpu.contiguous()
 		
 		batch_size = input_angles_cpu.size(0)
 		grad_angles_cpu = torch.DoubleTensor(batch_size, input_angles_cpu.size(1), input_angles_cpu.size(2))
