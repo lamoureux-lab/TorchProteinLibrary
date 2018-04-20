@@ -16,7 +16,6 @@ bool int2bool(int add_terminal){
     return add_term;
 }
 
-
 extern "C" {
     void Angles2Coords_forward(  THByteTensor *sequences,
                                 THDoubleTensor *input_angles, 
@@ -48,6 +47,23 @@ extern "C" {
                 std::string seq((const char*)THByteTensor_data(single_sequence));
                 
                 uint length = single_angles->size[1];
+                int num_atoms = ProtUtil::getNumAtoms(seq, add_term);
+                
+                if( single_coords->size[0]<3*num_atoms){
+                    throw("incorrect coordinates tensor length");
+                }
+                
+                if( length<seq.length() || single_angles->size[0]<7 ){
+                    throw("incorrect angles tensor length");
+                }
+                
+                if( single_res_names->size[0]<seq.length() ){
+                    throw("incorrect res names tensor length");
+                }
+                
+                if( single_atom_names->size[0]<seq.length() ){
+                    throw("incorrect atom names tensor length");
+                }
                 
                 THDoubleTensor *dummy_grad = THDoubleTensor_newWithSize2d(input_angles->size[1], input_angles->size[2]);
                 cConformation conf( seq, THDoubleTensor_data(single_angles), THDoubleTensor_data(dummy_grad),

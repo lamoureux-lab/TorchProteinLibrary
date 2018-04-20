@@ -11,21 +11,26 @@ class Coords2RMSDFunction(Function):
 	"""
 		
 	@staticmethod
-	def forward(ctx, input, target, num_atoms, c_coords_input, c_coords_target, U_coordinates_src, Ut_coordinates_dst):
+	def forward(ctx, input, target, num_atoms):
 		
-		batch_size = input.size()[0]
-		output = torch.DoubleTensor(batch_size)
+		if len(input.size())==2:
+			batch_size = input.size()[0]
+			max_num_atoms = torch.max(num_atoms)
+			#allocating temp outputs on cpu
+			output = torch.DoubleTensor(batch_size)
+			ctx.c_coords_input = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
+			ctx.c_coords_target = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
+			ctx.U_coordinates_src = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
+			ctx.Ut_coordinates_dst = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
+		else:
+			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
 		
 		cppCoords2RMSD.Coords2RMSD_forward( input, target, output,
-											c_coords_input,
-											c_coords_target,
-											U_coordinates_src,
-											Ut_coordinates_dst,
+											ctx.c_coords_input,
+											ctx.c_coords_target,
+											ctx.U_coordinates_src,
+											ctx.Ut_coordinates_dst,
 											num_atoms)
-		ctx.c_coords_input = c_coords_input
-		ctx.c_coords_target = c_coords_target
-		ctx.U_coordinates_src = U_coordinates_src
-		ctx.Ut_coordinates_dst = Ut_coordinates_dst
 		
 		if math.isnan(output.sum()):
 			raise(Exception('Coords2RMSDFunction: forward Nan'))
@@ -57,12 +62,12 @@ class Coords2RMSDFunction(Function):
 		
 		
 		for i in range(batch_size):
-			gradInput[i,:] = gradInput[i,:]/math.sqrt(output[i])
+			gradInput[i,:] = gradInput[i,:]/math.sqrt(output[i]+1E-5)
 		
 		if math.isnan(gradInput.sum()):
 			raise(Exception('Coords2RMSDFunction: backward Nan'))	
 		
-		return Variable(gradInput), None, None, None, None, None, None
+		return Variable(gradInput), None, None
 
 
 class Coords2RMSD(Module):
@@ -70,17 +75,4 @@ class Coords2RMSD(Module):
 		super(Coords2RMSD, self).__init__()
 		
 	def forward(self, input, target, num_atoms):
-		max_num_atoms = torch.max(num_atoms).data[0]
-				
-		if len(input.size())==2:
-			batch_size = input.size()[0]
-			#allocating temp outputs on cpu
-			c_coords_input = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			c_coords_target = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			U_coordinates_src = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			Ut_coordinates_dst = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-		else:
-			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
-
-		return Coords2RMSDFunction.apply(	input, target, num_atoms, c_coords_input, 
-											c_coords_target, U_coordinates_src, Ut_coordinates_dst)
+		return Coords2RMSDFunction.apply(input, target, num_atoms)

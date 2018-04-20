@@ -55,10 +55,11 @@ class Angles2CoordsFunction(Function):
 												output_atomnames_cpu,
 												False
 												)
+		
 		if math.isnan(output_coords_cpu.sum()):
-			torch.save(input_angles_cpu, 'input_angles_cpu.th')
-			torch.save(sequenceTensor, 'sequenceTensor.th')
-			torch.save(num_atoms, 'num_atoms.th')
+			# torch.save(input_angles_cpu, 'input_angles_cpu.th')
+			# torch.save(sequenceTensor, 'sequenceTensor.th')
+			# torch.save(num_atoms, 'num_atoms.th')
 			for i in xrange(batch_size):
 				if math.isnan(output_coords_cpu[i,:].sum()):
 					print 'Nan in %d  batch index'%i
@@ -72,7 +73,7 @@ class Angles2CoordsFunction(Function):
 		
 		
 
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu
+		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
 	
 	@staticmethod	
 	def backward(ctx, grad_atoms_cpu, *kwargs):

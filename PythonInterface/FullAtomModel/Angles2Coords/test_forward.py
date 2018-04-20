@@ -22,12 +22,14 @@ def batch_test():
 	angles[:, 2:,:] = 110.4*np.pi/180.0
 	
 	a2c = Angles2Coords()
-	protein, res_names, atom_names = a2c(angles, sequences)
+	protein, res_names, atom_names, num_atoms = a2c(angles, sequences)
 	proteins = protein.data.resize_(len(sequences), protein.size(1)/3, 3).numpy()
+	print num_atoms
+	print [len(seq) for seq in sequences]
 	
-	for i in range(0, len(sequences)):
-		for j in range(0, a2c.num_atoms[i]):
-			print j, res_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0], atom_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0]
+	# for i in range(0, len(sequences)):
+	# 	for j in range(0, a2c.num_atoms[i]):
+	# 		print j, res_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0], atom_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0]
 			
 
 	# print protein

@@ -227,7 +227,13 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
             atoms_grad[node->group->atomIndexes[i]*3 + 1],
             atoms_grad[node->group->atomIndexes[i]*3 + 2]
         );
+        
         grad += gradVec | (root_node->F * node->group->atoms_global[i]);
+        
+        
+    }
+    if( fabs(grad)>10.0){
+        grad = copysignf(1.0, grad)*10.0;
     }
     return grad;
 }
