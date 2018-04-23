@@ -36,7 +36,7 @@ class Angles2CoordsFunction(Function):
 	"""
 	Protein angles -> coordinates function
 	"""
-		
+	# @profile	
 	@staticmethod
 	def forward(ctx, input_angles_cpu, sequenceTensor, num_atoms):
 		ctx.save_for_backward(input_angles_cpu, sequenceTensor)
@@ -62,20 +62,24 @@ class Angles2CoordsFunction(Function):
 			# torch.save(num_atoms, 'num_atoms.th')
 			for i in xrange(batch_size):
 				if math.isnan(output_coords_cpu[i,:].sum()):
-					print 'Nan in %d  batch index'%i
+					print 'Nan in %d coords batch index'%i
 					for j in xrange(num_atoms[i]):
 						if math.isnan(output_coords_cpu[i, 3*j:3*j+3].sum()):
 							# print i, j, num_atoms[i], max_num_atoms
 							# print output_coords_cpu[i, 3*j-3:3*j]
 							# print output_coords_cpu[i, 3*j:3*j+3], output_atomnames_cpu[i, j, :].numpy().tostring(), output_resnames_cpu[i, j, :].numpy().tostring()
 							break
+					if math.isnan(input_angles_cpu[i,:,:].sum()):
+						print 'Nan in %d angles batch index'%i
+
 			raise(Exception('Angles2CoordsFunction: forward Nan'))	
 		
 		
 
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
 	
-	@staticmethod	
+	# @profile
+	@staticmethod 
 	def backward(ctx, grad_atoms_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()

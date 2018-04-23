@@ -9,7 +9,7 @@ class Coords2RMSDFunction(Function):
 	"""
 	Protein coords, target coords -> rmsd function
 	"""
-		
+	# @profile	
 	@staticmethod
 	def forward(ctx, input, target, num_atoms):
 		
@@ -37,7 +37,7 @@ class Coords2RMSDFunction(Function):
 		
 		ctx.save_for_backward(output, num_atoms)
 		return output
-			
+	# @profile		
 	@staticmethod
 	def backward(ctx, gradOutput):
 
