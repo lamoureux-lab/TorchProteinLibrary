@@ -2,17 +2,22 @@ import os
 import sys
 import argparse
 
-def make_cpp_lib(cpu_only=False):
+def make_cpp_lib(cpu_only=False, graham=False):
 	if os.path.exists("build"):
 		os.system("rm -r build")
 	os.system("mkdir build")
 	os.chdir('build')
-	if cpu_only:
-		#os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
-		os.system("cmake -DFAM_ONLY:BOOL=ON ..")
+	if graham:
+		if cpu_only:
+			os.system("cmake -DFAM_ONLY:BOOL=ON -DGRAHAM:BOOL=ON ..")
+		else:
+			os.system("cmake -DFAM_ONLY:BOOL=OFF -DGRAHAM:BOOL=ON ..")
 	else:
-		#os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6.4 ..")
-		os.system("cmake -DFAM_ONLY:BOOL=OFF ..")
+		if cpu_only:
+			os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
+		else:
+			os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6.4 ..")
+			
 	os.system("make")
 	os.chdir('..')
 
