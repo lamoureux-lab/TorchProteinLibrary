@@ -8,9 +8,11 @@ def make_cpp_lib(cpu_only=False):
 	os.system("mkdir build")
 	os.chdir('build')
 	if cpu_only:
-		os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
+		#os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
+		os.system("cmake -DFAM_ONLY:BOOL=ON ..")
 	else:
-		os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
+		#os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6.4 ..")
+		os.system("cmake -DFAM_ONLY:BOOL=OFF ..")
 	os.system("make")
 	os.chdir('..')
 
