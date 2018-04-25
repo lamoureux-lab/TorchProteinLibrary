@@ -32,7 +32,7 @@ if __name__=='__main__':
 	args = parser.parse_args()
 
 	#Making cuda library
-	make_cpp_lib(cpu_only = args.cpu_only)
+	make_cpp_lib(cpu_only = args.cpu_only, graham=True)
 	
 	cur_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 	

@@ -28,7 +28,7 @@ extern "C" {
         if(input_angles->nDimension == 3){
             int batch_size = input_angles->size[0];
                         
-            #pragma omp parallel for num_threads(32)
+            #pragma omp parallel for num_threads(16)
             for(int i=0; i<batch_size; i++){
                 THByteTensor *single_sequence = THByteTensor_new();
                 THByteTensor *single_atom_names = THByteTensor_new();
@@ -107,7 +107,7 @@ extern "C" {
         if(input_angles->nDimension == 3){
             int batch_size = input_angles->size[0];
 
-            #pragma omp parallel for num_threads(32)
+            #pragma omp parallel for num_threads(16)
             for(int i=0; i<batch_size; i++){
                 
                 THByteTensor *single_sequence = THByteTensor_new();
