@@ -1,7 +1,9 @@
 # from PythonInterface import CppLayers, Visualization, Utils, Angles2CoordsDihedral, \
 # Angles2BasisDihedral, Coords2Pairs, Coords2RMSD, Pairs2Distributions, Angles2CoordsAB
-
-from scripts import getAngles
+try:
+    from scripts import getAngles
+except:
+    print 'No scripts'
 try:
     from PythonInterface import PDB2Volume
 except:

@@ -56,6 +56,9 @@ if __name__=='__main__':
 	
 	f_a_dir = os.path.join(pi_dir, 'FullAtomModel')
 	make_layer(dir_name = os.path.join(f_a_dir,'Angles2Coords'), script_name='build.py')
+	make_layer(dir_name = os.path.join(f_a_dir,'Coords2CenteredCoords'), script_name='build.py')
+	make_layer(dir_name = os.path.join(f_a_dir,'Coords2TypedCoords'), script_name='build.py')
+	make_layer(dir_name = os.path.join(f_a_dir,'TypedCoords2Volume'), script_name='build.py')
 	make_layer(dir_name = os.path.join(f_a_dir,'Coords2RMSD'), script_name='build.py')
 	make_layer(dir_name = os.path.join(f_a_dir,'PDB2Coords'), script_name='build.py')
 	if not args.cpu_only:
