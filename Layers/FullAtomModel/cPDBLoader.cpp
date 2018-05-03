@@ -71,7 +71,7 @@ void cPDBLoader::reorder(double *coords, bool add_terminal){
         for(int j=0; j<res_r[i].size(); j++){
             local_ind = getAtomIndex(res_res_names[i], res_atom_names[i][j]);
             if(local_ind == -1){
-                std::cout<<"cPDBLoader::reorder: unknown atom "<<std::endl;
+                std::cout<<"cPDBLoader::reorder: unknown atom "<<res_res_names[i]<<" "<<res_atom_names[i][j]<<std::endl;
                 throw std::string("cPDBLoader::reorder: unknown atom ") + res_res_names[i] +std::string(":")+res_atom_names[i][j];
             }
             cVector3 global_r(coords + (global_ind + local_ind)*3);
@@ -85,10 +85,13 @@ void cPDBLoader::reorder(double *coords, bool add_terminal){
         }else{
             lastO = "O";
         }
-        if(res_r[i].size()!= (getAtomIndex(res_res_names[i], lastO) + 1) ){
-            std::cout<<"Missing atoms"<<std::endl;
-            throw std::string("cPDBLoader::reorder: Missing atoms");
-        }
+        // if(res_r[i].size()!= (getAtomIndex(res_res_names[i], lastO) + 1) ){
+        //     std::cout<<"Missing atoms in residue "<<res_res_names[i]<<std::endl;
+        //     for(int j=0;j<res_atom_names[i].size();j++){
+        //         std::cout<<res_atom_names[i][j]<<std::endl;
+        //     }
+        //     throw std::string("cPDBLoader::reorder: Missing atoms");
+        // }
         global_ind += getAtomIndex(res_res_names[i], lastO) + 1;
     }       
 }

@@ -21,7 +21,7 @@ def get_sequence(structure):
 	return sequence
 
 def pdb2sequence(filenames):
-	p = PDBParser(PERMISSIVE=1)
+	p = PDBParser(PERMISSIVE=1, QUIET=True)
 	sequences = []
 	for filename in filenames:
 		structure = p.get_structure('X', filename)
@@ -68,5 +68,5 @@ class PDB2Coords:
 
 		cppPDB2Coords.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.add_term)
 
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu
+		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.num_atoms
 		
