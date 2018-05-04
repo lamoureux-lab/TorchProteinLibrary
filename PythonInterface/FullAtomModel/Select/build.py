@@ -21,7 +21,7 @@ library_dirs=[	os.path.join(lib_dir, 'build/Layers/FullAtomModel'),
 				os.path.join(lib_dir, 'build/Math')]
 
 defines = []
-with_cuda = False
+with_cuda = True
 
 ffi = create_extension(
 	'Exposed.cppSelect',
@@ -33,7 +33,7 @@ ffi = create_extension(
 	include_dirs = include_dirs,
 	extra_compile_args=["-fopenmp"],
 	extra_link_args = [],
-	libraries = ["FULL_ATOM_MODEL", "TH_MATH"],
+	libraries = ["FULL_ATOM_MODEL", "FULL_ATOM_MODEL_CU", "TH_MATH"],
     library_dirs = library_dirs
 )
 

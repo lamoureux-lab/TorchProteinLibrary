@@ -5,7 +5,7 @@ try:
 except:
     print 'No scripts'
 try:
-    from PythonInterface import PDB2Volume
+    from PythonInterface import PDB2Volume, PDB2VolumeLocal, SelectVolume
 except:
     print "No PDB2Volume"
 

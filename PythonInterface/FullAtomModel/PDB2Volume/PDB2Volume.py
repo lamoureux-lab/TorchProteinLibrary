@@ -66,3 +66,34 @@ class PDB2Volume:
             cppPDB2Volume.PDB2Volume(stringListTensor, volume)
 
         return volume
+
+
+class PDB2VolumeLocal:
+    def __init__(self, box_size=120, resolution=1.0, rotate=True, translate=True):
+        self.box_size = box_size
+        self.resolution = resolution
+        self.num_atom_types = 11
+                
+        self.rotate = rotate
+        self.translate = translate
+        
+    def cuda(self):
+        self.use_cuda=True
+
+    def __call__(self, stringList):
+
+        if type(stringList)==list:
+            stringListTensor = convertStringList(stringList)
+            batch_size = len(stringList)
+            volume = torch.FloatTensor(batch_size, self.num_atom_types, self.box_size, self.box_size, self.box_size).cuda()
+            coords = torch.FloatTensor(batch_size, 1).cuda()
+            num_atoms = torch.IntTensor(batch_size).cuda()
+        else:
+            raise Exception("Unknown input format:", stringList)
+        
+        volume.fill_(0.0)
+        coords.fill_(0.0)
+        num_atoms.fill_(0)
+        cppPDB2Volume.PDB2VolumeLocal(stringListTensor, volume, coords, num_atoms, self.rotate, self.translate)
+
+        return volume, coords, num_atoms

@@ -1,1 +1,1 @@
-from PDB2Volume import PDB2Volume
+from PDB2Volume import PDB2Volume, PDB2VolumeLocal

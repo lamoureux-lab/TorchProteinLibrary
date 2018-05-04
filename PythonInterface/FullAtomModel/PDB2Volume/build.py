@@ -9,8 +9,10 @@ this_file = os.path.dirname(__file__)
 here = os.path.normpath(os.path.dirname(__file__))
 lib_dir = os.path.abspath(os.path.join(here, '../../../'))
 sources = [ os.path.join(lib_dir,'Layers/FullAtomModel/PDB2Volume/pdb2volume_interface.cpp'),
+			os.path.join(lib_dir,'Layers/FullAtomModel/PDB2Volume/pdb2volumeLocal_interface.cpp'),
 			]
 headers = [	os.path.join(lib_dir,'Layers/FullAtomModel/PDB2Volume/pdb2volume_interface.h'),
+			os.path.join(lib_dir,'Layers/FullAtomModel/PDB2Volume/pdb2volumeLocal_interface.h'),
 			]
 
 include_dirs = [

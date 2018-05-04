@@ -25,7 +25,7 @@ public:
     cPDBLoader();
 	cPDBLoader(std::string filename);
 	virtual ~cPDBLoader();
-    
+  
     //order according to cConformation
     void reorder(double *coords, bool add_terminal=false);
     //order according to atom types

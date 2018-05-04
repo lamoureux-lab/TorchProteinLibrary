@@ -12,7 +12,7 @@ from FullAtomModel import Coords2CenteredCoords
 from FullAtomModel import Coords2TypedCoords
 from FullAtomModel import TypedCoords2Volume
 try:
-    from FullAtomModel import PDB2Volume
+    from FullAtomModel import PDB2Volume, PDB2VolumeLocal, SelectVolume
 except:
     pass
 try:

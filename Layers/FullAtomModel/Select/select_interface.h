@@ -1,0 +1,1 @@
+void selectVolume_forward(  THCudaTensor *volume,THCudaTensor *coords,THCudaIntTensor *num_atoms,THCudaTensor *features,float res);
