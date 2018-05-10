@@ -232,8 +232,8 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
         
         
     }
-    if( fabs(grad)>10.0){
-        grad = copysignf(1.0, grad)*10.0;
+    if( fabs(grad)>100.0){
+        grad = copysignf(1.0, grad)*100.0;
     }
     return grad;
 }

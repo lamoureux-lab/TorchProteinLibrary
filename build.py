@@ -14,9 +14,9 @@ def make_cpp_lib(cpu_only=False, graham=False):
 			os.system("cmake -DFAM_ONLY:BOOL=OFF -DGRAHAM:BOOL=ON ..")
 	else:
 		if cpu_only:
-			os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
+			os.system("cmake -DFAM_ONLY:BOOL=ON -DCMAKE_C_COMPILER=/usr/bin/gcc-6 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
 		else:
-			os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6.4 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6.4 ..")
+			os.system("cmake -DFAM_ONLY:BOOL=OFF -DCMAKE_C_COMPILER=/usr/bin/gcc-6 -DCMAKE_CXX_COMPILER=/usr/bin/g++-6 ..")
 			
 	os.system("make")
 	os.chdir('..')
@@ -32,7 +32,7 @@ if __name__=='__main__':
 	args = parser.parse_args()
 
 	#Making cuda library
-	make_cpp_lib(cpu_only = args.cpu_only, graham=True)
+	make_cpp_lib(cpu_only = args.cpu_only, graham=False)
 	
 	cur_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 	
