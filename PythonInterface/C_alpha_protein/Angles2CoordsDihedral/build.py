@@ -8,13 +8,14 @@ this_file = os.path.dirname(__file__)
 
 here = os.path.normpath(os.path.dirname(__file__))
 lib_dir = os.path.abspath(os.path.join(here, '../../../'))
-sources = [ os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp'),
-			os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/cAngles2CoordsDihedral.cpp')]
+sources = [ os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp')
+			]
 headers = [	os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.h')
 			]
 
 include_dirs = [
 	os.path.join(lib_dir, 'Math'),
+	os.path.join(lib_dir, 'Layers/C_alpha_protein'),
 ]
 library_dirs=[	os.path.join(lib_dir, 'build/Layers/C_alpha_protein'),
 				os.path.join(lib_dir, 'build/Math')]

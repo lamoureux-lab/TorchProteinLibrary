@@ -25,8 +25,8 @@ class TestNet(nn.Module):
 
 def test_gradient():
 	L=10
-	x0 = Variable(torch.randn(2, L).cuda(), requires_grad=True)
-	x1 = Variable(torch.randn(2, L).cuda())
+	x0 = Variable(torch.randn(1, 2, L).cuda(), requires_grad=True)
+	x1 = Variable(torch.randn(1, 2, L).cuda())
 	length = Variable(torch.IntTensor(1).fill_(L))
 	
 	target = Variable(torch.zeros(3*(L+1)).cuda())

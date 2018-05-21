@@ -20,4 +20,5 @@ try:
 except:
     pass
 
-from C_alpha_protein import Angles2CoordsAB, Coords2Pairs, Angles2CoordsDihedral
+# from C_alpha_protein import Angles2CoordsAB, Coords2Pairs, Angles2CoordsDihedral
+from C_alpha_protein import Angles2CoordsDihedral

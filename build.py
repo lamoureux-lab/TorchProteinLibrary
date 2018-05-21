@@ -45,14 +45,14 @@ if __name__=='__main__':
 	#Building C_alpha_protein layers
 	if not args.cpu_only:
 		c_a_dir = os.path.join(pi_dir, 'C_alpha_protein')
-		make_layer(dir_name = os.path.join(c_a_dir,'Angles2BasisDihedral'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Angles2CoordsAB'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Angles2BasisDihedral'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Angles2CoordsAB'), script_name='build.py')
 		make_layer(dir_name = os.path.join(c_a_dir,'Angles2CoordsDihedral'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Coords2Pairs'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Coords2RMSD'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Ddist2Forces'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Forces2DanglesAB'), script_name='build.py')
-		make_layer(dir_name = os.path.join(c_a_dir,'Pairs2Distributions'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Coords2Pairs'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Coords2RMSD'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Ddist2Forces'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Forces2DanglesAB'), script_name='build.py')
+		# make_layer(dir_name = os.path.join(c_a_dir,'Pairs2Distributions'), script_name='build.py')
 	
 	f_a_dir = os.path.join(pi_dir, 'FullAtomModel')
 	make_layer(dir_name = os.path.join(f_a_dir,'Angles2Coords'), script_name='build.py')
