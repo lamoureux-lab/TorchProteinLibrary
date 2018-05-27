@@ -8,54 +8,21 @@ extern "C" {
     void Coords2TypedCoords_forward(    THDoubleTensor *input_coords, 
                                         THByteTensor *res_names,
                                         THByteTensor *atom_names,
+                                        THIntTensor *input_num_atoms,
                                         THDoubleTensor *output_coords,
                                         THIntTensor *output_num_atoms_of_type,
                                         THIntTensor *output_offsets,
                                         THIntTensor *output_atom_indexes
                                     ){
         uint num_atom_types = 11;
-        if(input_coords->nDimension == 1){
-            uint num_atoms = input_coords->size[0]/3;
-            THByteTensor *single_atom_name = THByteTensor_new();
-            THByteTensor *single_res_name = THByteTensor_new();
-
-            uint num_atoms_added[num_atom_types];
-            uint atom_types[num_atoms];
-            for(int i=0;i<num_atom_types;i++){
-                num_atoms_added[i] = 0;
-            }
-            //Assign atom types
-            for(uint i=0; i<num_atoms; i++){
-                THByteTensor_select(single_atom_name, atom_names, 0, i);
-                THByteTensor_select(single_res_name, res_names, 0, i);
-                uint type = ProtUtil::get11AtomType( StringUtil::tensor2String(single_res_name), 
-                                                     StringUtil::tensor2String(single_atom_name), false);
-                atom_types[i] = type;
-                THIntTensor_set1d(output_num_atoms_of_type, type, THIntTensor_get1d(output_num_atoms_of_type, type)+1);
-            }
-            //Compute memory offsets for an atom type
-            for(uint i=1;i<num_atom_types; i++){
-                THIntTensor_set1d(output_offsets, i, THIntTensor_get1d(output_offsets, i-1) + THIntTensor_get1d(output_num_atoms_of_type, i-1));
-            }
-            //Copy information
-            for(uint i=0;i<num_atoms; i++){
-                uint type = atom_types[i];
-                uint offset = THIntTensor_get1d(output_offsets, type);
-                cVector3 r_dst(THDoubleTensor_data(output_coords) + 3*(offset + num_atoms_added[type]));
-                cVector3 r_src(THDoubleTensor_data(input_coords) + 3*i);
-                r_dst = r_src;
-                THIntTensor_set1d(output_atom_indexes, offset + num_atoms_added[type], i);
-                num_atoms_added[type]+=1;
-            }    
-
-            THByteTensor_free(single_atom_name);
-            THByteTensor_free(single_res_name);
-        }else if(input_coords->nDimension == 2){
+        if(input_coords->nDimension == 2){
             int batch_size = input_coords->size[0];
-            uint num_atoms = input_coords->size[1]/3;
+            
 
             #pragma omp parallel for num_threads(10)
             for(int i=0; i<batch_size; i++){
+                int num_atoms = THIntTensor_get1d(input_num_atoms, i);
+
                 THDoubleTensor *single_intput_coords = THDoubleTensor_new();
                 THDoubleTensor_select(single_intput_coords, input_coords, 0, i);
                 THByteTensor *single_atom_names = THByteTensor_new();

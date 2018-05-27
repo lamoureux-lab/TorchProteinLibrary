@@ -22,8 +22,8 @@ import Utils
 
 if __name__=='__main__':
 
-	sequence = ['GGGGGG']
-	angles = Variable(torch.DoubleTensor(len(sequence), 7,len(sequence[0])).zero_())
+	sequence = ['GGAGRRRGGWG']
+	angles = Variable(torch.DoubleTensor(len(sequence), 7, len(sequence[0])).zero_())
 	angles[0,0,:] = -1.047
 	angles[0,1,:] = -0.698
 	angles[0,2:,:] = 110.4*np.pi/180.0
@@ -31,11 +31,11 @@ if __name__=='__main__':
 	c2cc = Coords2CenteredCoords()
 	c2tc = Coords2TypedCoords()
 	tc2v = TypedCoords2Volume()
-	protein, res_names, atom_names = a2c(angles, sequence)
+	protein, res_names, atom_names, num_atoms = a2c(angles, sequence)
 	protein = c2cc(protein)
-	coords, num_atoms_of_type, offsets = c2tc(protein,res_names,atom_names, a2c.num_atoms)
+	coords, num_atoms_of_type, offsets = c2tc(protein, res_names, atom_names, a2c.num_atoms)
 	volume = tc2v(coords, num_atoms_of_type, offsets)
-
+	print volume.size()
 	for i in range(0, res_names.size(1)):
 		print res_names.data[0,i,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0], atom_names.data[0,i,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0]
 
