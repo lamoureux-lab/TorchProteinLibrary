@@ -42,7 +42,7 @@ class Coords2TypedCoordsFunction(Function):
 		return output_coords_cpu, num_atoms_of_type, offsets
 	
 	@staticmethod
-	def backward(self, grad_typed_coords_cpu, *kwargs):
+	def backward(ctx, grad_typed_coords_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_typed_coords_cpu = grad_typed_coords_cpu.contiguous()
 		num_atom_types = 11
@@ -54,13 +54,15 @@ class Coords2TypedCoordsFunction(Function):
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		cppCoords2TypedCoords.Coords2TypedCoords_backward(	grad_typed_coords_cpu, grad_coords_cpu, 
-															num_atoms_of_type, offsets, ctx.atom_indexes)
+		cppCoords2TypedCoords.Coords2TypedCoords_backward(	grad_typed_coords_cpu.data, grad_coords_cpu, 
+															num_atoms_of_type, 
+															offsets, 
+															ctx.atom_indexes)
 		
 		if math.isnan(grad_coords_cpu.sum()):
 			raise(Exception('Coords2TypedCoordsFunction: backward Nan'))		
 		
-		return grad_coords_cpu, None, None
+		return Variable(grad_coords_cpu), None, None, None
 
 class Coords2TypedCoords(Module):
 	def __init__(self):
