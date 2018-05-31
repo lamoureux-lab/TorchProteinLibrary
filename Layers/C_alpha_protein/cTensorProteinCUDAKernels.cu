@@ -3,39 +3,18 @@
 #include "cMathCUDAKernels.cu"
 
 
-__global__ void backwardFromCoordinates(double *angles, double *dr, double *dR_dangle, int *length, int angles_stride){
-	int batch_idx = blockIdx.x;
-	int batch_size = blockDim.x;
-	int atom_idx = threadIdx.x;
-	int num_angles = length[batch_idx];
-	int num_atoms = num_angles + 1;
-	int atoms_stride = angles_stride + 1;
-	
-	
-	double *dRdAlpha = dR_dangle + 2*batch_idx*batch_size*atoms_stride*atoms_stride*3;
-	double *dRdBeta = dR_dangle + (2*batch_idx+1)*batch_size*atoms_stride*atoms_stride*3;
-	double *d_dalpha = angles + (2*batch_idx)*angles_stride;
-	double *d_dbeta = angles + (2*batch_idx+1)*angles_stride;
-	double *d_dr = dr + batch_idx*atoms_stride*3;
-	for(int j=atom_idx+1; j<num_atoms; j++){
-		int index_upper = atom_idx*num_atoms+j;
-		d_dalpha[atom_idx] += vec3Mul(d_dr+3*j, dRdAlpha + 3*index_upper);
-		d_dbeta[atom_idx] += vec3Mul(d_dr+3*j, dRdBeta + 3*index_upper);
-	}
-}
-
-
 __global__ void computeCoordinatesDihedral( double *angles,	double *atoms, double *A, int *length, int angles_stride){
-	uint k = (blockIdx.x * blockDim.x) + threadIdx.x;
-	double *d_atoms = atoms + k*(angles_stride)*3;
-	double *d_phi = angles + 2*k*angles_stride;
-	double *d_psi = angles + (2*k+1)*angles_stride;
-	double *d_A = A + k*angles_stride*16;
-	int num_angles = length[k];
+	uint batch_idx = threadIdx.x;
+
+	double *d_atoms = atoms + batch_idx*(angles_stride)*3;
+	double *d_phi = angles + 2*batch_idx*angles_stride;
+	double *d_psi = angles + (2*batch_idx+1)*angles_stride;
+	double *d_A = A + batch_idx*angles_stride*16;
+	int num_angles = length[batch_idx];
 
 	
 	double B[16];
-	double origin[3]; origin[0]=0.0; origin[1]=0.0; origin[2]=0.0;
+	double origin[3];setVec3(origin, 0, 0, 0);
 	getRotationMatrixCalpha(d_A, d_phi[0], 0.0, true);
 	mat44Vec3Mul(d_A, origin, d_atoms);
 	
@@ -47,48 +26,107 @@ __global__ void computeCoordinatesDihedral( double *angles,	double *atoms, doubl
 }
 
 __global__ void computeGradientsOptimizedDihedral( double *angles, double *dR_dangle, double *A, int *length, int angles_stride){
-							
-	uint k = (blockIdx.x * blockDim.x) + threadIdx.x;
-	int num_angles = length[blockIdx.x];
-	int num_atoms = num_angles + 1;
-	int atoms_stride = angles_stride+1;
-	double *d_alpha = angles + 2*k*angles_stride;
-	double *d_beta = angles + (2*k+1)*angles_stride;
-	double *d_dRdAlpha = dR_dangle + blockIdx.x * (atoms_stride*angles_stride*3) + threadIdx.x*atoms_stride*3;
-	double *d_dRdBeta = dR_dangle + blockIdx.x * (atoms_stride*angles_stride*3) + threadIdx.x*atoms_stride*3;
-	double *d_A = A + blockIdx.x * angles_stride * 16;
-	double r_0[3];setVec3(r_0, 0, 0, 0);
-	double dBdAlpha[16], dBdBeta[16], leftPartAlpha[16], leftPartBeta[16], rightPart[16];
-	double tmp[16], B[16];
-	getRotationMatrixCalphaDPhi(dBdAlpha, d_alpha[k], d_beta[k]);
-	getRotationMatrixCalphaDPsi(dBdBeta, d_alpha[k], d_beta[k]);
-	if(k>0){
-		mat44Mul(d_A + 16*(k-1), dBdAlpha, leftPartAlpha);
-		mat44Mul(d_A + 16*(k-1), dBdBeta, leftPartBeta);
+	uint batch_size = blockDim.x;	
+	uint batch_idx = blockIdx.x;
+	uint atom_i_idx = threadIdx.x;
+	uint angle_k_idx = threadIdx.y;
+	
+	int num_angles = length[batch_idx];
+	int num_atoms = num_angles;
+	int atoms_stride = angles_stride;
+	double *d_A = A + batch_idx * angles_stride * 16;
+
+	double *d_phi = angles + 2*batch_idx*angles_stride;
+	double *d_psi = angles + (2*batch_idx+1)*angles_stride;
+
+	double *dR_dPhi = dR_dangle + 2*batch_idx * (atoms_stride*angles_stride*3) + angle_k_idx*atoms_stride*3 + atom_i_idx*3;
+	double *dR_dPsi = dR_dangle + (2*batch_idx+1) * (atoms_stride*angles_stride*3) + angle_k_idx*atoms_stride*3 + atom_i_idx*3;
+
+	if(atom_i_idx<angle_k_idx){
+		setVec3(dR_dPsi, 0, 0, 0);
+		setVec3(dR_dPhi, 0, 0, 0);
+		return;
+	}
+	
+	double origin[3];setVec3(origin, 0, 0, 0);
+	double dBk_dPhik[16], dBk1_dPsik[16];	
+	double Ak1_inv[16], Ak_inv[16];
+	double tmp1[16], tmp2[16], tmp3[16];
+
+	if(angle_k_idx>0){
+		getRotationMatrixCalphaDPhi(dBk_dPhik, d_phi[angle_k_idx], d_psi[angle_k_idx-1], false);
 	}else{
-		memcpy(leftPartAlpha, dBdAlpha, 16*sizeof(float));
-		memcpy(leftPartBeta, dBdBeta, 16*sizeof(float));
+		getRotationMatrixCalphaDPhi(dBk_dPhik, d_phi[angle_k_idx], 0.0, true);
 	}
-	getIdentityMatrix44(rightPart);
-	for(int j=k+1; j<num_atoms; j++){
-		int index_upper = k*atoms_stride+j;
-		mat44Mul(leftPartAlpha, rightPart, tmp);
-		mat44Vec3Mul(tmp, r_0, d_dRdAlpha + 3*index_upper);
-		mat44Mul(leftPartBeta, rightPart, tmp);
-		mat44Vec3Mul(tmp, r_0, d_dRdBeta + 3*index_upper);
-		getRotationMatrixCalpha(B, d_alpha[j], d_beta[j], false);
-		mat44Mul(rightPart, B, rightPart);
+	getRotationMatrixCalphaDPsi(dBk1_dPsik, d_phi[angle_k_idx+1], d_psi[angle_k_idx]);
+
+	// double L[16], Linv[16];
+	// invertMat44(Linv, d_A + angle_k_idx*16);
+	// mat44Mul(d_A + angle_k_idx*16, Linv, L);
+	// printf("%f %f %f %f\n", L[0], L[1], L[2], L[3]);
+	// printf("%f %f %f %f\n", L[4], L[5], L[6], L[7]);
+	// printf("%f %f %f %f\n", L[8], L[9], L[10], L[11]);
+	// printf("%f %f %f %f\n", L[12], L[13], L[14], L[15]);
+	
+	//dA_i / dphi_k
+	invertMat44(Ak_inv, d_A + angle_k_idx*16);
+	
+	if(angle_k_idx>0)
+		mat44Mul(d_A + (angle_k_idx-1)*16, dBk_dPhik, tmp1);
+	else
+		setMat44(tmp1, dBk_dPhik);
+	mat44Mul(Ak_inv, d_A + atom_i_idx*16, tmp2);
+	mat44Mul(tmp1, tmp2, tmp3);
+	mat44Vec3Mul(tmp3, origin, dR_dPhi);
+	
+	//dA_i / dpsi_k
+	if(angle_k_idx == atom_i_idx){
+		setVec3(dR_dPsi, 0, 0, 0);
+		return;
+	}
+	invertMat44(Ak1_inv, d_A + (angle_k_idx + 1)*16);
+
+	mat44Mul(d_A + angle_k_idx*16, dBk1_dPsik, tmp1);
+	mat44Mul(Ak1_inv, d_A + atom_i_idx*16, tmp2);
+	mat44Mul(tmp1, tmp2, tmp3);
+	mat44Vec3Mul(tmp3, origin, dR_dPsi);
+	
+	
+}
+
+__global__ void backwardFromCoordinates(double *angles, double *dr, double *dR_dangle, int *length, int angles_stride){
+	int batch_idx = blockIdx.x;
+	int batch_size = blockDim.x;
+	int angle_idx = threadIdx.x;
+	int num_angles = length[batch_idx];
+	int num_atoms = num_angles;
+	int atoms_stride = angles_stride;
+	
+	double *d_phi = angles + 2*batch_idx*angles_stride + angle_idx;
+	double *d_psi = angles + (2*batch_idx+1)*angles_stride + angle_idx;
+	
+	double *dR_dPhi = dR_dangle + 2*batch_idx * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
+	double *dR_dPsi = dR_dangle + (2*batch_idx+1) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
+
+	double *d_dr = dr + batch_idx*atoms_stride*3;
+
+	for(int j=angle_idx; j<num_atoms; j++){
+		
+		(*d_phi) += vec3Mul(d_dr+3*j, dR_dPhi + 3*j);
+		(*d_psi) += vec3Mul(d_dr+3*j, dR_dPsi + 3*j);
 	}
 }
 
-void cpu_computeCoordinatesDihedral(double *angles,double *atoms,double *A,int *length,int batch_size,int angles_stride){
-	computeCoordinatesDihedral<<<batch_size,1>>>(angles, atoms, A, length, angles_stride);
+
+void cpu_computeCoordinatesDihedral(double *angles, double *atoms, double *A, int *length, int batch_size, int angles_stride){
+	computeCoordinatesDihedral<<<1,batch_size>>>(angles, atoms, A, length, angles_stride);
 }
 
-void cpu_computeDerivativesDihedral(double *angles,double *dR_dangle,double *A,int *length, int batch_size,int angles_stride){
-	computeGradientsOptimizedDihedral<<<angles_stride, batch_size>>>(angles, dR_dangle, A, length, angles_stride);
+void cpu_computeDerivativesDihedral(double *angles, double *dR_dangle, double *A, int *length, int batch_size, int angles_stride){
+	dim3 angles_dim(angles_stride, angles_stride, 1);
+	computeGradientsOptimizedDihedral<<<batch_size, angles_dim>>>(angles, dR_dangle, A, length, angles_stride);
 }
 
 void cpu_backwardFromCoords(double *angles, double *dr, double *dR_dangle, int *length, int batch_size, int angles_stride){
-	backwardFromCoordinates<<<angles_stride, batch_size>>>(angles, dr, dR_dangle, length, angles_stride);
+	backwardFromCoordinates<<<batch_size, angles_stride>>>(angles, dr, dR_dangle, length, angles_stride);
 }

@@ -33,25 +33,26 @@ class Angles2CoordsDihedralFunction(Function):
 			
 	@staticmethod
 	def backward(ctx, gradOutput):
-		input, angles_length = ctx.saved_tensors
-		if len(input.size()) == 3:
-			batch_size = input.size(0)
+		gradOutput = gradOutput.contiguous()
+		input_angles, angles_length = ctx.saved_tensors
+		if len(input_angles.size()) == 3:
+			batch_size = input_angles.size(0)
 			gradInput_gpu = torch.DoubleTensor(batch_size, 2, ctx.angles_max_length).cuda()
-			dr_dangle = torch.DoubleTensor(batch_size, 2, 3*(ctx.angles_max_length+1)*ctx.angles_max_length).cuda()
+			dr_dangle = torch.DoubleTensor(batch_size, 2, 3*ctx.angles_max_length*ctx.angles_max_length).cuda()
 		else:
-			raise(Exception('Angles2CoordsDihedralFunction: backward size', input.size()))		
+			raise(Exception('Angles2CoordsDihedralFunction: backward size', input_angles.size()))		
 		
 		dr_dangle.fill_(0.0)
 		gradInput_gpu.fill_(0.0)
 		
-		cppAngles2CoordsDihedral.Angles2Coords_backward(gradInput_gpu, gradOutput, input, angles_length, self.A, dr_dangle)
-		
+		cppAngles2CoordsDihedral.Angles2Coords_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
+				
 		if math.isnan(gradInput_gpu.sum()):
 			print 'GradInput: ', gradInput_gpu
 			print 'GradOutput: ', gradOutput
 			raise(Exception('Angles2CoordsDihedralFunction: backward Nan'))		
 		
-		return gradInput_gpu, None
+		return Variable(gradInput_gpu), None
 
 class Angles2CoordsDihedral(Module):
 	def __init__(self):

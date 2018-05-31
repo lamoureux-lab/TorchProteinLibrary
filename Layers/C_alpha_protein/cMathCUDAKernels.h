@@ -11,14 +11,19 @@ extern __device__ void getRotationMatrixDBeta(double *d_data, double alpha, doub
 extern __device__ void getRotationMatrixDihedral(double *d_data, double psi, double kappa, double R);
 extern __device__ void getRotationMatrixDihedralDPsi(double *d_data, double psi, double kappa, double R);
 extern __device__ void getRotationMatrixCalpha(double *d_data, double phi, double psi, bool first);
-extern __device__ void getRotationMatrixCalphaDPhi(double *d_data, double phi, double psi);
+extern __device__ void getRotationMatrixCalphaDPhi(double *d_data, double phi, double psi, bool first);
 extern __device__ void getRotationMatrixCalphaDPsi(double *d_data, double phi, double psi);
 
 
 extern __device__ void getIdentityMatrix44(double *d_data);
 // Fills the 4x4 identity matrix.
+extern __device__ void setMat44(double *d_dst, double d_src);
 extern __device__ void setMat44(double *d_dst, double *d_src);
 // Fills the 4x4 d_dst matrix with d_src values.
+
+extern __device__ void invertMat44(double *d_dst, double *d_src);
+//Inverts 4x4 transformation matrix
+
 extern __device__ void mat44Mul(double *d_m1, double *d_m2, double *dst);
 // Multiplies two 4x4 matrixes and puts the result to dst
 extern __device__ void mat44Vec4Mul(double *d_m, double *d_v, double *dst);

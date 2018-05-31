@@ -58,16 +58,16 @@ __device__ void getRotationMatrixDihedral(double *d_data, double a, double b, do
 	d_data[8]=-sin(b);  d_data[9]=sin(a)*cos(b);	d_data[10]=cos(a)*cos(b);	d_data[11]=-R*sin(b);
 	d_data[12]=0.0;		d_data[13]=0.0;				d_data[14]=0.0;				d_data[15]=1.0;
 }
-__device__ void getRotationMatrixDihedralDPsi(double *d_data, double psi, double kappa, double R){
-	d_data[0]=-sin(psi)*cos(kappa); 	d_data[1]=sin(psi)*sin(kappa);	d_data[2]=cos(psi);	d_data[3]=0;
-	d_data[4]=0.0;						d_data[5]=0.0;	 				d_data[6]=0;		d_data[7]=0;
-	d_data[8]=-cos(psi)*cos(kappa); 	d_data[9]=cos(psi)*sin(kappa);	d_data[10]=-sin(psi);d_data[11]=0.0;
-	d_data[12]=0.0;						d_data[13]=0.0;					d_data[14]=0.0;		d_data[15]=0.0;
+__device__ void getRotationMatrixDihedralDPsi(double *d_data, double a, double b, double R){
+	d_data[0]=0; 		d_data[1]=cos(a)*sin(b);	d_data[2]=-sin(a)*sin(b);	d_data[3]=0;
+	d_data[4]=0;		d_data[5]=-sin(a); 			d_data[6]=-cos(a);			d_data[7]=0;
+	d_data[8]=0;  		d_data[9]=cos(a)*cos(b);	d_data[10]=-sin(a)*cos(b);	d_data[11]=0;
+	d_data[12]=0;		d_data[13]=0.0;				d_data[14]=0.0;				d_data[15]=0;
 }
 
 __device__ void getRotationMatrixCalpha(double *d_data, double phi, double psi, bool first){
 	// getRotationMatrixDihedral(d_data, 0.0, psi);
-	double A[16], B[16], Bp[16], C[16], D[16];
+	double A[16], B[16], C[16], D[16];
 	if(first){
 		getRotationMatrixDihedral(d_data, phi, C_N_CA, R_N_CA);
 	}else{
@@ -79,26 +79,26 @@ __device__ void getRotationMatrixCalpha(double *d_data, double phi, double psi, 
 	}
 }
 
-__device__ void getRotationMatrixCalphaDPhi(double *d_data, double phi, double psi){
-	// getRotationMatrixDihedral(d_data, 0.0, psi);
-	double A[16],B[16],C[16],D[16];
-	getRotationMatrixDihedralDPsi(A, phi, KAPPA1, R_N_CA);
-	getRotationMatrixDihedral(B, OMEGACIS, KAPPA2, R_CA_C);
-	getRotationMatrixDihedral(C, OMEGACIS, KAPPA3, R_C_N);
-
-	mat44Mul(B, C, D);
-	mat44Mul(D, A, d_data);
+__device__ void getRotationMatrixCalphaDPhi(double *d_data, double phi, double psi, bool first){
+	double A[16], B[16], C[16], D[16];
+	if(first){
+		getRotationMatrixDihedralDPsi(d_data, phi, C_N_CA, R_N_CA);
+	}else{
+		getRotationMatrixDihedral(B, psi, N_CA_C, R_CA_C);
+		getRotationMatrixDihedral(C, OMEGACIS, CA_C_N, R_C_N);
+		getRotationMatrixDihedralDPsi(A, phi, C_N_CA, R_N_CA);	
+		mat44Mul(B, C, D);
+		mat44Mul(D, A, d_data);	
+	}
 }
 
 __device__ void getRotationMatrixCalphaDPsi(double *d_data, double phi, double psi){
-	// getRotationMatrixDihedral(d_data, 0.0, psi);
-	double A[16],B[16],C[16],D[16];
-	getRotationMatrixDihedral(A, phi, KAPPA1, R_N_CA);
-	getRotationMatrixDihedralDPsi(B, psi, KAPPA2, R_CA_C);
-	getRotationMatrixDihedral(C, OMEGACIS, KAPPA3, R_C_N);
-
+	double A[16], B[16], C[16], D[16];
+	getRotationMatrixDihedralDPsi(B, psi, N_CA_C, R_CA_C);
+	getRotationMatrixDihedral(C, OMEGACIS, CA_C_N, R_C_N);
+	getRotationMatrixDihedral(A, phi, C_N_CA, R_N_CA);
 	mat44Mul(B, C, D);
-	mat44Mul(D, A, d_data);
+	mat44Mul(D, A, d_data);	
 }
 
 
@@ -115,11 +115,28 @@ __device__ void getIdentityMatrix33(double *d_data){
 	d_data[6]=0.0;   		d_data[7]=0.0; 	d_data[8]=1.0;
 }
 
+__device__ void setMat44(double *d_dst, double d_src){
+	memset(d_dst, d_src, 16*sizeof(double));
+}
 __device__ void setMat44(double *d_dst, double *d_src){
 	memcpy(d_dst, d_src, 16*sizeof(double));
 }
 __device__ void setMat33(double *d_dst, double *d_src){
 	memcpy(d_dst, d_src, 9*sizeof(double));
+}
+
+__device__ void invertMat44(double *d_dst, double *d_src){
+	double trans[4], invTrans[4];
+	trans[0] = d_src[3];trans[1] = d_src[7];trans[2] = d_src[11];trans[3]=1.0;
+
+	d_dst[0]=d_src[0];	d_dst[1]=d_src[4];	d_dst[2]=d_src[8];  d_dst[3]=0;
+	d_dst[4]=d_src[1];	d_dst[5]=d_src[5]; 	d_dst[6]=d_src[9];  d_dst[7]=0;
+	d_dst[8]=d_src[2];  d_dst[9]=d_src[6]; 	d_dst[10]=d_src[10];d_dst[11]=0;
+	d_dst[12]=0.0;		d_dst[13]=0.0;		d_dst[14]=0.0;		d_dst[15]=1.0;
+	
+	mat44Vec4Mul(d_dst, trans, invTrans);
+
+	d_dst[3] = -invTrans[0]; d_dst[7] = -invTrans[1]; d_dst[11] = -invTrans[2];
 }
 
 __device__ void mat44Mul(double *d_m1, double *d_m2, double *dst){
@@ -212,9 +229,10 @@ __device__ void mat33Vec3Mul(double *d_m, double *d_v, double *dst){
 }
 
 __device__ void mat44Vec3Mul(double *d_m, double *d_v, double *dst){
-   double tmp[4];
+   double tmp[4], tmp1[4];
    memcpy(tmp, d_v, 3*sizeof(double));tmp[3]=1.0;
-   mat44Vec4Mul(d_m, tmp, dst);
+   mat44Vec4Mul(d_m, tmp, tmp1);
+   memcpy(dst, tmp1, 3*sizeof(double));
 }
 
 __device__ void setVec3(double *d_v, double x, double y, double z){
