@@ -1,2 +1,1 @@
-int Coords2RMSD_forward(THCudaTensor *input, THCudaTensor *target, THCudaTensor *output, THIntTensor *angles_length,THCudaTensor *re_coordinates_src, THCudaTensor *re_coordinates_dst,THCudaTensor *U_coordinates_src,THCudaTensor *Ut_coordinates_dst,THCudaTensor *rot_mat_t);
-int Coords2RMSD_backward( THCudaTensor *gradInput,  THCudaTensor *gradOutput, THIntTensor *angles_length,THCudaTensor *re_coordinates_src,THCudaTensor *re_coordinates_dst,THCudaTensor *Ut_coordinates_dst,THCudaTensor *rot_mat_t);
+void Coords2RMSD_forward(THCudaDoubleTensor *re_coordinates_src, THCudaDoubleTensor *re_coordinates_dst, THCudaDoubleTensor *output, THCudaIntTensor *num_atoms,THCudaDoubleTensor *Ut_coordinates_dst);

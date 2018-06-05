@@ -8,8 +8,8 @@ this_file = os.path.dirname(__file__)
 
 here = os.path.normpath(os.path.dirname(__file__))
 lib_dir = os.path.abspath(os.path.join(here, '../../../'))
-sources = [ os.path.join(lib_dir,'Layers/C_alpha_protein/Coords2RMSD/cCoords2RMSDInterface.cpp'),
-			os.path.join(lib_dir,'Layers/C_alpha_protein/Coords2RMSD/cCoords2RMSD.cpp')]
+sources = [ os.path.join(lib_dir,'Layers/C_alpha_protein/Coords2RMSD/cCoords2RMSDInterface.cpp')
+			]
 headers = [	os.path.join(lib_dir,'Layers/C_alpha_protein/Coords2RMSD/cCoords2RMSDInterface.h')
 			]
 

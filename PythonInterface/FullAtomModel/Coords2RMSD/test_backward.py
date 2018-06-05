@@ -20,7 +20,7 @@ def test_gradient():
 	target = Variable(torch.DoubleTensor([[0,0,0, 1,1,0, 3,0,0]]))
 	loss = Coords2RMSD()
 	rmsd_x0 = loss(x0, target, length)
-	
+	print rmsd_x0
 	rmsd_x0.backward()
 	float_rmsd_x0 = np.sqrt(rmsd_x0.data[0])
 	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)

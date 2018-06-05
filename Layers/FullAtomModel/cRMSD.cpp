@@ -48,7 +48,7 @@ double cRMSD::compute( double *src, double *dst ){
         centroid_dst += cVector3(dst+3*i);
     }
     centroid_src/=num_atoms; centroid_dst/=num_atoms;
-
+    
     //centering the proteins
     for(int i=0; i<num_atoms; i++){
         cVector3 ce_src_atom(ce_src+3*i);
@@ -97,7 +97,7 @@ double cRMSD::compute( double *src, double *dst ){
         }
     }
     THDoubleTensor_free(Tmat);
-   
+    
     // rotation matrix
     U.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
     U.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
@@ -120,6 +120,7 @@ double cRMSD::compute( double *src, double *dst ){
         cVector3 ce_dst_atom(ce_dst+3*i);
         R2 += ce_src_atom.norm2() + ce_dst_atom.norm2();
     }
+    
     double rmsd = (R2 - 2.0*fabs(max_eig))/(double(num_atoms));
     
     //transforming coordinates
