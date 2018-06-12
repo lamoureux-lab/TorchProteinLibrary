@@ -28,3 +28,8 @@ try:
     from PythonInterface import Utils
 except:
     print "No utils"
+
+try:
+    from PythonInterface import Angles2CoordsDihedral, Coords2RMSDCuda
+except:
+    print "No C-alpha model"

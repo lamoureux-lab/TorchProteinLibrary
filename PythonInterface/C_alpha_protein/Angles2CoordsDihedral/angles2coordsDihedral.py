@@ -44,10 +44,10 @@ class Angles2CoordsDihedralFunction(Function):
 		
 		dr_dangle.fill_(0.0)
 		gradInput_gpu.fill_(0.0)
-		
+		# print gradOutput
 		cppAngles2CoordsDihedral.Angles2Coords_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
-				
-		if math.isnan(gradInput_gpu.sum()):
+		# print gradInput_gpu
+		if math.isnan(torch.sum(gradInput_gpu)):
 			print 'GradInput: ', gradInput_gpu
 			print 'GradOutput: ', gradOutput
 			raise(Exception('Angles2CoordsDihedralFunction: backward Nan'))		

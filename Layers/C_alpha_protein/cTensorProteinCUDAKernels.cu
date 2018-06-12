@@ -26,10 +26,14 @@ __global__ void computeCoordinatesDihedral( double *angles,	double *atoms, doubl
 }
 
 __global__ void computeGradientsOptimizedDihedral( double *angles, double *dR_dangle, double *A, int *length, int angles_stride){
-	uint batch_size = blockDim.x;	
+	// uint batch_size = blockDim.x;	
+	// uint batch_idx = blockIdx.x;
+	// uint atom_i_idx = threadIdx.x;
+	// uint angle_k_idx = threadIdx.y;
+	uint batch_size = blockDim.x;
 	uint batch_idx = blockIdx.x;
-	uint atom_i_idx = threadIdx.x;
-	uint angle_k_idx = threadIdx.y;
+	uint atom_i_idx = blockIdx.y;
+	uint angle_k_idx = blockIdx.z;
 	
 	int num_angles = length[batch_idx];
 	int num_atoms = num_angles;
@@ -123,8 +127,10 @@ void cpu_computeCoordinatesDihedral(double *angles, double *atoms, double *A, in
 }
 
 void cpu_computeDerivativesDihedral(double *angles, double *dR_dangle, double *A, int *length, int batch_size, int angles_stride){
-	dim3 angles_dim(angles_stride, angles_stride, 1);
-	computeGradientsOptimizedDihedral<<<batch_size, angles_dim>>>(angles, dR_dangle, A, length, angles_stride);
+	// dim3 angles_dim(angles_stride, angles_stride, 1);
+	// computeGradientsOptimizedDihedral<<<batch_size, angles_dim>>>(angles, dR_dangle, A, length, angles_stride);
+	dim3 batch_angles_dim(batch_size, angles_stride, angles_stride);
+	computeGradientsOptimizedDihedral<<<batch_angles_dim, 1>>>(angles, dR_dangle, A, length, angles_stride);
 }
 
 void cpu_backwardFromCoords(double *angles, double *dr, double *dR_dangle, int *length, int batch_size, int angles_stride){

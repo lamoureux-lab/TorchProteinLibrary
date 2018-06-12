@@ -11,6 +11,8 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 import torch.optim as optim
 from coords2RMSD import Coords2RMSD
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from Angles2CoordsDihedral import Angles2CoordsDihedral
 
 def test_gradient():
 	maxL=2
@@ -48,5 +50,50 @@ def test_gradient():
 	plt.legend()
 	plt.savefig('TestFig/rmsd_gradients_CUDA.png')
 
+def test_gradient_combined():
+	L = 10
+	batch_size = 5
+	angles0 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
+	angles1 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda())
+	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
+	target = Variable(torch.DoubleTensor(batch_size, L*3).normal_().cuda())
+	
+	model = Angles2CoordsDihedral()
+	loss = Coords2RMSD()
+	
+	x0 = model(angles0, length)
+	rmsd_x0 = loss(x0, target, length)
+
+	rmsd_x0.sum().backward()
+	
+	float_rmsd_x0 = torch.sqrt(rmsd_x0).sum().data[0]
+	back_grad_angles0 = torch.DoubleTensor(angles0.grad.size()).copy_(angles0.grad.data)
+	
+	print float_rmsd_x0
+
+	
+	for b in xrange(batch_size):
+		grads = [[],[]]
+		for i in range(0,L):
+			for k in range(0,2):
+				dx = 0.0001
+				angles1.data.copy_(angles0.data)
+				angles1.data[b,k,i]+=dx
+				x1 = model(angles1, length)
+				rmsd_x1 = loss(x1, target, length)
+				float_rmsd_x1 = torch.sqrt(rmsd_x1).sum().data[0]
+				
+				drmsd_dx = (float_rmsd_x1-float_rmsd_x0)/(dx)
+				grads[k].append(drmsd_dx)
+		
+		fig = plt.figure()
+		plt.plot(grads[0],'-r', label = 'num grad')
+		plt.plot(back_grad_angles0[b,0,:].numpy(),'-.b', label = 'an grad')
+		plt.plot(grads[1],'-r', label = 'num grad')
+		plt.plot(back_grad_angles0[b,1,:].numpy(),'-.b', label = 'an grad')
+		plt.legend()
+		plt.savefig('TestFig/rmsd_gradients_CUDA_batch%d.png'%b)
+
 if __name__=='__main__':
-	test_gradient()
+	# test_gradient()
+	test_gradient_combined()

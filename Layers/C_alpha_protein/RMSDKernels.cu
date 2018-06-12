@@ -12,13 +12,13 @@ __global__ void gpu_correlationMatrix( double *d_coords1, double *d_coords2, dou
     
     R[r_index] = 0.0;
     for(int k=0; k<n_atoms; k++){
-        R[r_index] += double(coords1[3*k + i])*double(coords2[3*k + j]);
+        R[r_index] += coords1[3*k + i]*coords2[3*k + j];
     }
     
 }
 __global__ void gpu_TMatrix( double *d_R, double *d_T){
     uint batch_idx = blockIdx.x;
-    double *R = d_R + batch_idx*16;
+    double *R = d_R + batch_idx*9;
     double *T = d_T + batch_idx*16;
 
     T[0] = R[0]+R[4]+R[8];      T[1] = R[5]-R[7];           T[2] = R[6]-R[2];            T[3] = R[1]-R[3];

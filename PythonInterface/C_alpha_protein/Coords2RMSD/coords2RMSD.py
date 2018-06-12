@@ -32,8 +32,10 @@ class Coords2RMSDFunction(Function):
 		ctx.c_coords_input = (re_input - center_input.unsqueeze(dim=1)).resize_(batch_size, max_atoms*3).contiguous()
 		ctx.c_coords_target = (re_target - center_target.unsqueeze(dim=1)).resize_(batch_size, max_atoms*3).contiguous()
 		
+		
 		cppCoords2RMSD.Coords2RMSD_forward( ctx.c_coords_input, ctx.c_coords_target, 
 											output, num_atoms, ctx.Ut_coordinates_dst)
+		
 		
 		if math.isnan(output.sum()):
 			raise(Exception('Coords2RMSDFunction: forward Nan'))
@@ -54,7 +56,7 @@ class Coords2RMSDFunction(Function):
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', gradOutput.size())
 					
 		gradInput_gpu = (ctx.c_coords_input - ctx.Ut_coordinates_dst)
-
+		
 		for i in range(batch_size):
 			gradInput_gpu[i,:] = gradInput_gpu[i,:]/(math.sqrt(output[i]+1E-5)*num_atoms[i])
 		

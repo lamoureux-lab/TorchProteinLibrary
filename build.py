@@ -39,7 +39,7 @@ if __name__=='__main__':
 	#Building utilities
 	pi_dir = os.path.join(cur_dir, 'PythonInterface')
 	# make_layer(dir_name = pi_dir, script_name='build_layers.py')
-	# make_layer(dir_name = pi_dir, script_name='build_utils.py')
+	make_layer(dir_name = pi_dir, script_name='build_utils.py')
 	# make_layer(dir_name = pi_dir, script_name='build_visualization.py')
 
 	#Building C_alpha_protein layers
@@ -49,7 +49,7 @@ if __name__=='__main__':
 		# make_layer(dir_name = os.path.join(c_a_dir,'Angles2CoordsAB'), script_name='build.py')
 		make_layer(dir_name = os.path.join(c_a_dir,'Angles2CoordsDihedral'), script_name='build.py')
 		# make_layer(dir_name = os.path.join(c_a_dir,'Coords2Pairs'), script_name='build.py')
-		# make_layer(dir_name = os.path.join(c_a_dir,'Coords2RMSD'), script_name='build.py')
+		make_layer(dir_name = os.path.join(c_a_dir,'Coords2RMSD'), script_name='build.py')
 		# make_layer(dir_name = os.path.join(c_a_dir,'Ddist2Forces'), script_name='build.py')
 		# make_layer(dir_name = os.path.join(c_a_dir,'Forces2DanglesAB'), script_name='build.py')
 		# make_layer(dir_name = os.path.join(c_a_dir,'Pairs2Distributions'), script_name='build.py')
