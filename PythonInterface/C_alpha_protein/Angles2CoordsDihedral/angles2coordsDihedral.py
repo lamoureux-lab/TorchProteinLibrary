@@ -15,8 +15,8 @@ class Angles2CoordsDihedralFunction(Function):
 		ctx.angles_max_length = torch.max(angles_length)
 		if len(input.size())==3:
 			batch_size = input.size(0)
-			output_coords_gpu = torch.DoubleTensor(batch_size, 3*(ctx.angles_max_length)).cuda()
-			ctx.A = torch.DoubleTensor(batch_size, 16*ctx.angles_max_length).cuda()
+			output_coords_gpu = torch.FloatTensor(batch_size, 3*(ctx.angles_max_length)).cuda()
+			ctx.A = torch.FloatTensor(batch_size, 16*ctx.angles_max_length).cuda()
 		else:
 			raise Exception('Angles2CoordsFunction: ', 'Incorrect input size:', input.size()) 
 
@@ -37,8 +37,8 @@ class Angles2CoordsDihedralFunction(Function):
 		input_angles, angles_length = ctx.saved_tensors
 		if len(input_angles.size()) == 3:
 			batch_size = input_angles.size(0)
-			gradInput_gpu = torch.DoubleTensor(batch_size, 2, ctx.angles_max_length).cuda()
-			dr_dangle = torch.DoubleTensor(batch_size, 2, 3*ctx.angles_max_length*ctx.angles_max_length).cuda()
+			gradInput_gpu = torch.FloatTensor(batch_size, 2, ctx.angles_max_length).cuda()
+			dr_dangle = torch.FloatTensor(batch_size, 2, 3*ctx.angles_max_length*ctx.angles_max_length).cuda()
 		else:
 			raise(Exception('Angles2CoordsDihedralFunction: backward size', input_angles.size()))		
 		

@@ -3,45 +3,47 @@
 #include <iostream>
 
 extern THCState *state;
-float R = 3.8;
+#define CUDA_REAL_TENSOR_VAR THCudaTensor
+#define CUDA_REAL_TENSOR(X) THCudaTensor_##X
+
 extern "C" {
-    int Angles2Coords_forward(  THCudaDoubleTensor *input_angles, 
-                                THCudaDoubleTensor *output_coords, 
+    int Angles2Coords_forward(  CUDA_REAL_TENSOR_VAR *input_angles, 
+                                CUDA_REAL_TENSOR_VAR *output_coords, 
                                 THCudaIntTensor *angles_length, 
-                                THCudaDoubleTensor *A
+                                CUDA_REAL_TENSOR_VAR *A
                             ){
         if(input_angles->nDimension!=3){
             std::cout<<"incorrect input dimension"<<input_angles->nDimension<<std::endl;
             throw("incorrect input dimension");
         }
-        cpu_computeCoordinatesDihedral(	THCudaDoubleTensor_data(state, input_angles), 
-							THCudaDoubleTensor_data(state, output_coords), 
-							THCudaDoubleTensor_data(state, A), 
+        cpu_computeCoordinatesDihedral(	CUDA_REAL_TENSOR(data)(state, input_angles), 
+							CUDA_REAL_TENSOR(data)(state, output_coords), 
+							CUDA_REAL_TENSOR(data)(state, A), 
 							THCudaIntTensor_data(state, angles_length),
                             input_angles->size[0],
                             input_angles->size[2]);
     }
-    int Angles2Coords_backward(     THCudaDoubleTensor *gradInput,
-                                    THCudaDoubleTensor *gradOutput,
-                                    THCudaDoubleTensor *input_angles, 
+    int Angles2Coords_backward(     CUDA_REAL_TENSOR_VAR *gradInput,
+                                    CUDA_REAL_TENSOR_VAR *gradOutput,
+                                    CUDA_REAL_TENSOR_VAR *input_angles, 
                                     THCudaIntTensor *angles_length, 
-                                    THCudaDoubleTensor *A,   
-                                    THCudaDoubleTensor *dr_dangle
+                                    CUDA_REAL_TENSOR_VAR *A,   
+                                    CUDA_REAL_TENSOR_VAR *dr_dangle
                             ){
         if(gradInput->nDimension!=3){
             std::cout<<"incorrect input dimension"<<gradInput->nDimension<<std::endl;
             throw("incorrect input dimension");
         }
-        cpu_computeDerivativesDihedral( THCudaDoubleTensor_data(state, input_angles),
-                                        THCudaDoubleTensor_data(state, dr_dangle),
-                                        THCudaDoubleTensor_data(state, A),
+        cpu_computeDerivativesDihedral( CUDA_REAL_TENSOR(data)(state, input_angles),
+                                        CUDA_REAL_TENSOR(data)(state, dr_dangle),
+                                        CUDA_REAL_TENSOR(data)(state, A),
                                         THCudaIntTensor_data(state, angles_length),
                                         input_angles->size[0],
                                         input_angles->size[2]);
         
-        cpu_backwardFromCoords( THCudaDoubleTensor_data(state, gradInput),
-                                THCudaDoubleTensor_data(state, gradOutput),
-                                THCudaDoubleTensor_data(state, dr_dangle),
+        cpu_backwardFromCoords( CUDA_REAL_TENSOR(data)(state, gradInput),
+                                CUDA_REAL_TENSOR(data)(state, gradOutput),
+                                CUDA_REAL_TENSOR(data)(state, dr_dangle),
                                 THCudaIntTensor_data(state, angles_length),
                                 input_angles->size[0],
                                 input_angles->size[2]);

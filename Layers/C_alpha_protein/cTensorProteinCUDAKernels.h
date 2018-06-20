@@ -1,4 +1,5 @@
 #include <THC/THC.h>
+#include <cMathCUDAKernels.h>
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
@@ -11,23 +12,23 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 
-void cpu_backwardFromCoords(double *angles, 
-							double *dr, 
-							double *dR_dangle, 
+void cpu_backwardFromCoords(REAL *angles, 
+							REAL *dr, 
+							REAL *dR_dangle, 
 							int *length, 
 							int batch_size, 
 							int angles_stride);
 
-void cpu_computeCoordinatesDihedral(double *angles,  
-									double *atoms,   
-									double *A,       
+void cpu_computeCoordinatesDihedral(REAL *angles,  
+									REAL *atoms,   
+									REAL *A,       
 									int *length,
 									int batch_size,
 									int angles_stride);
 
-void cpu_computeDerivativesDihedral(double *angles,
-									double *dR_dangle,
-									double *A,
+void cpu_computeDerivativesDihedral(REAL *angles,
+									REAL *dR_dangle,
+									REAL *A,
 									int *length,
 									int batch_size,
 									int angles_stride);

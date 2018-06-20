@@ -14,7 +14,7 @@ from FullAtomModel import Angles2Coords
 
 if __name__=='__main__':
 	L=10
-	x0 = Variable(torch.randn(1, 2, L).double().cuda())
+	x0 = Variable(torch.randn(1, 2, L).float().cuda())
 	# x0.data.fill_(0.0)
 	length = Variable(torch.IntTensor(1).cuda().fill_(L))
 	a2c = Angles2CoordsDihedral()

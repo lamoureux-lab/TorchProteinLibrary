@@ -10,7 +10,7 @@ here = os.path.normpath(os.path.dirname(__file__))
 lib_dir = os.path.abspath(os.path.join(here, '../../../'))
 sources = [ os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp')
 			]
-headers = [	os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.h')
+headers = [	os.path.join(lib_dir,'Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface_float.h')
 			]
 
 include_dirs = [

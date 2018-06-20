@@ -125,6 +125,9 @@ if(NOT FAM_ONLY)
   #Test backbone computation
   # add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
   # target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
+
+  add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
+  target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
 endif(NOT FAM_ONLY)
 
 #Test FullAtomModel

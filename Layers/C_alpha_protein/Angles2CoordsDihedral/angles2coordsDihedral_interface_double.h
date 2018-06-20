@@ -1,0 +1,2 @@
+void Angles2Coords_forward(  THCudaDoubleTensor *input_angles, THCudaDoubleTensor *output_coords, THCudaIntTensor *angles_length, THCudaDoubleTensor *A);
+void Angles2Coords_backward( THCudaDoubleTensor *gradInput,THCudaDoubleTensor *gradOutput, THCudaDoubleTensor *input_angles, THCudaIntTensor *angles_length, THCudaDoubleTensor *A, THCudaDoubleTensor *dr_dangle);

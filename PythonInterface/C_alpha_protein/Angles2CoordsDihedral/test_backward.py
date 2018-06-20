@@ -15,8 +15,8 @@ from angles2coordsDihedral import Angles2CoordsDihedral as Angles2Coords
 
 def test_gradient():
 	L=10
-	x0 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda(), requires_grad=True)
-	x1 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda())
+	x0 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda(), requires_grad=True)
+	x1 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(1).fill_(L).cuda())
 	
 	model = Angles2Coords()
@@ -48,8 +48,8 @@ def test_gradient():
 def test_gradient_batch():
 	L=450
 	batch_size = 2
-	x0 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
-	x1 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda())
+	x0 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
+	x1 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
 		
 	model = Angles2Coords()
