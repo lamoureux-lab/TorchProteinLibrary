@@ -26,23 +26,13 @@ __global__ void computeCoordinatesDihedral( REAL *angles,	REAL *atoms, REAL *A, 
 }
 
 __global__ void computeGradientsOptimizedDihedral( REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride){
-	// uint batch_size = blockDim.x;	
-	// uint batch_idx = blockIdx.x;
-	// uint atom_i_idx = threadIdx.x;
-	// uint angle_k_idx = threadIdx.y;
 	
-	//Time 1
-	// uint batch_size = blockDim.x;
-	// uint batch_idx = blockIdx.x;
-	// uint atom_i_idx = blockIdx.y;
-	// uint angle_k_idx = blockIdx.z;
-
-	//Time 2
 	uint batch_size = blockDim.x;
 	uint batch_idx = blockIdx.x;
-	uint atom_i_idx = blockIdx.y;
-	uint angle_k_idx = threadIdx.x;
-	
+	uint angle_k_idx = blockIdx.y; 
+	uint atom_i_idx = threadIdx.x;
+
+		
 	int num_angles = length[batch_idx];
 	int num_atoms = num_angles;
 	int atoms_stride = angles_stride;
@@ -79,6 +69,7 @@ __global__ void computeGradientsOptimizedDihedral( REAL *angles, REAL *dR_dangle
 		mat44Mul(d_A + (angle_k_idx-1)*16, dBk_dPhik, tmp1);
 	else
 		setMat44(tmp1, dBk_dPhik);
+
 	mat44Mul(Ak_inv, d_A + atom_i_idx*16, tmp2);
 	mat44Mul(tmp1, tmp2, tmp3);
 	mat44Vec3Mul(tmp3, origin, dR_dPhi);
@@ -94,8 +85,7 @@ __global__ void computeGradientsOptimizedDihedral( REAL *angles, REAL *dR_dangle
 	mat44Mul(Ak1_inv, d_A + atom_i_idx*16, tmp2);
 	mat44Mul(tmp1, tmp2, tmp3);
 	mat44Vec3Mul(tmp3, origin, dR_dPsi);
-	
-	
+		
 }
 
 __global__ void backwardFromCoordinates(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int angles_stride){
@@ -127,14 +117,7 @@ void cpu_computeCoordinatesDihedral(REAL *angles, REAL *atoms, REAL *A, int *len
 }
 
 void cpu_computeDerivativesDihedral(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int batch_size, int angles_stride){
-	// dim3 angles_dim(angles_stride, angles_stride, 1);
-	// computeGradientsOptimizedDihedral<<<batch_size, angles_dim>>>(angles, dR_dangle, A, length, angles_stride);
 	
-	//Time 1: 778ms
-	// dim3 batch_angles_dim(batch_size, angles_stride, angles_stride);
-	// computeGradientsOptimizedDihedral<<<batch_angles_dim, 1>>>(angles, dR_dangle, A, length, angles_stride);
-
-	//Time 2: 43ms
 	dim3 batch_angles_dim(batch_size, angles_stride, 1);
 	computeGradientsOptimizedDihedral<<<batch_angles_dim, angles_stride>>>(angles, dR_dangle, A, length, angles_stride);
 }
