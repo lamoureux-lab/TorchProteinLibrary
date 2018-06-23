@@ -72,7 +72,11 @@ __global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle
         mat44Mul(A3k1_inv, d_A + atom_i_idx*16, tmp2);
         mat44Mul(tmp1, tmp2, tmp3);
         mat44Vec3Mul(tmp3, origin, dR_dPhi);
-		if(norm)vec3Normalize(dR_dPhi);
+		if(norm){
+			REAL norm = getVec3Norm(dR_dPhi);
+			if(norm>1E-5)vec3Mul(dR_dPhi, 1.0/norm);
+		}
+
     }
 	
 	//dA_i / dpsi_k
@@ -85,7 +89,10 @@ __global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle
         mat44Mul(A3k2_inv, d_A + atom_i_idx*16, tmp2);
         mat44Mul(tmp1, tmp2, tmp3);
         mat44Vec3Mul(tmp3, origin, dR_dPsi);
-		if(norm)vec3Normalize(dR_dPsi);
+		if(norm){
+			REAL norm = getVec3Norm(dR_dPsi);
+			if(norm>1E-5)vec3Mul(dR_dPsi, 1.0/norm);
+		}
     }
 	
 }
