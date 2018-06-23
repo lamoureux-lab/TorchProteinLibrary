@@ -1,7 +1,5 @@
 #include "cTensorProteinCUDAKernels.h"
-// #include "cMathCUDAKernels.h"
 #include "cMathCUDAKernels.cu"
-
 
 __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, int *length, int angles_stride){
 	uint batch_idx = threadIdx.x;
@@ -37,7 +35,7 @@ __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, 
 	}
 }
 
-__global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride){
+__global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride, bool norm){
 	
 	uint batch_size = blockDim.x;
 	uint batch_idx = blockIdx.x;
@@ -74,6 +72,7 @@ __global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle
         mat44Mul(A3k1_inv, d_A + atom_i_idx*16, tmp2);
         mat44Mul(tmp1, tmp2, tmp3);
         mat44Vec3Mul(tmp3, origin, dR_dPhi);
+		if(norm)vec3Normalize(dR_dPhi);
     }
 	
 	//dA_i / dpsi_k
@@ -86,6 +85,7 @@ __global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle
         mat44Mul(A3k2_inv, d_A + atom_i_idx*16, tmp2);
         mat44Mul(tmp1, tmp2, tmp3);
         mat44Vec3Mul(tmp3, origin, dR_dPsi);
+		if(norm)vec3Normalize(dR_dPsi);
     }
 	
 }
@@ -119,10 +119,10 @@ void cpu_computeCoordinatesBackbone(REAL *angles, REAL *atoms, REAL *A, int *len
 	computeCoordinatesBackbone<<<1, batch_size>>>(angles, atoms, A, length, angles_stride);
 }
 
-void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int batch_size, int angles_stride){
+void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int batch_size, int angles_stride, bool norm){
 	
 	dim3 batch_angles_dim(batch_size, 3*angles_stride, 1);
-	computeGradientsOptimizedBackbone<<<batch_angles_dim, angles_stride>>>(angles, dR_dangle, A, length, angles_stride);
+	computeGradientsOptimizedBackbone<<<batch_angles_dim, angles_stride>>>(angles, dR_dangle, A, length, angles_stride, norm);
 }
 
 void cpu_backwardFromCoordsBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int batch_size, int angles_stride){

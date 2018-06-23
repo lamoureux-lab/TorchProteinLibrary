@@ -30,6 +30,6 @@ except:
     print "No utils"
 
 try:
-    from PythonInterface import Angles2CoordsDihedral, Coords2RMSDCuda
+    from PythonInterface import Angles2CoordsDihedral, Coords2RMSDCuda, Angles2Backbone
 except:
     print "No C-alpha model"

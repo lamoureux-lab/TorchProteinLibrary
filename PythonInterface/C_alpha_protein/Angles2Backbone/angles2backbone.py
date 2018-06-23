@@ -11,7 +11,8 @@ class Angles2BackboneFunction(Function):
 	"""
 	
 	@staticmethod
-	def forward(ctx, input, angles_length):
+	def forward(ctx, input, angles_length, norm):
+		ctx.normalize = norm
 		ctx.angles_max_length = torch.max(angles_length)
 		ctx.atoms_max_length = 3*ctx.angles_max_length
 		if len(input.size())==3:
@@ -46,18 +47,19 @@ class Angles2BackboneFunction(Function):
 		dr_dangle.fill_(0.0)
 		gradInput_gpu.fill_(0.0)
 		
-		cppAngles2Backbone.Angles2Backbone_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
+		cppAngles2Backbone.Angles2Backbone_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle, ctx.normalize)
 		
 		if math.isnan(torch.sum(gradInput_gpu)):
 			print 'GradInput: ', gradInput_gpu
 			print 'GradOutput: ', gradOutput
 			raise(Exception('Angles2BackboneFunction: backward Nan'))		
 		
-		return Variable(gradInput_gpu), None
+		return Variable(gradInput_gpu), None, None
 
 class Angles2Backbone(Module):
-	def __init__(self):
+	def __init__(self, normalize = False):
 		super(Angles2Backbone, self).__init__()
+		self.normalize = normalize
 		
 	def forward(self, input, angles_length):
-		return Angles2BackboneFunction.apply(input, angles_length)
+		return Angles2BackboneFunction.apply(input, angles_length, self.normalize)

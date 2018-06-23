@@ -13,7 +13,8 @@ void cpu_computeDerivativesBackbone(REAL *angles,
 									REAL *A,       
 									int *length,
 									int batch_size,
-									int angles_stride);
+									int angles_stride,
+									bool norm);
 
 void cpu_backwardFromCoordsBackbone(REAL *angles,
 									REAL *dR_dangle,
