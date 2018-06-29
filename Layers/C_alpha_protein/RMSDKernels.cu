@@ -56,8 +56,8 @@ __device__ void mat33Vec3Mul(double *d_m, double *d_v, double *dst){
 }
 
 __global__ void gpu_transformCoordinates( double *d_coordinates_src, double *d_coordinates_dst, double *d_matrix, int atoms_stride){
-    int atom_idx = threadIdx.x;
-    int batch_idx = blockIdx.x;
+    int atom_idx = blockIdx.x;
+    int batch_idx = threadIdx.x;
     double *coordinates_src = d_coordinates_src + batch_idx*atoms_stride*3;
     double *coordinates_dst = d_coordinates_dst + batch_idx*atoms_stride*3;
     double *matrix = d_matrix + 9*batch_idx;
@@ -87,7 +87,7 @@ void cpu_transformCoordinates( double *d_coordinates_src, //input: coordinates t
                                 double *d_matrix,            //input: transformation matrix
                                 int batch_size, int coords_stride){
     int max_num_atoms = coords_stride/3;
-    gpu_transformCoordinates<<<batch_size, max_num_atoms>>>(d_coordinates_src, d_coordinates_dst, d_matrix, max_num_atoms);
+    gpu_transformCoordinates<<<max_num_atoms, batch_size>>>(d_coordinates_src, d_coordinates_dst, d_matrix, max_num_atoms);
 }
 
 

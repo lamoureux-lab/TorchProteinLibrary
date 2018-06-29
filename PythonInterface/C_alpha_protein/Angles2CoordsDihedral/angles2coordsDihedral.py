@@ -33,7 +33,7 @@ class Angles2CoordsDihedralFunction(Function):
 			
 	@staticmethod
 	def backward(ctx, gradOutput):
-		gradOutput = gradOutput.contiguous()
+		gradOutput = gradOutput.contiguous().float()
 		input_angles, angles_length = ctx.saved_tensors
 		if len(input_angles.size()) == 3:
 			batch_size = input_angles.size(0)

@@ -19,7 +19,7 @@ def test_gradient():
 	x1 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(1).fill_(L).cuda())
 	
-	model = Angles2Coords()
+	model = Angles2Coords(normalize=False)
 		
 	basis_x0 = model(x0, length)
 	err_x0 = basis_x0.sum()
@@ -53,7 +53,7 @@ def test_gradient_batch():
 	x1 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
 		
-	model = Angles2Coords()
+	model = Angles2Coords(normalize=False)
 
 	basis_x0 = model(x0, length)
 	err_x0 = basis_x0.sum()

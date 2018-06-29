@@ -53,10 +53,10 @@ def test_gradient():
 def test_gradient_combined():
 	L = 10
 	batch_size = 5
-	angles0 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
-	angles1 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda())
+	angles0 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
+	angles1 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
-	target = Variable(torch.DoubleTensor(batch_size, L*3).normal_().cuda())
+	target = Variable(torch.FloatTensor(batch_size, L*3).normal_().cuda())
 	
 	model = Angles2CoordsDihedral()
 	loss = Coords2RMSD()
@@ -67,7 +67,7 @@ def test_gradient_combined():
 	rmsd_x0.sum().backward()
 	
 	float_rmsd_x0 = torch.sqrt(rmsd_x0).sum().data[0]
-	back_grad_angles0 = torch.DoubleTensor(angles0.grad.size()).copy_(angles0.grad.data)
+	back_grad_angles0 = torch.FloatTensor(angles0.grad.size()).copy_(angles0.grad.data)
 	
 	print float_rmsd_x0
 

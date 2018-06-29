@@ -33,6 +33,8 @@ int main(int argc, char** argv)
 	THCudaInit(state); 
     int max_length = 650;
     int batch_size = 64;
+    // int batch_size = 1;
+    // int max_length = 1;
     CUDA_REAL_TENSOR_VAR *input_angles = CUDA_REAL_TENSOR(newWithSize3d)(state, batch_size, 2, max_length);
     CUDA_REAL_TENSOR_VAR *output_coords = CUDA_REAL_TENSOR(newWithSize2d)(state, batch_size, 3*max_length*3);
     THCudaIntTensor *length = THCudaIntTensor_newWithSize1d(state, batch_size);
@@ -64,8 +66,7 @@ int main(int argc, char** argv)
                                     CUDA_REAL_TENSOR(data)(state, A),
                                     THCudaIntTensor_data(state, length),
                                     input_angles->size[0],
-                                    input_angles->size[2],
-                                    true);
+                                    input_angles->size[2]);
     cudaEventRecord(stopBwd1);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
@@ -77,7 +78,8 @@ int main(int argc, char** argv)
                             CUDA_REAL_TENSOR(data)(state, dr_dangle),
                             THCudaIntTensor_data(state, length),
                             input_angles->size[0],
-                            input_angles->size[2]);
+                            input_angles->size[2],
+                            true);
     cudaEventRecord(stopBwd2);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );

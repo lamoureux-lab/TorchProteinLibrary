@@ -52,15 +52,15 @@ extern "C" {
                                         CUDA_REAL_TENSOR(data)(state, A),
                                         THCudaIntTensor_data(state, angles_length),
                                         input_angles->size[0],
-                                        input_angles->size[2],
-                                        bnorm);
+                                        input_angles->size[2]);
         
         cpu_backwardFromCoordsBackbone( CUDA_REAL_TENSOR(data)(state, gradInput),
                                 CUDA_REAL_TENSOR(data)(state, gradOutput),
                                 CUDA_REAL_TENSOR(data)(state, dr_dangle),
                                 THCudaIntTensor_data(state, angles_length),
                                 input_angles->size[0],
-                                input_angles->size[2]);
+                                input_angles->size[2],
+                                bnorm);
     }
 
 

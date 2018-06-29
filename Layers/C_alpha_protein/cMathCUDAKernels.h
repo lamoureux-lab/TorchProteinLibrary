@@ -31,6 +31,7 @@ extern __device__ void mat44Mul(REAL *d_m1, REAL *d_m2, REAL *dst);
 extern __device__ void mat44Vec4Mul(REAL *d_m, REAL *d_v, REAL *dst);
 // Multiplies two 4x4 matrixe by 4-vector and puts the result to dst
 extern __device__ void mat44Vec3Mul(REAL *d_m, REAL *d_v, REAL *dst);
+extern __device__ void mat44Zero3Mul(REAL *d_m, REAL *dst);
 // Multiplies two 4x4 matrixe by 3-vector and puts the result to dst
 extern __device__ void setVec3(REAL *d_v, REAL x, REAL y, REAL z);
 // Initializes a 3-vector
