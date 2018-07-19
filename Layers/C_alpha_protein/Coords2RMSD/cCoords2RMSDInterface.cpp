@@ -111,8 +111,7 @@ extern "C" {
             THDoubleTensor_free(vec);
             THDoubleTensor_free(eig);
             THCudaDoubleTensor_free(state, rot_mat_t);
-            
-            
+            THCudaDoubleTensor_free(state, T);
         }
     }
 }
