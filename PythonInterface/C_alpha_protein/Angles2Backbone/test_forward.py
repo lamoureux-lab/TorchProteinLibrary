@@ -26,7 +26,7 @@ if __name__=='__main__':
 	x0 = x0.cpu()
 	sequence = ''
 	for i in xrange(L):
-		sequence += 'G'
+		sequence += 'P'
 	print sequence
 	x1 = Variable(torch.zeros(1, 7, L).double())
 	x1.data[:,0:2,:].copy_(x0.data)

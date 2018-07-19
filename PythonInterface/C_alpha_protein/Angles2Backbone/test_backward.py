@@ -17,6 +17,8 @@ def test_gradient():
 	L=10
 	x0 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda(), requires_grad=True)
 	x1 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda())
+	# x0 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda(), requires_grad=True)
+	# x1 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(1).fill_(L).cuda())
 	
 	model = Angles2Coords(normalize=False)
@@ -25,6 +27,7 @@ def test_gradient():
 	err_x0 = basis_x0.sum()
 	err_x0.backward()
 	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)
+	# back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
 	
 	grads = [[],[]]
 	for a in range(0,2):
@@ -51,6 +54,8 @@ def test_gradient_batch():
 	batch_size = 2
 	x0 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
 	x1 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda())
+	# x0 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
+	# x1 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda())
 	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
 		
 	model = Angles2Coords(normalize=False)
@@ -59,6 +64,7 @@ def test_gradient_batch():
 	err_x0 = basis_x0.sum()
 	err_x0.backward()
 	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)
+	# back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
 		
 	
 	for b in range(0,batch_size):

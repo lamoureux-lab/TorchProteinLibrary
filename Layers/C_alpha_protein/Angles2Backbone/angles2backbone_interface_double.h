@@ -1,0 +1,2 @@
+int Angles2Backbone_forward(THCudaDoubleTensor *input_angles, THCudaDoubleTensor *output_coords, THCudaIntTensor *angles_length, THCudaDoubleTensor *A);
+int Angles2Backbone_backward(THCudaDoubleTensor *gradInput,THCudaDoubleTensor *gradOutput,THCudaDoubleTensor *input_angles, THCudaIntTensor *angles_length, THCudaDoubleTensor *A, THCudaDoubleTensor *dr_dangle,  int norm);

@@ -5,6 +5,8 @@
 extern THCState *state;
 #define CUDA_REAL_TENSOR_VAR THCudaTensor
 #define CUDA_REAL_TENSOR(X) THCudaTensor_##X
+// #define CUDA_REAL_TENSOR_VAR THCudaDoubleTensor
+// #define CUDA_REAL_TENSOR(X) THCudaDoubleTensor_##X
 bool int2bool(int add_terminal){
     bool add_term;
     if(add_terminal == 1){

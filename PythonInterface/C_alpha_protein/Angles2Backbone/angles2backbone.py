@@ -19,6 +19,8 @@ class Angles2BackboneFunction(Function):
 			batch_size = input.size(0)
 			output_coords_gpu = torch.FloatTensor(batch_size, 3*(ctx.atoms_max_length)).cuda()
 			ctx.A = torch.FloatTensor(batch_size, 16*ctx.atoms_max_length).cuda()
+			# output_coords_gpu = torch.DoubleTensor(batch_size, 3*(ctx.atoms_max_length)).cuda()
+			# ctx.A = torch.DoubleTensor(batch_size, 16*ctx.atoms_max_length).cuda()
 		else:
 			raise Exception('Angles2CoordsFunction: ', 'Incorrect input size:', input.size()) 
 
@@ -41,6 +43,8 @@ class Angles2BackboneFunction(Function):
 			batch_size = input_angles.size(0)
 			gradInput_gpu = torch.FloatTensor(batch_size, 2, ctx.angles_max_length).cuda()
 			dr_dangle = torch.FloatTensor(batch_size, 2, 3*ctx.atoms_max_length*ctx.angles_max_length).cuda()
+			# gradInput_gpu = torch.DoubleTensor(batch_size, 2, ctx.angles_max_length).cuda()
+			# dr_dangle = torch.DoubleTensor(batch_size, 2, 3*ctx.atoms_max_length*ctx.angles_max_length).cuda()
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
 		
@@ -62,4 +66,11 @@ class Angles2Backbone(Module):
 		self.normalize = normalize
 		
 	def forward(self, input, angles_length):
+		# stringListTensor = Variable(convertStringList(sequences))
+				
+		# self.num_atoms = []
+		# for seq in sequences:
+		# 	self.num_atoms.append(cppPDB2Coords.getSeqNumAtoms(seq, self.add_term))
+		# num_atoms = Variable(torch.IntTensor(self.num_atoms))
+
 		return Angles2BackboneFunction.apply(input, angles_length, self.normalize)

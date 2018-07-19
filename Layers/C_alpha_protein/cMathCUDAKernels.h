@@ -2,6 +2,7 @@
 #define MATH_CUDA_KERNELS_H
 
 #define REAL float
+// #define REAL double
 
 extern __device__ void getRotationMatrix(REAL *d_data, REAL alpha, REAL beta, REAL R);
 // Fills rotation-translation 4x4 matrix. 

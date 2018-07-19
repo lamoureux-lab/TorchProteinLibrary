@@ -92,19 +92,20 @@ __global__ void computeGradientsOptimizedBackbone( REAL *angles, REAL *dR_dangle
 
 __global__ void computeGradientsOptimizedBackbonePhi( REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride){
 	
-	volatile uint batch_size = blockDim.x;
-	volatile uint batch_idx = blockIdx.x;
-	volatile uint atom_i_idx = blockIdx.y;
-    volatile uint local_angle_k_idx = threadIdx.x;
-    volatile uint angle_k_idx = blockIdx.z*WARP_SIZE + local_angle_k_idx;
+	uint batch_size = blockDim.x;
+	uint batch_idx = blockIdx.x;
+	uint atom_i_idx = blockIdx.y;
+    uint local_angle_k_idx = threadIdx.x;
+    uint angle_k_idx = blockIdx.z*WARP_SIZE + local_angle_k_idx;
 
-	volatile int num_angles = length[batch_idx];
-	volatile int num_atoms = 3*num_angles;
-	volatile int atoms_stride = 3*angles_stride;
+	int num_angles = length[batch_idx];
+	int num_atoms = 3*num_angles;
+	int atoms_stride = 3*angles_stride;
 
 	REAL *d_A = A + batch_idx * atoms_stride * 16;
 	REAL *d_A_warp = d_A + 3*blockIdx.z*WARP_SIZE*16;
-	__shared__ REAL s_A [WARP_SIZE*3*16];
+	__shared__ REAL s_A[WARP_SIZE*3*16];
+	
 	for(int i=local_angle_k_idx; i<WARP_SIZE*3*16; i+=WARP_SIZE){
 		s_A[i] = d_A_warp[i];
 	}
@@ -118,30 +119,33 @@ __global__ void computeGradientsOptimizedBackbonePhi( REAL *angles, REAL *dR_dan
 	//dA_i / dphi_k
     if( (3*angle_k_idx+1) > atom_i_idx){
         setVec3(dR_dPhi, 0, 0, 0);
+		
     }else{
 		getRotationMatrixDihedralDPsi(tmp2, d_phi[angle_k_idx], C_N_CA, R_N_CA);
-        mat44Mul(s_A + (3*local_angle_k_idx)*16, tmp2, tmp1);
+        mat44Mul(&s_A[3*local_angle_k_idx*16], tmp2, tmp1);
 
-        invertMat44(tmp3, s_A + (3*local_angle_k_idx+1)*16);
+        invertMat44(tmp3, &s_A[(3*local_angle_k_idx+1)*16]);
         mat44Mul(tmp3, d_A + atom_i_idx*16, tmp2);
 		
         mat44Mul(tmp1, tmp2, tmp3);
         mat44Zero3Mul(tmp3, dR_dPhi);
+		
+		
 	}
 	
 }
 
 __global__ void computeGradientsOptimizedBackbonePsi( REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride){
 	
-	volatile uint batch_size = blockDim.x;
-	volatile uint batch_idx = blockIdx.x;
-	volatile uint atom_i_idx = blockIdx.y;
-	volatile uint local_angle_k_idx = threadIdx.x;
-    volatile uint angle_k_idx = blockIdx.z*WARP_SIZE + local_angle_k_idx;
+	uint batch_size = blockDim.x;
+	uint batch_idx = blockIdx.x;
+	uint atom_i_idx = blockIdx.y;
+	uint local_angle_k_idx = threadIdx.x;
+    uint angle_k_idx = blockIdx.z*WARP_SIZE + local_angle_k_idx;
 			
-	volatile int num_angles = length[batch_idx];
-	volatile int num_atoms = 3*num_angles;
-	volatile int atoms_stride = 3*angles_stride;
+	int num_angles = length[batch_idx];
+	int num_atoms = 3*num_angles;
+	int atoms_stride = 3*angles_stride;
 	
 	REAL *d_A = A + batch_idx * atoms_stride * 16;
 	REAL *d_A_warp = d_A + 3*blockIdx.z*WARP_SIZE*16;
@@ -203,7 +207,36 @@ __global__ void backwardFromCoordinatesBackbone(REAL *angles, REAL *dr, REAL *dR
 	}
 	
 }
+/*
+__global__ void backwardFromCoordinatesBackbonePhi(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int angles_stride, bool norm){
+	int batch_idx = blockIdx.x;
+	int batch_size = blockDim.x;
+	int local_angle_idx = threadIdx.x;
+	int global_angle_idx = blockIdx.y*WARP_SIZE + threadIdx.x;
+	int num_angles = length[batch_idx];
+	int num_atoms = 3*num_angles;
+	int atoms_stride = 3*angles_stride;
+	
+	REAL *d_phi = angles + 2*batch_idx*angles_stride + global_angle_idx;
+	REAL *dR_dPhi = dR_dangle + 2*batch_idx * (atoms_stride*angles_stride*3);
+	REAL *d_dr = dr + batch_idx*atoms_stride*3;
+	REAL mag;
 
+	for(int j=3*angle_idx+2; j<num_atoms; j++){
+		(*d_phi) += vec3Mul(d_dr+3*j, dR_dPhi + j*angles_stride*3 + angle_idx*3);
+	}
+	
+	if(norm){
+		if (abs((*d_phi))>10.0){
+			(*d_phi) = copysignf(1, (*d_phi))*10.0;
+		}
+		if (abs((*d_psi))>10.0){
+			(*d_psi) = copysignf(1, (*d_psi))*10.0;
+		}
+	}
+	
+}
+*/
 
 void cpu_computeCoordinatesBackbone(REAL *angles, REAL *atoms, REAL *A, int *length, int batch_size, int angles_stride){
 	computeCoordinatesBackbone<<<1, batch_size>>>(angles, atoms, A, length, angles_stride);
@@ -217,4 +250,7 @@ void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int 
 
 void cpu_backwardFromCoordsBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int batch_size, int angles_stride, bool norm){
 	backwardFromCoordinatesBackbone<<<batch_size, angles_stride>>>(angles, dr, dR_dangle, length, angles_stride, norm);
+	// dim3 batch_angles_dim_special(batch_size, 3*angles_stride, angles_stride/WARP_SIZE + 1);
+	// backwardFromCoordinatesBackbonePhi<<<batch_size, angles_stride>>>(angles, dr, dR_dangle, length, angles_stride, norm);
 }
+
