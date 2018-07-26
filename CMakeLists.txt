@@ -23,6 +23,7 @@ INCLUDE_DIRECTORIES(
 )
 
 if(NOT FAM_ONLY)
+  # SET(CUDA_SEPARABLE_COMPILATION ON)
   if(GRAHAM)
     FIND_PACKAGE(CUDA 8.0 REQUIRED)
   endif(GRAHAM)
@@ -81,6 +82,9 @@ if(NOT FAM_ONLY)
   #CALPHA_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for C-alpha protein model
   include_directories("Layers/C_alpha_protein")
   add_subdirectory(Layers/C_alpha_protein)
+
+  include_directories("Layers/Volume")
+  add_subdirectory(Layers/Volume)
 endif(NOT FAM_ONLY)
 
 #FULL-ATOM MODEL
@@ -130,8 +134,11 @@ if(NOT FAM_ONLY)
   #add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
   #target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
 
-  #add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
-  #target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
+  # add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
+  # target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
+
+  add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
+  target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV )
 endif(NOT FAM_ONLY)
 
 #Test FullAtomModel

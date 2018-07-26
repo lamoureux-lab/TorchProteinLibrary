@@ -78,8 +78,8 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     }
     return num_atoms;
 }
-void ProtUtil::translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords){
-    uint num_atoms = input_coords->size[0]/3;
+void ProtUtil::translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms){
+    // uint num_atoms = input_coords->size[0]/3;
     double *data_in = THDoubleTensor_data(input_coords);
     double *data_out = THDoubleTensor_data(output_coords);
     for(int i=0;i<num_atoms;i++){
@@ -96,8 +96,7 @@ void ProtUtil::translate(THDoubleTensor *coords, cVector3 T){
         r = r + T;
     }
 }
-void ProtUtil::rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords){
-    uint num_atoms = input_coords->size[0]/3;
+void ProtUtil::rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords, int num_atoms){
     double *data_in = THDoubleTensor_data(input_coords);
     double *data_out = THDoubleTensor_data(output_coords);
     for(int i=0;i<num_atoms;i++){
@@ -149,14 +148,13 @@ cVector3 ProtUtil::getRandomTranslation(THGenerator *gen, uint spatial_dim, cVec
     return cVector3(dx, dy, dz);
 }
 
-void ProtUtil::computeBoundingBox(THDoubleTensor *input_coords, cVector3 &b0, cVector3 &b1){
+void ProtUtil::computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, cVector3 &b0, cVector3 &b1){
 	b0[0]=std::numeric_limits<double>::infinity(); 
 	b0[1]=std::numeric_limits<double>::infinity(); 
 	b0[2]=std::numeric_limits<double>::infinity();
 	b1[0]=-1*std::numeric_limits<double>::infinity(); 
 	b1[1]=-1*std::numeric_limits<double>::infinity(); 
 	b1[2]=-1*std::numeric_limits<double>::infinity();
-    uint num_atoms = input_coords->size[0]/3;
     double *data = THDoubleTensor_data(input_coords);
     for(int i=0;i<num_atoms;i++){
         cVector3 r(data + 3*i);

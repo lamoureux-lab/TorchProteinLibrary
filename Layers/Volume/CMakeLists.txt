@@ -1,0 +1,7 @@
+find_library(CUFFT_LIBRARY cufft HINTS /usr/local/cuda-9.1/lib64)
+find_library(CULIBOS_LIBRARY culibos HINTS /usr/local/cuda-9.1/lib64)
+find_library(CUDEVRT_LIBRARY cudadevrt HINTS /usr/local/cuda-9.1/lib64)
+find_library(CUDART_LIBRARY cudart HINTS /usr/local/cuda-9.1/lib64)
+CUDA_ADD_LIBRARY(VOLUMECONV VolumeConv.cu)
+TARGET_LINK_LIBRARIES(VOLUMECONV ${CUFFT_LIBRARY} )
+#${CULIBOS_LIBRARY} ${CUDEVRT_LIBRARY} ${CUDART_LIBRARY} pthread dl 

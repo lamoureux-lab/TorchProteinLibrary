@@ -40,11 +40,11 @@ namespace ProtUtil{
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 
-    void rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords);
+    void rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords, int num_atoms);
     void rotate(THDoubleTensor *coords, cMatrix33 R);
-    void translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords);
+    void translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms);
     void translate(THDoubleTensor *coords, cVector3 T);
-    void computeBoundingBox(THDoubleTensor *input_coords, cVector3 &b0, cVector3 &b1);
+    void computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, cVector3 &b0, cVector3 &b1);
 
     cMatrix33 getRandomRotation(THGenerator *gen);
     cVector3 getRandomTranslation(THGenerator *gen, uint spatial_dim, cVector3 b0, cVector3 b1);
