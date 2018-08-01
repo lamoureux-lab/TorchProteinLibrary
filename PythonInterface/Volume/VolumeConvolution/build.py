@@ -18,7 +18,8 @@ include_dirs = [
 	os.path.join(lib_dir, 'Layers/Volume'),
 ]
 library_dirs=[	os.path.join(lib_dir, 'build/Layers/Volume'),
-				os.path.join(lib_dir, 'build/Math')]
+				os.path.join(lib_dir, 'build/Math'),
+				os.path.join(lib_dir, '/usr/local/cuda-9.1/lib64')]
 
 defines = []
 with_cuda = True
@@ -33,7 +34,7 @@ ffi = create_extension(
 	include_dirs = include_dirs,
 	extra_compile_args=["-fopenmp"],
 	extra_link_args = [],
-	libraries = ["VOLUMECONV", "TH_MATH"],
+	libraries = ["VOLUMECONV", "TH_MATH", "cufft"],
 	library_dirs = library_dirs
 )
 

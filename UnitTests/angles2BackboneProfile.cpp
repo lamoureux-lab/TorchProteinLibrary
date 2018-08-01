@@ -14,8 +14,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 
-#define CUDA_REAL_TENSOR_VAR THCudaDoubleTensor
-#define CUDA_REAL_TENSOR(X) THCudaDoubleTensor_##X
+#define CUDA_REAL_TENSOR_VAR THCudaTensor
+#define CUDA_REAL_TENSOR(X) THCudaTensor_##X
                             
 int main(int argc, char** argv)
 {

@@ -32,17 +32,18 @@ extern "C" {
             throw("incorrect input dimension");
         }
         
-        cpu_VolumeConvGrad( CUDA_REAL_TENSOR(data)(state, gradOutput),
-                            CUDA_REAL_TENSOR(data)(state, volume1),
-                            CUDA_REAL_TENSOR(data)(state, volume2),
-                            CUDA_REAL_TENSOR(data)(state, gradVolume1),
-                            volume1->size[0], volume1->size[1], true);
+        cpu_VolumeConv(	CUDA_REAL_TENSOR(data)(state, gradOutput), 
+							CUDA_REAL_TENSOR(data)(state, volume2), 
+							CUDA_REAL_TENSOR(data)(state, gradVolume1), 
+							volume1->size[0],
+                            volume1->size[1]);
         
-        cpu_VolumeConvGrad( CUDA_REAL_TENSOR(data)(state, gradOutput),
-                            CUDA_REAL_TENSOR(data)(state, volume2),
-                            CUDA_REAL_TENSOR(data)(state, volume1),
-                            CUDA_REAL_TENSOR(data)(state, gradVolume2),
-                            volume1->size[0], volume1->size[1], false);
+        cpu_VolumeConv(	CUDA_REAL_TENSOR(data)(state, gradOutput), 
+							CUDA_REAL_TENSOR(data)(state, volume1), 
+							CUDA_REAL_TENSOR(data)(state, gradVolume2), 
+							volume1->size[0],
+                            volume1->size[1]);
+        
     }
 
 
