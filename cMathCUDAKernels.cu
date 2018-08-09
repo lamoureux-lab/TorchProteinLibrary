@@ -292,7 +292,11 @@ __device__ void setVec3(REAL *src, REAL *dst){
 }
 
 __device__ REAL vec3Mul(const REAL *v1, const REAL *v2){
-	return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+  return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+}
+
+__device__ float vec3Mul(const float3 *v1, const float3 *v2){
+  return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
 __device__ void extract33RotationMatrix(REAL *mat44, REAL *mat33){

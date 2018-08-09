@@ -1,4 +1,4 @@
-//#include "cTensorProteinCUDAKernels.h"
+#include "cBackboneProteinCUDAKernels.h"
 #include "cMathCUDAKernels.cu"
 
 #define WARP_SIZE 32
