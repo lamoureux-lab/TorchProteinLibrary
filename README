@@ -1,0 +1,4 @@
+This needs access to cnpy: https://github.com/rogersce/cnpy
+
+You can build that library and dump the cnpy.h and libcnpy.a files in
+the root to make the Makefile work.
