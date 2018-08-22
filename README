@@ -2,3 +2,15 @@ This needs access to cnpy: https://github.com/rogersce/cnpy
 
 You can build that library and dump the cnpy.h and libcnpy.a files in
 the root to make the Makefile work.
+
+You will also need suitable input data files:
+
+A.npy
+dr_dangle.npy
+gradInput.npy
+gradInputRef.npy
+gradOutput.npy
+input_angles.npy
+
+There are suitable data files packed in data.tar.xz.  This archive
+will expand to 1.9Gb when uncompressed.
