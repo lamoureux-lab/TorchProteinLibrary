@@ -23,6 +23,7 @@ INCLUDE_DIRECTORIES(
 )
 
 if(NOT FAM_ONLY)
+  # SET(CUDA_SEPARABLE_COMPILATION ON)
   if(GRAHAM)
     FIND_PACKAGE(CUDA 8.0 REQUIRED)
   endif(GRAHAM)
@@ -35,8 +36,17 @@ if(NOT FAM_ONLY)
   INCLUDE_DIRECTORIES("${Torch_INSTALL_INCLUDE}/THC")
   LINK_DIRECTORIES(${TH_INSTALL_LIB})
 
-  LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC -arch=sm_52  -lineinfo")
-  #LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC -arch=sm_52")
+  
+  # SET(CUDA_CC "50" CACHE STRING "CUDA Compute Capability of the target GPU.")
+  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode;arch=compute_${CUDA_CC},code=sm_${CUDA_CC};")
+  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler;-fPIC")
+  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-rdc=true")
+  # SET(CUDA_SEPARABLE_COMPILATION ON)
+  # set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+  # SET(BUILD_SHARED_LIBS OFF)
+
+  LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC -arch=sm_52  -lineinfo ")
+  # LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC $CUDA_ARCH")
 
 endif(NOT FAM_ONLY)
 
@@ -81,6 +91,9 @@ if(NOT FAM_ONLY)
   #CALPHA_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for C-alpha protein model
   include_directories("Layers/C_alpha_protein")
   add_subdirectory(Layers/C_alpha_protein)
+
+  include_directories("Layers/Volume")
+  add_subdirectory(Layers/Volume)
 endif(NOT FAM_ONLY)
 
 #FULL-ATOM MODEL
@@ -127,8 +140,20 @@ if(NOT FAM_ONLY)
   # add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
   # target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
 
-  #add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
-  #target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
+  # add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
+  # target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
+
+  add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
+  target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
+
+  # CUDA_ADD_EXECUTABLE_DC(volumeConvolutionProfile "${CMAKE_SOURCE_DIR}/UnitTests/volumeConvolutionProfile.cpp" "TH THC VOLUMECONV" "" "")
+  cuda_add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
+  # set_property(TARGET volumeConvolutionProfile PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+  target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV)
+
+  find_library(CUFFT_LIBRARY cufft HINTS /usr/local/cuda-9.1/lib64)
+  cuda_add_executable(cudaConvolutions UnitTests/cudaConvolutions.cpp)
+  target_link_libraries (cudaConvolutions TH THC VOLUMECONV ${CUFFT_LIBRARY})
 
   add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
   target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)

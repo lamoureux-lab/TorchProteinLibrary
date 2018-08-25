@@ -8,9 +8,9 @@ this_file = os.path.dirname(__file__)
 
 here = os.path.normpath(os.path.dirname(__file__))
 lib_dir = os.path.abspath(os.path.join(here, '../../../'))
-sources = [ os.path.join(lib_dir,'Layers/FullAtomModel/Coords2CenteredCoords/coords2centeredcoords_interface.cpp')
+sources = [ os.path.join(lib_dir,'Layers/FullAtomModel/CoordsTransform/coordsTransform_interface.cpp')
 			]
-headers = [	os.path.join(lib_dir,'Layers/FullAtomModel/Coords2CenteredCoords/coords2centeredcoords_interface.h')
+headers = [	os.path.join(lib_dir,'Layers/FullAtomModel/CoordsTransform/coordsTransform_interface.h')
 			]
 
 include_dirs = [
@@ -24,7 +24,7 @@ defines = []
 with_cuda = False
 
 ffi = create_extension(
-	'Exposed.cppCoords2CenteredCoords',
+	'Exposed.cppCoordsTransform',
 	headers=headers,
 	sources=sources,
 	define_macros=defines,
@@ -39,5 +39,5 @@ ffi = create_extension(
 
 if __name__ == '__main__':
 	ffi.build()
-	from Exposed import cppCoords2CenteredCoords
-	print cppCoords2CenteredCoords.__dict__.keys()
+	from Exposed import cppCoordsTransform
+	print cppCoordsTransform.__dict__.keys()
