@@ -22,8 +22,8 @@ class Coords2RMSDFunction(Function):
 		else:
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
 		
-		re_input = torch.DoubleTensor(input.size()).cuda().copy_(input)
-		re_target = torch.DoubleTensor(target.size()).cuda().copy_(target)
+		re_input = torch.DoubleTensor(input.size()).cuda().copy_(input.double())
+		re_target = torch.DoubleTensor(target.size()).cuda().copy_(target.double())
 		
 		re_input.resize_(batch_size, max_atoms, 3)
 		re_target.resize_(batch_size, max_atoms, 3)

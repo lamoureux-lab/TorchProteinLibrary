@@ -107,7 +107,8 @@ __global__ void computeGradientsOptimizedBackbonePhi( REAL *angles, REAL *dR_dan
 	__shared__ REAL s_A[WARP_SIZE*3*16];
 	
 	for(int i=local_angle_k_idx; i<WARP_SIZE*3*16; i+=WARP_SIZE){
-		s_A[i] = d_A_warp[i];
+		if(i<atoms_stride*16)
+			s_A[i] = d_A_warp[i];
 	}
 	__syncthreads();
 
@@ -151,7 +152,9 @@ __global__ void computeGradientsOptimizedBackbonePsi( REAL *angles, REAL *dR_dan
 	REAL *d_A_warp = d_A + 3*blockIdx.z*WARP_SIZE*16;
 	__shared__ REAL s_A [WARP_SIZE*3*16];
 	for(int i=local_angle_k_idx; i<WARP_SIZE*3*16; i+=WARP_SIZE){
-		s_A[i] = d_A_warp[i];
+		if(i<atoms_stride*16)
+			s_A[i] = d_A_warp[i];
+		
 	}
 	__syncthreads();
 
