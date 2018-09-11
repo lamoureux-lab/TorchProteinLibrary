@@ -143,20 +143,20 @@ if(NOT FAM_ONLY)
   # add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
   # target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
 
-  add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
+  add_executable(Angles2BackboneProfile UnitTests/Angles2Backbone/angles2BackboneProfile.cpp)
   target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
 
-  # CUDA_ADD_EXECUTABLE_DC(volumeConvolutionProfile "${CMAKE_SOURCE_DIR}/UnitTests/volumeConvolutionProfile.cpp" "TH THC VOLUMECONV" "" "")
-  cuda_add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
-  # set_property(TARGET volumeConvolutionProfile PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-  target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV)
+  add_executable(Angles2BackboneMemtest UnitTests/Angles2Backbone/angles2BackboneMemtest.cpp)
+  target_link_libraries (Angles2BackboneMemtest TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
+
+
+  # cuda_add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
+  # target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV)
 
   find_library(CUFFT_LIBRARY cufft HINTS /usr/local/cuda-9.1/lib64)
   cuda_add_executable(cudaConvolutions UnitTests/cudaConvolutions.cpp)
   target_link_libraries (cudaConvolutions TH THC VOLUMECONV ${CUFFT_LIBRARY})
 
-  add_executable(Angles2BackboneProfile UnitTests/angles2BackboneProfile.cpp)
-  target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
 endif(NOT FAM_ONLY)
 
 #Test FullAtomModel
