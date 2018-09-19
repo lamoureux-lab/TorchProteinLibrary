@@ -1,9 +1,3 @@
-# import CppLayers
-# import Visualization
-# import Utils
-
-# from C_alpha_protein import Angles2CoordsDihedral, Angles2BasisDihedral, Coords2Pairs, Coords2RMSDAB, Pairs2Distributions
-# from C_alpha_protein import Angles2CoordsAB
 
 from FullAtomModel import Angles2Coords, Angles2Coords_save
 from FullAtomModel import Coords2RMSD
@@ -15,12 +9,7 @@ try:
     from FullAtomModel import PDB2Volume, PDB2VolumeLocal, SelectVolume
 except:
     pass
-try:
-    from Visualization import VisualizeVolume4d, visSequence, updateAngles
-except:
-    pass
 
-# from C_alpha_protein import Angles2CoordsAB, Coords2Pairs, Angles2CoordsDihedral
-from C_alpha_protein import Angles2CoordsDihedral
-from C_alpha_protein import Coords2RMSDCuda
-from C_alpha_protein import Angles2Backbone
+from ReducedModel import Angles2CoordsDihedral
+from ReducedModel import Coords2RMSDCuda
+from ReducedModel import Angles2Backbone

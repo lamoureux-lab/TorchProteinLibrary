@@ -1,2 +1,0 @@
-int Angles2Basis_forward(  THCudaTensor *input_angles,THCudaTensor *output_basis, THIntTensor *angles_length, THCudaTensor *B);
-int Angles2Basis_backward( THCudaTensor *gradInput,THCudaTensor *gradOutput,THCudaTensor *input_angles, THIntTensor *angles_length, THCudaTensor *B,THCudaTensor *daxis_dangle);

@@ -1,1 +1,0 @@
-int SaveVolumeXPlor(THFloatTensor *cpu_volume, const char* filename);

@@ -3,7 +3,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8)
 project(MainProj)
 option(FAM_ONLY "FAM_ONLY" OFF)
-
   
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
@@ -19,150 +18,51 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(
   ${TH_INSTALL_INCLUDE}/TH
+  ${TH_INSTALL_INCLUDE}/THC
   ${TH_INSTALL_INCLUDE}
 )
 
-if(NOT FAM_ONLY)
-  # SET(CUDA_SEPARABLE_COMPILATION ON)
-  if(GRAHAM)
-    FIND_PACKAGE(CUDA 8.0 REQUIRED)
-  endif(GRAHAM)
-  if(NOT GRAHAM)
-    FIND_PACKAGE(CUDA 9.1 REQUIRED)
-  endif(NOT GRAHAM)
-  
-  INCLUDE_DIRECTORIES("${CUDA_INCLUDE_DIRS}")
-
-  INCLUDE_DIRECTORIES("${Torch_INSTALL_INCLUDE}/THC")
-  LINK_DIRECTORIES(${TH_INSTALL_LIB})
-
-  
-  # SET(CUDA_CC "50" CACHE STRING "CUDA Compute Capability of the target GPU.")
-  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode;arch=compute_${CUDA_CC},code=sm_${CUDA_CC};")
-  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler;-fPIC")
-  # SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-rdc=true")
-  # SET(CUDA_SEPARABLE_COMPILATION ON)
-  # set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
-  # SET(BUILD_SHARED_LIBS OFF)
-
-  LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC -arch=sm_52  -lineinfo ")
-  # LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC $CUDA_ARCH")
-
-endif(NOT FAM_ONLY)
-
 LINK_DIRECTORIES(${TH_INSTALL_LIB})
 
-#TH_MATH: tensor scaling, rotating and saving to ccp4
+
+#CUDA
+if(GRAHAM)
+  FIND_PACKAGE(CUDA 8.0 REQUIRED)
+endif(GRAHAM)
+if(NOT GRAHAM)
+  FIND_PACKAGE(CUDA 9.1 REQUIRED)
+endif(NOT GRAHAM)
+
+INCLUDE_DIRECTORIES("${CUDA_INCLUDE_DIRS}")
+
+LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC -arch=sm_52  -lineinfo ")
+
+#CPU MATH
 include_directories("Math")
 add_subdirectory(Math)
-if(NOT FAM_ONLY)
-  #PROTEINLOADER: protein loading layer
-  #include_directories("Layers/PDB2Coords")
-  #add_subdirectory(Layers/PDB2Coords)
 
-  #COORDS2VOLUME: projection of coordinates on a grid on gpu
-  #include_directories("Layers/Coords2Volume")
-  #add_subdirectory(Layers/Coords2Volume)
+#BACKBONE_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for backbone protein model
+include_directories("Layers/ReducedModel")
+add_subdirectory(Layers/ReducedModel)
 
-  #TENSORUPSAMPLE: upsampling a tensor on cpu
-  #include_directories("Layers/Upsampling")
-  #add_subdirectory(Layers/Upsampling)
-endif(NOT FAM_ONLY)
-
-#GLFRAMEWORK: freeglut visualization library
-include_directories("GL")
-add_subdirectory(GL)
-
-#TENSORVIS: tensor visualization library
-include_directories("VolumeVisualization")
-add_subdirectory(VolumeVisualization)
-
-if(NOT FAM_ONLY)
- 
-
-  # UTILS: some useful utilities
-  include_directories("Utils")
-  add_subdirectory(Utils)
-
-  #ANGLES2BACKBONE: convert backbone dihedral angles to coordinates
-  # include_directories("Layers/Angles2Backbone")
-  # add_subdirectory(Layers/Angles2Backbone)
-
-  #CALPHA_INTERNAL_COORDINATES and CALPHARMSD: cuda libraries for C-alpha protein model
-  include_directories("Layers/C_alpha_protein")
-  add_subdirectory(Layers/C_alpha_protein)
-
-  include_directories("Layers/Volume")
-  add_subdirectory(Layers/Volume)
-endif(NOT FAM_ONLY)
+include_directories("Layers/Volume")
+add_subdirectory(Layers/Volume)
 
 #FULL-ATOM MODEL
 include_directories("Layers/FullAtomModel")
 add_subdirectory(Layers/FullAtomModel)
 
-#Remote visualization
-include_directories("Visualization")
-add_subdirectory(Visualization)
 
 
+add_executable(Angles2BackboneProfile UnitTests/Angles2Backbone/angles2BackboneProfile.cpp)
+target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES)
 
-if(NOT FAM_ONLY)
-  #Test tensor visualization using protein loading and visualizing it's density
-  #cuda_add_executable(cpuProteinLoaderTest UnitTests/cpuProteinLoaderTest.cpp)
-  #target_link_libraries (cpuProteinLoaderTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
+add_executable(Angles2BackboneMemtest UnitTests/Angles2Backbone/angles2BackboneMemtest.cpp)
+target_link_libraries (Angles2BackboneMemtest TH THC BACKBONE_INTERNAL_COORDINATES)
 
-  #Test PDB2Coords layer
-  #cuda_add_executable(pdb2CoordsTest UnitTests/pdb2CoordsTest.cpp)
-  #target_link_libraries (pdb2CoordsTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK)
+cuda_add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
+target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV)
 
-  #Test PDB2Coords layer
-  #cuda_add_executable(coords2VolumeTest UnitTests/coords2VolumeTest.cpp)
-  #target_link_libraries (coords2VolumeTest TH PROTEINLOADER MARCHINGCUBES GLFRAMEWORK COORDS2VOLUME)
-
-  #Test Utils saving 3d tensor to xplor
-  #add_executable(densityMapSaveTest UnitTests/densityMapSaveTest.cpp)
-  #target_link_libraries (densityMapSaveTest TH UTILS TH_MATH)
-
-  #Test upsampling of tensor on cpu
-  #add_executable(tensorUpsampleTest UnitTests/tensorUpsampleTest.cpp)
-  #target_link_libraries (tensorUpsampleTest TH TENSORUPSAMPLE TH_MATH)
-
-  #Test backbone computation
-  #add_executable(angles2BackboneTest UnitTests/angles2BackboneTest.cpp)
-  #target_link_libraries (angles2BackboneTest TH GLFRAMEWORK)
-
-
-  #Test backbone computation
-  # add_executable(forces2DanglesTest UnitTests/forces2DanglesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp)
-  # target_link_libraries (forces2DanglesTest TH THC AB_MODEL GLFRAMEWORK)
-
-  #Test backbone computation
-  # add_executable(Ddist2ForcesTest UnitTests/ddist2ForcesTest.cpp Layers/C_alpha_protein/Angles2CoordsAB/cAngles2CoordsAB.cpp Layers/C_alpha_protein/Forces2Dangles/cForces2Dangles.cpp Layers/C_alpha_protein/Ddist2Forces/cDdist2Forces.cpp)
-  # target_link_libraries (Ddist2ForcesTest TH THC AB_MODEL GLFRAMEWORK)
-
-  # add_executable(Angles2CoordsProfile UnitTests/angles2CoordsProfile.cpp)# Layers/C_alpha_protein/Angles2CoordsDihedral/angles2coordsDihedral_interface.cpp)
-  # target_link_libraries (Angles2CoordsProfile TH THC CALPHA_INTERNAL_COORDINATES GLFRAMEWORK)
-
-  add_executable(Angles2BackboneProfile UnitTests/Angles2Backbone/angles2BackboneProfile.cpp)
-  target_link_libraries (Angles2BackboneProfile TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
-
-  add_executable(Angles2BackboneMemtest UnitTests/Angles2Backbone/angles2BackboneMemtest.cpp)
-  target_link_libraries (Angles2BackboneMemtest TH THC BACKBONE_INTERNAL_COORDINATES GLFRAMEWORK)
-
-
-  # cuda_add_executable(volumeConvolutionProfile UnitTests/volumeConvolutionProfile.cpp)
-  # target_link_libraries (volumeConvolutionProfile TH THC VOLUMECONV)
-
-  find_library(CUFFT_LIBRARY cufft HINTS /usr/local/cuda-9.1/lib64)
-  cuda_add_executable(cudaConvolutions UnitTests/cudaConvolutions.cpp)
-  target_link_libraries (cudaConvolutions TH THC VOLUMECONV ${CUFFT_LIBRARY})
-
-endif(NOT FAM_ONLY)
-
-#Test FullAtomModel
-add_executable(fullAtomModelTest UnitTests/fullAtomModelTest.cpp)
-target_link_libraries (fullAtomModelTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
-
-#Test PDBLoader
-add_executable(PDBLoaderTest UnitTests/PDBLoaderTest.cpp)
-target_link_libraries (PDBLoaderTest TH_MATH FULL_ATOM_MODEL GLFRAMEWORK)
+find_library(CUFFT_LIBRARY cufft HINTS /usr/local/cuda-9.1/lib64)
+cuda_add_executable(cudaConvolutions UnitTests/cudaConvolutions.cpp)
+target_link_libraries (cudaConvolutions TH THC VOLUMECONV ${CUFFT_LIBRARY})

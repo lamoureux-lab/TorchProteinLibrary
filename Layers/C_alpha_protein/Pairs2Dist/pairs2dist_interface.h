@@ -1,2 +1,0 @@
- int Pairs2Dist_forward(THCudaTensor *input_pairs,THCudaTensor *output_dist,THCudaIntTensor *input_types,THIntTensor *angles_length,int num_types,int num_bins,float resolution);
- int Pairs2Dist_backward(THCudaTensor *gradInput_pairs,THCudaTensor *gradOutput_dist,THCudaTensor *input_pairs,THCudaIntTensor *input_types,THIntTensor *angles_length,int num_types,int num_bins,float resolution);
