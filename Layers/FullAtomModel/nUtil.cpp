@@ -31,17 +31,16 @@ std::string StringUtil::string_format(const std::string fmt, ...) {
     return str;
 }
 
-void StringUtil::string2Tensor(std::string s, THByteTensor *T){
-    if( (s.length()+1) > T->size[0])
-        throw(std::string("String is longer than tensor"));
-
+at::Tensor StringUtil::string2Tensor(std::string s){
+    at::Tensor T = at::CPU(at::kByte).zeros({s.length()+1});
+    auto aT = T.accessor<char,1>();
     for(int i=0; i<s.length(); i++)
-        *((char*)THByteTensor_data(T) + i) = s[i];
-
-    *((char*)THByteTensor_data(T) + s.length()) = '\0';
+        aT[i] = s[i];
+    aT[s.length()] = '\0';
+    return T;
 } 
-std::string StringUtil::tensor2String(THByteTensor *T){
-    return std::string( (const char*)THByteTensor_data(T));
+std::string StringUtil::tensor2String(at::Tensor T){
+    return std::string(T.data<char>());
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
     if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S')
@@ -49,17 +48,22 @@ bool ProtUtil::isHeavyAtom(std::string &atom_name){
     else
         return false;
 }
-cMatrix33 ProtUtil::tensor2Matrix33(THDoubleTensor *T){
+
+cMatrix33 ProtUtil::tensor2Matrix33(at::Tensor T){
     cMatrix33 dst;
+    auto aT = T.accessor<double,2>();
     for(int i=0; i<3; i++)
         for(int j=0; j<3; j++)
-            dst.m[i][j] = THDoubleTensor_get2d(T, i, j);
+            dst.m[i][j] = aT[i][j];
     return dst;
 }
-void ProtUtil::matrix2Tensor(cMatrix33 &mat, THDoubleTensor *T){
+at::Tensor ProtUtil::matrix2Tensor(cMatrix33 &mat){
+    at::Tensor T = at::CPU(at::kDouble).zeros({3,3});
+    auto aT = T.accessor<double,2>();
     for(int i=0; i<3; i++)
-            for(int j=0; j<3; j++)
-                THDoubleTensor_set2d(T, i, j, mat.m[i][j]);
+        for(int j=0; j<3; j++)
+            aT[i][j] = mat.m[i][j];
+    return T;
 }
 uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     uint num_atoms = 0;
@@ -78,6 +82,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     }
     return num_atoms;
 }
+/*
 void ProtUtil::translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms){
     // uint num_atoms = input_coords->size[0]/3;
     double *data_in = THDoubleTensor_data(input_coords);
@@ -179,7 +184,7 @@ void ProtUtil::computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, c
 		}
 	}
 }
-
+*/
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
     if(atom_name == std::string("N"))
         return 0;

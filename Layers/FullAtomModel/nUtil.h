@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-#include <TH/TH.h>
+#include <torch/torch.h>
 #include <cVector3.h>
 #include <cMatrix33.h>
 #include <cConformation.h>
@@ -20,8 +20,8 @@ namespace StringUtil{
     //     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     // };
     std::string string_format(const std::string fmt, ...);
-    void string2Tensor(std::string s, THByteTensor *T);
-    std::string tensor2String(THByteTensor *T);
+    at::Tensor string2Tensor(std::string s);
+    std::string tensor2String(at::Tensor T);
 };
 
 namespace ProtUtil{
@@ -40,17 +40,17 @@ namespace ProtUtil{
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 
-    void rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords, int num_atoms);
-    void rotate(THDoubleTensor *coords, cMatrix33 R);
-    void translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms);
-    void translate(THDoubleTensor *coords, cVector3 T);
-    void computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, cVector3 &b0, cVector3 &b1);
+    // void rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords, int num_atoms);
+    // void rotate(THDoubleTensor *coords, cMatrix33 R);
+    // void translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms);
+    // void translate(THDoubleTensor *coords, cVector3 T);
+    // void computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, cVector3 &b0, cVector3 &b1);
 
-    cMatrix33 getRandomRotation(THGenerator *gen);
-    cVector3 getRandomTranslation(THGenerator *gen, uint spatial_dim, cVector3 b0, cVector3 b1);
+    // cMatrix33 getRandomRotation(THGenerator *gen);
+    // cVector3 getRandomTranslation(THGenerator *gen, uint spatial_dim, cVector3 b0, cVector3 b1);
     
-    cMatrix33 tensor2Matrix33(THDoubleTensor *T);
-    void matrix2Tensor(cMatrix33 &mat, THDoubleTensor *T);
+    cMatrix33 tensor2Matrix33(at::Tensor T);
+    at::Tensor matrix2Tensor(cMatrix33 &mat);
 
 };
 
