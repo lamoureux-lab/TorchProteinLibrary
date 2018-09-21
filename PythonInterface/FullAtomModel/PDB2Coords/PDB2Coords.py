@@ -3,12 +3,12 @@
 # 2. loading and allocating array
 # 3. dealing with missing aa
 
-from Exposed import cppPDB2Coords
 import torch
-
 from Bio.PDB import *
 from Bio.PDB.Polypeptide import three_to_one
 import numpy as np
+
+import FullAtomModel
 
 def get_sequence(structure):
 	sequence = ''
@@ -48,25 +48,25 @@ def convertString(string):
 	return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
 class PDB2Coords:
-	def __init__(self, add_term=False):
-		self.add_term = add_term
-
+	def __init__(self):
+		pass
+		
 	def __call__(self, filenames):
 		self.filenamesTensor = convertStringList(filenames)
 		self.num_atoms = []
 		self.sequences = pdb2sequence(filenames)
 		self.seqTensor = convertStringList(self.sequences)
 		for seq in self.sequences:
-			self.num_atoms.append(cppPDB2Coords.getSeqNumAtoms(seq, self.add_term))
+			self.num_atoms.append(FullAtomModel.getSeqNumAtoms(seq))
 		
 		max_num_atoms = max(self.num_atoms)
 		batch_size = len(self.num_atoms)
 
-		output_coords_cpu = torch.DoubleTensor(batch_size, max_num_atoms*3)
-		output_resnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous()
-		output_atomnames_cpu = torch.ByteTensor(batch_size, max_num_atoms, 4).contiguous()
+		output_coords_cpu = torch.zeros(batch_size, max_num_atoms*3, dtype=torch.double)
+		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
+		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-		cppPDB2Coords.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.add_term)
+		FullAtomModel.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu)
 
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.num_atoms
 		

@@ -141,41 +141,41 @@ void cPDBLoader::computeBoundingBox(){
 	}
 }
 
-void cPDBLoader::randRot(THGenerator *gen){
-    float u1 = THRandom_uniform(gen,0,1.0);
-    float u2 = THRandom_uniform(gen,0,1.0);
-    float u3 = THRandom_uniform(gen,0,1.0);
-    float q[4];
-    q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
-    q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
-    q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
-    q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
-    cMatrix33 random_rotation;
-    random_rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
-    random_rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
-    random_rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
+// void cPDBLoader::randRot(THGenerator *gen){
+//     float u1 = THRandom_uniform(gen,0,1.0);
+//     float u2 = THRandom_uniform(gen,0,1.0);
+//     float u3 = THRandom_uniform(gen,0,1.0);
+//     float q[4];
+//     q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
+//     q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
+//     q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
+//     q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
+//     cMatrix33 random_rotation;
+//     random_rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+//     random_rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
+//     random_rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
 
-    random_rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
-    random_rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
-    random_rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
+//     random_rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
+//     random_rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+//     random_rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
 
-    random_rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
-    random_rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
-    random_rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
+//     random_rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
+//     random_rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
+//     random_rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
     
-    for(int i=0; i<r.size(); i++){
-        r[i] = random_rotation*r[i];
-    }
-}
-void cPDBLoader::randTrans(THGenerator *gen, int spatial_dim){
-    float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
-    float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
-    float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
-    float dx = THRandom_uniform(gen,-dx_max,dx_max);
-    float dy = THRandom_uniform(gen,-dy_max,dy_max);
-    float dz = THRandom_uniform(gen,-dz_max,dz_max);
-    this->translate(cVector3(dx,dy,dz));
-}
+//     for(int i=0; i<r.size(); i++){
+//         r[i] = random_rotation*r[i];
+//     }
+// }
+// void cPDBLoader::randTrans(THGenerator *gen, int spatial_dim){
+//     float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
+//     float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
+//     float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
+//     float dx = THRandom_uniform(gen,-dx_max,dx_max);
+//     float dy = THRandom_uniform(gen,-dy_max,dy_max);
+//     float dz = THRandom_uniform(gen,-dz_max,dz_max);
+//     this->translate(cVector3(dx,dy,dz));
+// }
 void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
     std::vector<int> atom_types;
     int num_atoms[11];

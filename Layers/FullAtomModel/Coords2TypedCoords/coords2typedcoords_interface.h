@@ -1,2 +1,16 @@
-void Coords2TypedCoords_forward(    THDoubleTensor *input_coords, THByteTensor *res_names,THByteTensor *atom_names, THIntTensor *input_num_atoms,THDoubleTensor *output_coords,THIntTensor *output_num_atoms_of_type,THIntTensor *output_offsets,THIntTensor *output_atom_indexes);
-void Coords2TypedCoords_backward(   THDoubleTensor *grad_typed_coords,THDoubleTensor *grad_flat_coords,THIntTensor *num_atoms_of_type,THIntTensor *offsets,THIntTensor *atom_indexes);
+#include <torch/torch.h>
+void Coords2TypedCoords_forward(    at::Tensor input_coords, 
+                                    at::Tensor res_names,
+                                    at::Tensor atom_names,
+                                    at::Tensor input_num_atoms,
+                                    at::Tensor output_coords,
+                                    at::Tensor output_num_atoms_of_type,
+                                    at::Tensor output_offsets,
+                                    at::Tensor output_atom_indexes
+                                );
+void Coords2TypedCoords_backward(   at::Tensor grad_typed_coords,
+                                    at::Tensor grad_flat_coords,
+                                    at::Tensor num_atoms_of_type,
+                                    at::Tensor offsets,
+                                    at::Tensor atom_indexes
+                                );

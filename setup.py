@@ -3,7 +3,7 @@ from torch.utils.cpp_extension import CppExtension, BuildExtension
 
 setup(name='TorchProteinLayers',
 	  ext_modules=[
-		  	CppExtension('cppAngles2Coords', 
+		  	CppExtension('FullAtomModel', 
 				sources = [
 				'Math/cMatrix33.cpp',
 				'Math/cMatrix44.cpp',
@@ -13,7 +13,11 @@ setup(name='TorchProteinLayers',
 				'Layers/FullAtomModel/cGeometry.cpp',
 				'Layers/FullAtomModel/cRigidGroup.cpp',
 				'Layers/FullAtomModel/nUtil.cpp',
-				'Layers/FullAtomModel/Angles2Coords/angles2coords_interface.cpp'],
+				'Layers/FullAtomModel/cPDBLoader.cpp',
+				'Layers/FullAtomModel/Angles2Coords/angles2coords_interface.cpp',
+				'Layers/FullAtomModel/PDB2Coords/pdb2coords_interface.cpp',
+				'Layers/FullAtomModel/Coords2TypedCoords/coords2typedcoords_interface.cpp',
+				'Layers/FullAtomModel/main.cpp'],
 				include_dirs = ['Layers/FullAtomModel',
 				'Math'])
 		  	],

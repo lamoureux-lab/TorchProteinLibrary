@@ -1,3 +1,19 @@
-void Angles2Coords_forward(  THByteTensor *sequences,THDoubleTensor *input_angles, THDoubleTensor *output_coords, THByteTensor *res_names, THByteTensor *atom_names, int add_terminal);
-void Angles2Coords_backward( THDoubleTensor *grad_atoms,THDoubleTensor *grad_angles,THByteTensor *sequences,THDoubleTensor *input_angles, int add_terminal);
-void Angles2Coords_save(  const char* sequence,THDoubleTensor *input_angles, const char* output_filename, int add_terminal, const char mode);
+#include <torch/torch.h>
+void Angles2Coords_forward(     at::Tensor sequences,
+                                at::Tensor input_angles, 
+                                at::Tensor output_coords,
+                                at::Tensor res_names,
+                                at::Tensor atom_names
+                        );
+
+void Angles2Coords_backward(    at::Tensor grad_atoms,
+                                at::Tensor grad_angles,
+                                at::Tensor sequences,
+                                at::Tensor input_angles
+                        );
+void Angles2Coords_save(    const char* sequence,
+                            at::Tensor input_angles, 
+                            const char* output_filename,
+                            const char mode
+                        );
+int getSeqNumAtoms( const char *sequence);

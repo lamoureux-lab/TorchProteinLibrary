@@ -1,150 +1,119 @@
-#include <TH/TH.h>
+#include "coords2typedcoords_interface.h"
 #include "cConformation.h"
 #include <iostream>
 #include <string>
 #include "nUtil.h"
 
-extern "C" {
-    void Coords2TypedCoords_forward(    THDoubleTensor *input_coords, 
-                                        THByteTensor *res_names,
-                                        THByteTensor *atom_names,
-                                        THIntTensor *input_num_atoms,
-                                        THDoubleTensor *output_coords,
-                                        THIntTensor *output_num_atoms_of_type,
-                                        THIntTensor *output_offsets,
-                                        THIntTensor *output_atom_indexes
-                                    ){
-        uint num_atom_types = 11;
-        if(input_coords->nDimension == 2){
-            int batch_size = input_coords->size[0];
-            
 
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                int num_atoms = THIntTensor_get1d(input_num_atoms, i);
+void Coords2TypedCoords_forward(    at::Tensor input_coords, 
+                                    at::Tensor res_names,
+                                    at::Tensor atom_names,
+                                    at::Tensor input_num_atoms,
+                                    at::Tensor output_coords,
+                                    at::Tensor output_num_atoms_of_type,
+                                    at::Tensor output_offsets,
+                                    at::Tensor output_atom_indexes
+                                ){
+    const uint num_atom_types = 11;
 
-                THDoubleTensor *single_intput_coords = THDoubleTensor_new();
-                THDoubleTensor_select(single_intput_coords, input_coords, 0, i);
-                THByteTensor *single_atom_names = THByteTensor_new();
-                THByteTensor *single_res_names = THByteTensor_new();
-                THByteTensor_select(single_atom_names, atom_names, 0, i);
-                THByteTensor_select(single_res_names, res_names, 0, i);
-                
-                THDoubleTensor *single_output_coords = THDoubleTensor_new();
-                THIntTensor *single_output_num_atoms_of_type = THIntTensor_new();
-                THIntTensor *single_output_offsets = THIntTensor_new();
-                THIntTensor *single_output_atom_indexes = THIntTensor_new();
-
-                THDoubleTensor_select(single_output_coords, output_coords, 0, i);
-                THIntTensor_select(single_output_offsets, output_offsets, 0, i);
-                THIntTensor_select(single_output_num_atoms_of_type, output_num_atoms_of_type, 0, i);
-                THIntTensor_select(single_output_atom_indexes, output_atom_indexes, 0, i);
-                
-                uint num_atoms_added[num_atom_types];
-                uint atom_types[num_atoms];
-                for(int j=0;j<num_atom_types;j++){
-                    num_atoms_added[j] = 0;
-                }
-                
-                //Assign atom types
-                THByteTensor *single_atom_name = THByteTensor_new();
-                THByteTensor *single_res_name = THByteTensor_new();
-                
-                for(uint j=0; j<num_atoms; j++){
-                    THByteTensor_select(single_atom_name, single_atom_names, 0, j);
-                    THByteTensor_select(single_res_name, single_res_names, 0, j);
-
-                    uint type = ProtUtil::get11AtomType( StringUtil::tensor2String(single_res_name), 
-                                                        StringUtil::tensor2String(single_atom_name), false);
-                    atom_types[j] = type;
-                    THIntTensor_set1d(single_output_num_atoms_of_type, type, THIntTensor_get1d(single_output_num_atoms_of_type, type)+1);
-                }
-                THByteTensor_free(single_atom_name);
-                THByteTensor_free(single_res_name);
-
-                //Compute memory offsets for an atom type
-                for(uint j=1;j<num_atom_types; j++){
-                    THIntTensor_set1d(single_output_offsets, j, THIntTensor_get1d(single_output_offsets, j-1) + THIntTensor_get1d(single_output_num_atoms_of_type, j-1));
-                }
-                //Copy information
-                for(uint j=0;j<num_atoms; j++){
-                    uint type = atom_types[j];
-                    uint offset = THIntTensor_get1d(single_output_offsets, type);
-                    cVector3 r_dst(THDoubleTensor_data(single_output_coords) + 3*(offset + num_atoms_added[type]));
-                    cVector3 r_src(THDoubleTensor_data(single_intput_coords) + 3*j);
-                    r_dst = r_src;
-                    THIntTensor_set1d(single_output_atom_indexes, offset + num_atoms_added[type], j);
-                    num_atoms_added[type]+=1;
-                }    
-
-                THByteTensor_free(single_atom_names);
-                THByteTensor_free(single_res_names);
-                THDoubleTensor_free(single_intput_coords);
-                THDoubleTensor_free(single_output_coords);
-                THIntTensor_free(single_output_offsets);
-                THIntTensor_free(single_output_num_atoms_of_type);
-                THIntTensor_free(single_output_atom_indexes);
-                
-            }
-        }else{
-            std::cout<<"Not implemented\n";
-        }
+    if( res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
+        || input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble
+        || input_num_atoms.dtype() != at::kInt || output_num_atoms_of_type.dtype() != at::kInt
+        || output_offsets.dtype() != at::kInt || output_atom_indexes.dtype() != at::kInt){
+            throw("Incorrect tensor types");
     }
-    void Coords2TypedCoords_backward(   THDoubleTensor *grad_typed_coords,
-                                        THDoubleTensor *grad_flat_coords,
-                                        THIntTensor *num_atoms_of_type,
-                                        THIntTensor *offsets,
-                                        THIntTensor *atom_indexes
-                            ){
-        uint num_atom_types=11;
-        if(grad_flat_coords->nDimension == 1){
+    if(input_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    int batch_size = input_coords.size(0);
+                    
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        int num_atoms = input_num_atoms.accessor<int,1>()[i];
 
-            for(uint i=0;i<num_atom_types; i++){
-                uint num_atoms = THIntTensor_get1d(num_atoms_of_type, i);
-                uint offset = THIntTensor_get1d(offsets, i);
-                for(int j=0; j<num_atoms; j++){
-                    cVector3 r_src(THDoubleTensor_data(grad_typed_coords) + 3*(offset + j));
-                    cVector3 r_dst(THDoubleTensor_data(grad_flat_coords) + 3*THIntTensor_get1d(atom_indexes, offset+j));
-                    r_dst = r_src;
-                }
-            }
-        }else if(grad_flat_coords->nDimension == 2){
-            int batch_size = grad_flat_coords->size[0];
-            
-            // #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
+        at::Tensor single_intput_coords = input_coords[i];
+        at::Tensor single_atom_names = atom_names[i];
+        at::Tensor single_res_names = res_names[i];
+        
+        at::Tensor single_output_coords = output_coords[i];
+        at::Tensor single_output_num_atoms_of_type = output_num_atoms_of_type[i];
+        at::Tensor single_output_offsets = output_offsets[i];
+        at::Tensor single_output_atom_indexes = output_atom_indexes[i];
 
-                THDoubleTensor *single_grad_typed_coords = THDoubleTensor_new();
-                THDoubleTensor *single_grad_flat_coords = THDoubleTensor_new();
-                THDoubleTensor_select(single_grad_typed_coords, grad_typed_coords, 0, i);
-                THDoubleTensor_select(single_grad_flat_coords, grad_flat_coords, 0, i);
-                THIntTensor *single_atom_indexes = THIntTensor_new();
-                THIntTensor *single_offsets = THIntTensor_new();
-                THIntTensor *single_num_atoms_of_type = THIntTensor_new();
-                THIntTensor_select(single_atom_indexes, atom_indexes, 0, i);
-                THIntTensor_select(single_offsets, offsets, 0, i);
-                THIntTensor_select(single_num_atoms_of_type, num_atoms_of_type, 0, i);
+        int num_atoms_added[num_atom_types];
+        int atom_types[num_atoms];
+        for(int j=0;j<num_atom_types;j++){
+            num_atoms_added[j] = 0;
+        }
+        
+        //Assign atom types
+        at::Tensor single_atom_name, single_res_name;
+                
+        for(int j=0; j<num_atoms; j++){
+            single_atom_name = single_atom_names[j];
+            single_res_name = single_res_names[j];
 
-                for(uint j=0;j<num_atom_types; j++){
-                    uint num_atoms = THIntTensor_get1d(single_num_atoms_of_type, j);
-                    uint offset = THIntTensor_get1d(single_offsets, j);
-                    for(int k=0; k<num_atoms; k++){
-                        cVector3 r_src(THDoubleTensor_data(single_grad_typed_coords) + 3*(offset + k));
-                        cVector3 r_dst(THDoubleTensor_data(single_grad_flat_coords) + 3*THIntTensor_get1d(single_atom_indexes, offset+k));
-                        r_dst = r_src;
-                    }
-                }
-
-                THDoubleTensor_free(single_grad_typed_coords);
-                THDoubleTensor_free(single_grad_flat_coords);
-                THIntTensor_free(single_atom_indexes);
-                THIntTensor_free(single_offsets);
-                THIntTensor_free(single_num_atoms_of_type);
-
-            }
-        }else{
-            std::cout<<"Not implemented\n";
+            int type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_name), 
+                                                StringUtil::tensor2String(single_atom_name), false);
+            atom_types[j] = type;
+            single_output_num_atoms_of_type[type] += 1;
+        }
+        
+        //Compute memory offsets for an atom type
+        for(int j=1;j<num_atom_types; j++){
+            single_output_offsets[j] = single_output_offsets[j-1] + single_output_num_atoms_of_type[j-1];
+        }
+        //Copy information
+        auto a_single_output_offsets = single_output_offsets.accessor<int,1>();
+        for(int j=0;j<num_atoms; j++){
+            int type = atom_types[j];
+            int offset = a_single_output_offsets[type];
+            int dst_idx = offset + num_atoms_added[type];
+            cVector3 r_dst( single_output_coords.data<double>() + 3*dst_idx );
+            cVector3 r_src( single_intput_coords.data<double>() + 3*j);
+            r_dst = r_src;
+            single_output_atom_indexes[offset + num_atoms_added[type]] = j;
+            num_atoms_added[type] += 1;
         }
     }
     
+}
+void Coords2TypedCoords_backward(   at::Tensor grad_typed_coords,
+                                    at::Tensor grad_flat_coords,
+                                    at::Tensor num_atoms_of_type,
+                                    at::Tensor offsets,
+                                    at::Tensor atom_indexes
+                        ){
+    const uint num_atom_types=11;
+    if( grad_typed_coords.dtype() != at::kDouble || grad_flat_coords.dtype() != at::kDouble
+        || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt
+        || atom_indexes.dtype() != at::kInt){
+            throw("Incorrect tensor types");
+    }
+    if(grad_typed_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+   
+    int batch_size = grad_flat_coords.size(0);
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+
+        at::Tensor single_grad_typed_coords = grad_typed_coords[i];
+        at::Tensor single_grad_flat_coords = grad_flat_coords[i];
+        at::Tensor single_atom_indexes = atom_indexes[i];
+        at::Tensor single_offsets = offsets[i];
+        at::Tensor single_num_atoms_of_type = num_atoms_of_type[i];
+        
+        for(int j=0;j<num_atom_types; j++){
+            int num_atoms = single_num_atoms_of_type.accessor<int,1>()[j];
+            int offset = single_offsets.accessor<int,1>()[j];
+            for(int k=0; k<num_atoms; k++){
+                int src_idx = offset + k;
+                int dst_idx = single_atom_indexes.accessor<int,1>()[src_idx];
+                cVector3 r_src( single_grad_typed_coords.data<double>()+ 3*src_idx );
+                cVector3 r_dst( single_grad_flat_coords.data<double>() + 3*dst_idx );
+                r_dst = r_src;
+            }
+        }
+    }
 }

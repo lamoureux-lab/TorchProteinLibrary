@@ -33,8 +33,8 @@ public:
 
     cVector3 getCenterMass();
     void translate(cVector3 dr);
-    void randRot(THGenerator *gen);
-    void randTrans(THGenerator *gen, int spatial_dim);
+    // void randRot(THGenerator *gen);
+    // void randTrans(THGenerator *gen, int spatial_dim);
     
     inline uint getNumAtoms(){return r.size();};
     void computeBoundingBox();

@@ -26,8 +26,8 @@ def test_gradient():
 	c2tc = Coords2TypedCoords()
 	
 	
-	y0, res, at = a2c(x0, sequence)
-	coords, num_atoms_of_type, offsets = c2tc(y0, res, at, a2c.num_atoms)
+	y0, res, at, nat = a2c(x0, sequence)
+	coords, num_atoms_of_type, offsets = c2tc(y0, res, at, nat)
 	z0 = coords.sum()
 		
 	z0.backward()
@@ -39,10 +39,10 @@ def test_gradient():
 			dx = 0.0001
 			x1.data.copy_(x0.data)
 			x1.data[0,i,j]+=dx
-			y1, res, at = a2c(x1, sequence)
-			coords, num_atoms_of_type, offsets = c2tc(y1, res, at, a2c.num_atoms)
+			y1, res, at, nat = a2c(x1, sequence)
+			coords, num_atoms_of_type, offsets = c2tc(y1, res, at, nat)
 			z1 = coords.sum()
-			dy_dx = (z1.data[0]-z0.data[0])/(dx)
+			dy_dx = (z1.data-z0.data)/(dx)
 			grads.append(dy_dx)
 
 		fig = plt.figure()

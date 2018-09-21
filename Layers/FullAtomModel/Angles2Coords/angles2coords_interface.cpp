@@ -1,5 +1,5 @@
 
-#include <torch/torch.h>
+#include "angles2coords_interface.h"
 #include "cConformation.h"
 #include <iostream>
 #include <string>
@@ -132,9 +132,9 @@ int getSeqNumAtoms( const char *sequence){
     return num_atoms;
 }
 
-PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("Angles2Coords_forward", &Angles2Coords_forward, "Angles2Coords forward");
-  m.def("Angles2Coords_backward", &Angles2Coords_backward, "Angles2Coords backward");
-  m.def("Angles2Coords_save", &Angles2Coords_save, "Angles2Coords save");
-  m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
-}
+// PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+//   m.def("Angles2Coords_forward", &Angles2Coords_forward, "Angles2Coords forward");
+//   m.def("Angles2Coords_backward", &Angles2Coords_backward, "Angles2Coords backward");
+//   m.def("Angles2Coords_save", &Angles2Coords_save, "Angles2Coords save");
+//   m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
+// }
