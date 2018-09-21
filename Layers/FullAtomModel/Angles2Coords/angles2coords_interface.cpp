@@ -9,9 +9,9 @@ void Angles2Coords_forward(     at::Tensor sequences,
                                 at::Tensor input_angles, 
                                 at::Tensor output_coords,
                                 at::Tensor res_names,
-                                at::Tensor atom_names,
-                                bool add_terminal
+                                at::Tensor atom_names
                         ){
+    bool add_terminal = false;
     if( sequences.dtype() != at::kByte || res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
         || input_angles.dtype() != at::kDouble || output_coords.dtype() != at::kDouble){
             throw("Incorrect tensor types");
@@ -24,12 +24,12 @@ void Angles2Coords_forward(     at::Tensor sequences,
              
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
-        at::Tensor batch_index = at::CPU(at::kInt).scalarTensor(i);
-        at::Tensor single_sequence = sequences.index_select(0, batch_index);
-        at::Tensor single_atom_names = atom_names.index_select(0, batch_index);
-        at::Tensor single_res_names = res_names.index_select(0, batch_index);
-        at::Tensor single_angles = input_angles.index_select(0, batch_index);
-        at::Tensor single_coords = output_coords.index_select(0, batch_index);
+                
+        at::Tensor single_sequence = sequences[i];
+        at::Tensor single_atom_names = atom_names[i];
+        at::Tensor single_res_names = res_names[i];
+        at::Tensor single_angles = input_angles[i];
+        at::Tensor single_coords = output_coords[i];
         
         std::string seq = StringUtil::tensor2String(single_sequence);
         
@@ -60,11 +60,10 @@ void Angles2Coords_forward(     at::Tensor sequences,
         for(int j=0; j<conf.groups.size(); j++){
             for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                 int idx = conf.groups[j]->atomIndexes[k];
-                at::Tensor atom_index = at::CPU(at::kInt).scalarTensor(idx);       
-                at::Tensor single_atom_name = single_atom_names.index_select(0, atom_index);
-                at::Tensor single_res_name = single_res_names.index_select(0, atom_index);
-                single_res_name = StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName));
-                single_atom_name = StringUtil::string2Tensor(conf.groups[j]->atomNames[k]);
+                at::Tensor single_atom_name = single_atom_names[idx];
+                at::Tensor single_res_name = single_res_names[idx];
+                StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name);
+                StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
             }
         }
     }
@@ -73,9 +72,9 @@ void Angles2Coords_forward(     at::Tensor sequences,
 void Angles2Coords_backward(    at::Tensor grad_atoms,
                                 at::Tensor grad_angles,
                                 at::Tensor sequences,
-                                at::Tensor input_angles,
-                                bool add_terminal
+                                at::Tensor input_angles
                         ){
+    bool add_terminal = false;
     if( sequences.dtype() != at::kByte || grad_atoms.dtype() != at::kDouble || grad_angles.dtype() != at::kDouble
         || input_angles.dtype() != at::kDouble){
             throw("Incorrect tensor types");
@@ -88,14 +87,14 @@ void Angles2Coords_backward(    at::Tensor grad_atoms,
 
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
-        at::Tensor batch_index = at::CPU(at::kInt).scalarTensor(i);
-        at::Tensor single_sequence = sequences.index_select(0, batch_index);
-        at::Tensor single_angles = input_angles.index_select(0, batch_index);
-        at::Tensor single_grad_angles = grad_angles.index_select(0, batch_index);
-        at::Tensor single_grad_atoms = grad_atoms.index_select(0, batch_index);
+        
+        at::Tensor single_sequence = sequences[i];
+        at::Tensor single_angles = input_angles[i];
+        at::Tensor single_grad_angles = grad_angles[i];
+        at::Tensor single_grad_atoms = grad_atoms[i];
         
         std::string seq = StringUtil::tensor2String(single_sequence);
-        
+                
         uint length = single_angles.sizes()[1];
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
@@ -110,9 +109,9 @@ void Angles2Coords_backward(    at::Tensor grad_atoms,
 void Angles2Coords_save(    const char* sequence,
                             at::Tensor input_angles, 
                             const char* output_filename,
-                            bool add_terminal,
                             const char mode
                         ){
+    bool add_terminal = false;
     if(input_angles.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -126,9 +125,16 @@ void Angles2Coords_save(    const char* sequence,
     conf.save(std::string(output_filename), mode);
 }
 
+int getSeqNumAtoms( const char *sequence){
+    bool add_terminal = false;
+    std::string seq(sequence);
+    int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
+    return num_atoms;
+}
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("forward", &Angles2Coords_forward, "Angles2Coords forward");
-//   m.def("backward", &Angles2Coords_backward, "Angles2Coords backward");
-//   m.def("save", &Angles2Coords_save, "Angles2Coords save");
+  m.def("Angles2Coords_forward", &Angles2Coords_forward, "Angles2Coords forward");
+  m.def("Angles2Coords_backward", &Angles2Coords_backward, "Angles2Coords backward");
+  m.def("Angles2Coords_save", &Angles2Coords_save, "Angles2Coords save");
+  m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
 }

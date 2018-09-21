@@ -8,7 +8,7 @@ from torch.nn.modules.module import Module
 import matplotlib.pylab as plt
 import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
-import seaborn as sea
+# import seaborn as sea
 from Angles2Coords import Angles2Coords
 
 def batch_test():
@@ -23,16 +23,14 @@ def batch_test():
 	
 	a2c = Angles2Coords()
 	protein, res_names, atom_names, num_atoms = a2c(angles, sequences)
-	proteins = protein.data.resize_(len(sequences), protein.size(1)/3, 3).numpy()
-	print num_atoms
-	print [len(seq) for seq in sequences]
+	
+	proteins = protein.resize_(len(sequences), int(protein.size(1)/3), 3).numpy()
 	
 	for i in range(0, len(sequences)):
 		for j in range(0, a2c.num_atoms[i]):
-			print j, res_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0], atom_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split('\0')[0]
+			print(j, res_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split(b'\00')[0], atom_names.data[i,j,:].numpy().astype(dtype=np.uint8).tostring().split(b'\00')[0])
+	
 			
-
-	# print protein
 	for i in range(0, len(sequences)):
 		sx, sy, sz = proteins[i,:,0], proteins[i,:,1], proteins[i,:,2]
 		fig = plt.figure()

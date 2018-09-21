@@ -37,7 +37,7 @@ def test_gradient():
 				x1.data[b,i,j]+=dx
 				y1, res, at, n_at = a2c(x1,sequences)
 				y1 = y1.sum()
-				dy_dx = (y1.data[0]-y0.data[0])/(dx)
+				dy_dx = (y1.data-y0.data)/(dx)
 				grads.append(dy_dx)
 
 			fig = plt.figure()

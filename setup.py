@@ -3,7 +3,7 @@ from torch.utils.cpp_extension import CppExtension, BuildExtension
 
 setup(name='TorchProteinLayers',
 	  ext_modules=[
-		  	CppExtension('TorchProteinLayers', 
+		  	CppExtension('cppAngles2Coords', 
 				sources = [
 				'Math/cMatrix33.cpp',
 				'Math/cMatrix44.cpp',

@@ -33,14 +33,20 @@ std::string StringUtil::string_format(const std::string fmt, ...) {
 
 at::Tensor StringUtil::string2Tensor(std::string s){
     at::Tensor T = at::CPU(at::kByte).zeros({s.length()+1});
-    auto aT = T.accessor<char,1>();
+    char* aT = static_cast<char*>(T.data_ptr());
     for(int i=0; i<s.length(); i++)
         aT[i] = s[i];
     aT[s.length()] = '\0';
     return T;
 } 
+void StringUtil::string2Tensor(std::string s, at::Tensor &T){
+    char* aT = static_cast<char*>(T.data_ptr());
+    for(int i=0; i<s.length(); i++)
+        aT[i] = s[i];
+    aT[s.length()] = '\0';
+} 
 std::string StringUtil::tensor2String(at::Tensor T){
-    return std::string(T.data<char>());
+    return std::string(static_cast<char*>(T.data_ptr()));
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
     if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S')

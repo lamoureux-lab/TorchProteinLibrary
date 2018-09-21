@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-#include <torch/torch.h>
+#include <ATen/ATen.h>
 #include <cVector3.h>
 #include <cMatrix33.h>
 #include <cConformation.h>
@@ -21,6 +21,7 @@ namespace StringUtil{
     // };
     std::string string_format(const std::string fmt, ...);
     at::Tensor string2Tensor(std::string s);
+    void string2Tensor(std::string s, at::Tensor & T);
     std::string tensor2String(at::Tensor T);
 };
 
