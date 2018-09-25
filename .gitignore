@@ -4,10 +4,6 @@
 #Python 
 *.pyc
 
-#Build directories
-*Exposed*
-
-
 # Prerequisites
 *.d
 
