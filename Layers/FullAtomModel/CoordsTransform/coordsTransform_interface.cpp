@@ -1,180 +1,145 @@
-#include <TH/TH.h>
 #include "cConformation.h"
 #include <iostream>
 #include <string>
 #include "nUtil.h"
+#include "coordsTransform_interface.h"
 
-extern "C" {
-    void CoordsTranslate_forward(   THDoubleTensor *input_coords, 
-                                    THDoubleTensor *output_coords,
-                                    THDoubleTensor *T,
-                                    THIntTensor *num_atoms
-                                    ){
-        if(input_coords->nDimension == 2){
-            int batch_size = input_coords->size[0];
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_input_coords = THDoubleTensor_new();
-                THDoubleTensor *single_output_coords = THDoubleTensor_new();
-                THDoubleTensor_select(single_input_coords, input_coords, 0, i);
-                THDoubleTensor_select(single_output_coords, output_coords, 0, i);
-                
-                cVector3 translation(THDoubleTensor_get2d(T, i, 0), THDoubleTensor_get2d(T, i, 1), THDoubleTensor_get2d(T, i, 2));
-                ProtUtil::translate( single_input_coords, translation, single_output_coords, THIntTensor_get1d(num_atoms, i));
 
-                THDoubleTensor_free(single_input_coords);
-                THDoubleTensor_free(single_output_coords);
-            }
-        }else{
-            std::cout<<"Not implemented\n";
-        }                             
-    }
-    void CoordsTranslate_backward(  THDoubleTensor *grad_output_coords, 
-                                    THDoubleTensor *grad_input_coords
-                                    ){
-        if(grad_output_coords->nDimension == 2){
-            THDoubleTensor_copy(grad_input_coords, grad_output_coords);
-        }else{
-            std::cout<<"Not implemented\n";
-        }
-    }
-    void CoordsRotate_forward(  THDoubleTensor *input_coords, 
-                                THDoubleTensor *output_coords,
-                                THDoubleTensor *R,
-                                THIntTensor *num_atoms
+void CoordsTranslate_forward(   at::Tensor input_coords, 
+                                at::Tensor output_coords,
+                                at::Tensor T,
+                                at::Tensor num_atoms
                                 ){
-        if(input_coords->nDimension == 2){
-            int batch_size = input_coords->size[0];
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_input_coords = THDoubleTensor_new();
-                THDoubleTensor *single_output_coords = THDoubleTensor_new();
-                THDoubleTensor *single_R = THDoubleTensor_new();
-                THDoubleTensor_select(single_input_coords, input_coords, 0, i);
-                THDoubleTensor_select(single_output_coords, output_coords, 0, i);
-                THDoubleTensor_select(single_R, R, 0, i);
-                
-                cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
-                ProtUtil::rotate(single_input_coords, _R, single_output_coords, THIntTensor_get1d(num_atoms, i));
-
-                THDoubleTensor_free(single_input_coords);
-                THDoubleTensor_free(single_output_coords);
-            }
-        }else{
-            std::cout<<"Not implemented\n";
-        }                             
+    if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || T.dtype() != at::kDouble 
+    || num_atoms.dtype() != at::kInt){
+        throw("Incorrect tensor types");
     }
-    void CoordsRotate_backward( THDoubleTensor *grad_output_coords, 
-                                THDoubleTensor *grad_input_coords,
-                                THDoubleTensor *R,
-                                THIntTensor *num_atoms){
+    if(input_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    
+    int batch_size = input_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_input_coords = single_input_coords[i];
+        at::Tensor single_output_coords = output_coords[i];
+        auto aT = T.accessor<double,2>();
         
-        if(grad_output_coords->nDimension == 2){
-            int batch_size = grad_output_coords->size[0];
-
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_grad_output_coords = THDoubleTensor_new();
-                THDoubleTensor *single_grad_input_coords = THDoubleTensor_new();
-                THDoubleTensor *single_R = THDoubleTensor_new();
-                THDoubleTensor_select(single_grad_output_coords, grad_output_coords, 0, i);
-                THDoubleTensor_select(single_grad_input_coords, grad_input_coords, 0, i);
-                THDoubleTensor_select(single_R, R, 0, i);
-
-                cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
-                _R = _R.getTranspose();
-                ProtUtil::rotate(single_grad_output_coords, _R, single_grad_input_coords, THIntTensor_get1d(num_atoms, i));
-                
-                THDoubleTensor_free(single_R);
-                THDoubleTensor_free(single_grad_input_coords);
-                THDoubleTensor_free(single_grad_output_coords);
-            }
-
-        }else{
-            std::cout<<"Not implemented\n";
-        }
+        cVector3 translation(aT[i][0], aT[i][1], aT[i][2]);
+        ProtUtil::translate(single_input_coords, translation, single_output_coords, num_at[i]);
     }
-    void getBBox( THDoubleTensor *input_coords,
-                  THDoubleTensor *a, THDoubleTensor *b,
-                  THIntTensor *num_atoms){
-
-        if(input_coords->nDimension == 2){
-            int batch_size = input_coords->size[0];
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_input_coords = THDoubleTensor_new();
-                THDoubleTensor *single_a = THDoubleTensor_new();
-                THDoubleTensor *single_b = THDoubleTensor_new();
-                THDoubleTensor_select(single_input_coords, input_coords, 0, i);
-                THDoubleTensor_select(single_a, a, 0, i);
-                THDoubleTensor_select(single_b, b, 0, i);
-                
-                cVector3 b0, b1;
-                ProtUtil::computeBoundingBox(single_input_coords, THIntTensor_get1d(num_atoms, i), b0, b1);
-                THDoubleTensor_set1d(single_a, 0, b0.v[0]);
-                THDoubleTensor_set1d(single_a, 1, b0.v[1]);
-                THDoubleTensor_set1d(single_a, 2, b0.v[2]);
-
-                THDoubleTensor_set1d(single_b, 0, b1.v[0]);
-                THDoubleTensor_set1d(single_b, 1, b1.v[1]);
-                THDoubleTensor_set1d(single_b, 2, b1.v[2]);
-
-                THDoubleTensor_free(single_input_coords);
-                THDoubleTensor_free(single_a);
-                THDoubleTensor_free(single_b);
-            }
-
-        }else{
-            std::cout<<"Not implemented\n";
-        }
+}
+void CoordsRotate_forward(  at::Tensor input_coords, 
+                            at::Tensor output_coords,
+                            at::Tensor R,
+                            at::Tensor num_atoms
+                            ){
+    if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
+    || num_atoms.dtype() != at::kInt){
+        throw("Incorrect tensor types");
     }
-    void getRandomRotation( THDoubleTensor *R ){
-        THGenerator *gen = THGenerator_new();
- 		THRandom_seed(gen);
+    if(input_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    
+    int batch_size = input_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_input_coords = input_coords[i];
+        at::Tensor single_output_coords = output_coords[i];
+        at::Tensor single_R = R[i];
         
-        if(R->nDimension == 3){
-            int batch_size = R->size[0];
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_R = THDoubleTensor_new();
-                THDoubleTensor_select(single_R, R, 0, i);
-                
-                cMatrix33 _R = ProtUtil::getRandomRotation(gen);
-                ProtUtil::matrix2Tensor(_R, single_R);                
-                
-                THDoubleTensor_free(single_R);
-            }
-
-        }else{
-            std::cout<<"Not implemented\n";
-        }
-        THGenerator_free(gen);
+        cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
+        ProtUtil::rotate(single_input_coords, _R, single_output_coords, num_at[i]);
     }
-    void getRandomTranslation( THDoubleTensor *T, THDoubleTensor *a, THDoubleTensor *b, int volume_size ){
-        THGenerator *gen = THGenerator_new();
- 		THRandom_seed(gen);
+}
+void CoordsRotate_backward( at::Tensor grad_output_coords, 
+                            at::Tensor grad_input_coords,
+                            at::Tensor R,
+                            at::Tensor num_atoms){
+    if( grad_output_coords.dtype() != at::kDouble || grad_input_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
+    || num_atoms.dtype() != at::kInt){
+        throw("Incorrect tensor types");
+    }
+    if(grad_output_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    
+    
+    int batch_size = grad_output_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_grad_output_coords = grad_output_coords[i];
+        at::Tensor single_grad_input_coords = grad_input_coords[i];
+        at::Tensor single_R = R[i];
         
-        if(T->nDimension == 2){
-            int batch_size = T->size[0];
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THDoubleTensor *single_T = THDoubleTensor_new();
-                THDoubleTensor_select(single_T, T, 0, i);
+        cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
+        _R = _R.getTranspose();
+        ProtUtil::rotate(single_grad_output_coords, _R, single_grad_input_coords, num_at[i]);
+    }
+}
+void getBBox(   at::Tensor input_coords,
+                at::Tensor a, at::Tensor b,
+                at::Tensor num_atoms){
+    if( input_coords.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble 
+    || num_atoms.dtype() != at::kInt){
+        throw("Incorrect tensor types");
+    }
+    if(input_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    
+    int batch_size = input_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for num_threads(10)
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_input_coords = input_coords[i];
+        at::Tensor single_a = a[i];
+        at::Tensor single_b = b[i];
+        
+        cVector3 va(single_a.data<double>());
+        cVector3 vb(single_b.data<double>());
+        ProtUtil::computeBoundingBox(single_input_coords, num_at[i], va, vb);
+    }
+}
+void getRandomRotation( at::Tensor R ){
+    if( R.dtype() != at::kDouble ){
+        throw("Incorrect tensor types");
+    }
+    if(R.ndimension() != 3){
+        throw("Incorrect input ndim");
+    }
+
+    int batch_size = R.size(0);
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_R = R[i];
+        cMatrix33 rnd_R = ProtUtil::getRandomRotation();
+        ProtUtil::matrix2Tensor(rnd_R, single_R);                
+    }
+}
+void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size){
+    if( T.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble){
+        throw("Incorrect tensor types");
+    }
+    if(T.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    
+    int batch_size = T.size(0);
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_T = T[i];
+        at::Tensor single_a = a[i];
+        at::Tensor single_b = b[i];
                 
-                cVector3 _a(THDoubleTensor_get2d(a, i, 0), THDoubleTensor_get2d(a, i, 1), THDoubleTensor_get2d(a, i, 2));
-                cVector3 _b(THDoubleTensor_get2d(b, i, 0), THDoubleTensor_get2d(b, i, 1), THDoubleTensor_get2d(b, i, 2));
-
-                cVector3 _T = ProtUtil::getRandomTranslation(gen, volume_size, _a, _b);
-                THDoubleTensor_set1d(single_T, 0, _T.v[0]);
-                THDoubleTensor_set1d(single_T, 1, _T.v[1]);
-                THDoubleTensor_set1d(single_T, 2, _T.v[2]);
-
-                THDoubleTensor_free(single_T);
-            }
-
-        }else{
-            std::cout<<"Not implemented\n";
-        }
-        THGenerator_free(gen);
+        cVector3 _a(single_a.data<double>());
+        cVector3 _b(single_b.data<double>());
+        cVector3 _T(single_T.data<double>());
+        
+        _T = ProtUtil::getRandomTranslation(volume_size, _a, _b);
     }
 }

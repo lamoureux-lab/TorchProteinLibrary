@@ -39,7 +39,7 @@ at::Tensor StringUtil::string2Tensor(std::string s){
     aT[s.length()] = '\0';
     return T;
 } 
-void StringUtil::string2Tensor(std::string s, at::Tensor &T){
+void StringUtil::string2Tensor(std::string s, at::Tensor T){
     char* aT = static_cast<char*>(T.data_ptr());
     for(int i=0; i<s.length(); i++)
         aT[i] = s[i];
@@ -63,13 +63,11 @@ cMatrix33 ProtUtil::tensor2Matrix33(at::Tensor T){
             dst.m[i][j] = aT[i][j];
     return dst;
 }
-at::Tensor ProtUtil::matrix2Tensor(cMatrix33 &mat){
-    at::Tensor T = at::CPU(at::kDouble).zeros({3,3});
-    auto aT = T.accessor<double,2>();
+void ProtUtil::matrix2Tensor(cMatrix33 &mat, at::Tensor &T){
+    // auto aT = T.accessor<double,2>();
     for(int i=0; i<3; i++)
         for(int j=0; j<3; j++)
-            aT[i][j] = mat.m[i][j];
-    return T;
+            T[i][j] = mat.m[i][j];
 }
 uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     uint num_atoms = 0;
@@ -88,17 +86,17 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     }
     return num_atoms;
 }
-/*
-void ProtUtil::translate(THDoubleTensor *input_coords, cVector3 T, THDoubleTensor *output_coords, int num_atoms){
-    // uint num_atoms = input_coords->size[0]/3;
-    double *data_in = THDoubleTensor_data(input_coords);
-    double *data_out = THDoubleTensor_data(output_coords);
+
+void ProtUtil::translate(at::Tensor &input_coords, cVector3 &T, at::Tensor &output_coords, int num_atoms){
+    double *data_in = input_coords.data<double>();
+    double *data_out = output_coords.data<double>();
     for(int i=0;i<num_atoms;i++){
         cVector3 in(data_in+3*i);
         cVector3 out(data_out+3*i);
         out = in + T;
     }
 }
+/*
 void ProtUtil::translate(THDoubleTensor *coords, cVector3 T){
     uint num_atoms = coords->size[0]/3;
     double *data = THDoubleTensor_data(coords);
@@ -107,15 +105,18 @@ void ProtUtil::translate(THDoubleTensor *coords, cVector3 T){
         r = r + T;
     }
 }
-void ProtUtil::rotate(THDoubleTensor *input_coords, cMatrix33 R, THDoubleTensor *output_coords, int num_atoms){
-    double *data_in = THDoubleTensor_data(input_coords);
-    double *data_out = THDoubleTensor_data(output_coords);
+*/
+
+void ProtUtil::rotate(at::Tensor &input_coords, cMatrix33 &R, at::Tensor &output_coords, int num_atoms){
+    double *data_in = input_coords.data<double>();
+    double *data_out = output_coords.data<double>();
     for(int i=0;i<num_atoms;i++){
         cVector3 in(data_in+3*i);
         cVector3 out(data_out+3*i);
         out = R*in;
     }
 }
+/*
 void ProtUtil::rotate(THDoubleTensor *coords, cMatrix33 R){
     uint num_atoms = coords->size[0]/3;
     double *data = THDoubleTensor_data(coords);
@@ -124,12 +125,15 @@ void ProtUtil::rotate(THDoubleTensor *coords, cMatrix33 R){
         r = R*r;
     }
 }
-
-cMatrix33 ProtUtil::getRandomRotation(THGenerator *gen){
-    float u1 = THRandom_uniform(gen,0,1.0);
-    float u2 = THRandom_uniform(gen,0,1.0);
-    float u3 = THRandom_uniform(gen,0,1.0);
-    float q[4];
+*/
+cMatrix33 ProtUtil::getRandomRotation(){
+    auto default_gen = &at::globalContext().defaultGenerator(at::kCPU);
+    at::Tensor uni_rnd = at::CPU(at::kDouble).zeros({3});
+    uni_rnd.uniform_(0,1.0, default_gen);
+    double u1 = uni_rnd.accessor<double,1>()[0];
+    double u2 = uni_rnd.accessor<double,1>()[1];
+    double u3 = uni_rnd.accessor<double,1>()[2];
+    double q[4];
     q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
     q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
     q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
@@ -149,24 +153,30 @@ cMatrix33 ProtUtil::getRandomRotation(THGenerator *gen){
     
     return random_rotation;
 }
-cVector3 ProtUtil::getRandomTranslation(THGenerator *gen, uint spatial_dim, cVector3 b0, cVector3 b1){
+
+cVector3 ProtUtil::getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3 &b1){
     float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
     float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
     float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
-    float dx = THRandom_uniform(gen,-dx_max,dx_max);
-    float dy = THRandom_uniform(gen,-dy_max,dy_max);
-    float dz = THRandom_uniform(gen,-dz_max,dz_max);
-    return cVector3(dx, dy, dz);
+
+    auto default_gen = &at::globalContext().defaultGenerator(at::kCPU);
+    at::Tensor uni_rnd = at::CPU(at::kDouble).zeros({3});
+    uni_rnd[0].uniform_(-dx_max, dx_max, default_gen);
+    uni_rnd[1].uniform_(-dy_max,dy_max, default_gen);
+    uni_rnd[2].uniform_(-dz_max,dz_max, default_gen);
+    auto acc = uni_rnd.accessor<double,1>();
+    return cVector3(acc[0], acc[1], acc[2]);
 }
 
-void ProtUtil::computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, cVector3 &b0, cVector3 &b1){
+
+void ProtUtil::computeBoundingBox(at::Tensor &input_coords, int num_atoms, cVector3 &b0, cVector3 &b1){
 	b0[0]=std::numeric_limits<double>::infinity(); 
 	b0[1]=std::numeric_limits<double>::infinity(); 
 	b0[2]=std::numeric_limits<double>::infinity();
 	b1[0]=-1*std::numeric_limits<double>::infinity(); 
 	b1[1]=-1*std::numeric_limits<double>::infinity(); 
 	b1[2]=-1*std::numeric_limits<double>::infinity();
-    double *data = THDoubleTensor_data(input_coords);
+    double *data = input_coords.data<double>();
     for(int i=0;i<num_atoms;i++){
         cVector3 r(data + 3*i);
 		if(r[0]<b0[0]){
@@ -190,7 +200,7 @@ void ProtUtil::computeBoundingBox(THDoubleTensor *input_coords, int num_atoms, c
 		}
 	}
 }
-*/
+
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
     if(atom_name == std::string("N"))
         return 0;

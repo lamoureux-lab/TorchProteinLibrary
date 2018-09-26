@@ -2,7 +2,8 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
-from Exposed import cppCoordsTransform
+
+import FullAtomModel
 import math
 
 import sys
@@ -11,30 +12,30 @@ import os
 def getBBox(input_coords, num_atoms):
 	if len(input_coords.size())==2:
 		batch_size = input_coords.size(0)
-		a = torch.DoubleTensor(batch_size, 3)
-		b = torch.DoubleTensor(batch_size, 3)
+		a = torch.zeros(batch_size, 3, dtype=torch.double)
+		b = torch.zeros(batch_size, 3, dtype=torch.double)
 	else:
 		raise ValueError('getBBox: ', 'Incorrect input size:', input_coords.size()) 
 
-	cppCoordsTransform.getBBox(input_coords.data, a, b, num_atoms.data)
+	FullAtomModel.getBBox(input_coords, a, b, num_atoms)
 
-	return Variable(a), Variable(b)
+	return a, b
 
 def getRandomTranslation(a, b, volume_size):
 	if len(a.size())==2:
 		batch_size = a.size(0)
-		T = torch.DoubleTensor(batch_size, 3)
+		T = torch.zeros(batch_size, 3, dtype=torch.double)
 	else:
 		raise ValueError('getRandomTranslation: ', 'Incorrect input size:', a.size()) 
 
-	cppCoordsTransform.getRandomTranslation(T, a.data, b.data, volume_size)
+	FullAtomModel.getRandomTranslation(T, a, b, volume_size)
 
-	return Variable(T)
+	return T
 
 def getRandomRotation(batch_size):
-	R = torch.DoubleTensor(batch_size, 3, 3)
-	cppCoordsTransform.getRandomRotation(R)
-	return Variable(R)
+	R = torch.zeros(batch_size, 3, 3, dtype=torch.double)
+	FullAtomModel.getRandomRotation(R)
+	return R
 
 class CoordsTranslateFunction(Function):
 	"""
@@ -47,14 +48,14 @@ class CoordsTranslateFunction(Function):
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
 			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.DoubleTensor(batch_size, num_coords)
+			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
-		cppCoordsTransform.CoordsTranslate_forward( input_coords_cpu, output_coords_cpu, T, num_atoms)
+		FullAtomModel.CoordsTranslate_forward( input_coords_cpu, output_coords_cpu, T, num_atoms)
 
-		# if math.isnan(output_coords_cpu.sum()):
-		# 	raise(Exception('CoordsTranslateFunction: forward Nan'))	
+		if math.isnan(output_coords_cpu.sum()):
+			raise(Exception('CoordsTranslateFunction: forward Nan'))	
 
 		return output_coords_cpu
 
@@ -66,15 +67,12 @@ class CoordsTranslateFunction(Function):
 		if len(grad_output_coords_cpu.size()) == 2:
 			batch_size = grad_output_coords_cpu.size(0)
 			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.DoubleTensor(batch_size, num_coords)
+			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		cppCoordsTransform.CoordsTranslate_backward(grad_output_coords_cpu, grad_input_coords_cpu)
-		
-		# if math.isnan(grad_input_coords_cpu.sum()):
-		# 	raise(Exception('CoordsTranslateFunction: backward Nan'))		
-		
+		grad_input_coords_cpu.data.copy_(grad_output_coords_cpu)
+				
 		return grad_input_coords_cpu, None, None
 
 class CoordsTranslate(Module):
@@ -96,11 +94,11 @@ class CoordsRotateFunction(Function):
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
 			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.DoubleTensor(batch_size, num_coords)
+			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
-		cppCoordsTransform.CoordsRotate_forward( input_coords_cpu, output_coords_cpu, R, num_atoms)
+		FullAtomModel.CoordsRotate_forward( input_coords_cpu, output_coords_cpu, R, num_atoms)
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('CoordsRotateFunction: forward Nan'))	
@@ -116,11 +114,11 @@ class CoordsRotateFunction(Function):
 		if len(grad_output_coords_cpu.size()) == 2:
 			batch_size = grad_output_coords_cpu.size(0)
 			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.DoubleTensor(batch_size, num_coords)
+			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		cppCoordsTransform.CoordsRotate_backward(grad_output_coords_cpu, grad_input_coords_cpu, R, num_atoms)
+		FullAtomModel.CoordsRotate_backward(grad_output_coords_cpu, grad_input_coords_cpu, R, num_atoms)
 		
 		if math.isnan(grad_input_coords_cpu.sum()):
 			raise(Exception('CoordsRotateFunction: backward Nan'))		

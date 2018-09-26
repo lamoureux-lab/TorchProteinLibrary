@@ -27,7 +27,7 @@ def test_translation(coords, num_atoms):
 	a,b = getBBox(centered_coords, num_atoms)
 	center = (a+b)*0.5
 	
-	print center
+	print(center)
 	
 
 def test_rotation(coords, num_atoms):
@@ -36,13 +36,13 @@ def test_rotation(coords, num_atoms):
 	rotate = CoordsRotate()
 	rotated = rotate(coords, R, num_atoms)
 	
-	print rotated
+	print(rotated)
 	
 
 if __name__=='__main__':
 
 	sequences = ['GGGGGG', 'GGAARRRRRRRRR']
-	angles = Variable(torch.DoubleTensor(2, 7,len(sequences[1])).zero_())
+	angles = torch.zeros(2, 7,len(sequences[1]), dtype=torch.double)
 	angles[:,0,:] = -1.047
 	angles[:,1,:] = -0.698
 	angles[:,2:,:] = 110.4*np.pi/180.0

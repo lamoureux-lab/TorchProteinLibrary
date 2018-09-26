@@ -17,6 +17,7 @@ setup(name='TorchProteinLayers',
 				'Layers/FullAtomModel/Angles2Coords/angles2coords_interface.cpp',
 				'Layers/FullAtomModel/PDB2Coords/pdb2coords_interface.cpp',
 				'Layers/FullAtomModel/Coords2TypedCoords/coords2typedcoords_interface.cpp',
+				'Layers/FullAtomModel/CoordsTransform/coordsTransform_interface.cpp',
 				'Layers/FullAtomModel/main.cpp'],
 				include_dirs = ['Layers/FullAtomModel',
 				'Math'])

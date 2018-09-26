@@ -2,6 +2,7 @@
 #include <Angles2Coords/angles2coords_interface.h>
 #include <PDB2Coords/pdb2coords_interface.h>
 #include <Coords2TypedCoords/coords2typedcoords_interface.h>
+#include <CoordsTransform/coordsTransform_interface.h>
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("Angles2Coords_forward", &Angles2Coords_forward, "Angles2Coords forward");
@@ -11,4 +12,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("PDB2Coords", &PDB2Coords, "Convert PDB to coordinates");
 	m.def("Coords2TypedCoords_forward", &Coords2TypedCoords_forward, "Convert coordinates to atom types");
 	m.def("Coords2TypedCoords_backward", &Coords2TypedCoords_backward, "Backward of Coords2TypedCoords");
+	m.def("CoordsTranslate_forward", &CoordsTranslate_forward, "Translate coordinates");
+	m.def("CoordsRotate_forward", &CoordsRotate_forward, "Rotate coordinates");
+	m.def("CoordsRotate_forward", &CoordsRotate_backward, "Backward of rotate coordinates");
+	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
+	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
+	m.def("getRandomTranslation", &getRandomTranslation, "Get random translation");
 }
