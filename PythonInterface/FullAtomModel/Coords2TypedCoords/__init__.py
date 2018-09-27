@@ -1,1 +1,1 @@
-from Coords2TypedCoords import Coords2TypedCoords
+from .Coords2TypedCoords import Coords2TypedCoords

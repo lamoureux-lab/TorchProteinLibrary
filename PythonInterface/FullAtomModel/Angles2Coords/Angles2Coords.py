@@ -6,7 +6,7 @@ import math
 import sys
 import os
 import numpy as np
-import FullAtomModel
+import _FullAtomModel
 
 
 def convertStringList(stringList):
@@ -45,7 +45,7 @@ class Angles2CoordsFunction(Function):
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-		FullAtomModel.Angles2Coords_forward( sequenceTensor,
+		_FullAtomModel.Angles2Coords_forward( sequenceTensor,
 												input_angles_cpu, 
 												output_coords_cpu, 
 												output_resnames_cpu,
@@ -85,7 +85,7 @@ class Angles2CoordsFunction(Function):
 		batch_size = input_angles_cpu.size(0)
 		grad_angles_cpu = torch.zeros(batch_size, input_angles_cpu.size(1), input_angles_cpu.size(2), dtype=torch.double)
 				
-		FullAtomModel.Angles2Coords_backward(grad_atoms_cpu.data, grad_angles_cpu, sequenceTensor, input_angles_cpu)
+		_FullAtomModel.Angles2Coords_backward(grad_atoms_cpu.data, grad_angles_cpu, sequenceTensor, input_angles_cpu)
 
 		if math.isnan(grad_angles_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: backward Nan'))		
@@ -101,7 +101,7 @@ class Angles2Coords(Module):
 				
 		self.num_atoms = []
 		for seq in sequences:
-			self.num_atoms.append(FullAtomModel.getSeqNumAtoms(seq))
+			self.num_atoms.append(_FullAtomModel.getSeqNumAtoms(seq))
 		num_atoms = torch.IntTensor(self.num_atoms)
 		
 		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms)

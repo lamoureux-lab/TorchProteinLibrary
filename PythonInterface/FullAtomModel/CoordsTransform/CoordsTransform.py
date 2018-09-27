@@ -3,7 +3,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
 
-import FullAtomModel
+import _FullAtomModel
 import math
 
 import sys
@@ -17,7 +17,7 @@ def getBBox(input_coords, num_atoms):
 	else:
 		raise ValueError('getBBox: ', 'Incorrect input size:', input_coords.size()) 
 
-	FullAtomModel.getBBox(input_coords, a, b, num_atoms)
+	_FullAtomModel.getBBox(input_coords, a, b, num_atoms)
 
 	return a, b
 
@@ -28,13 +28,13 @@ def getRandomTranslation(a, b, volume_size):
 	else:
 		raise ValueError('getRandomTranslation: ', 'Incorrect input size:', a.size()) 
 
-	FullAtomModel.getRandomTranslation(T, a, b, volume_size)
+	_FullAtomModel.getRandomTranslation(T, a, b, volume_size)
 
 	return T
 
 def getRandomRotation(batch_size):
 	R = torch.zeros(batch_size, 3, 3, dtype=torch.double)
-	FullAtomModel.getRandomRotation(R)
+	_FullAtomModel.getRandomRotation(R)
 	return R
 
 class CoordsTranslateFunction(Function):
@@ -52,7 +52,7 @@ class CoordsTranslateFunction(Function):
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
-		FullAtomModel.CoordsTranslate_forward( input_coords_cpu, output_coords_cpu, T, num_atoms)
+		_FullAtomModel.CoordsTranslate_forward( input_coords_cpu, output_coords_cpu, T, num_atoms)
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('CoordsTranslateFunction: forward Nan'))	
@@ -98,7 +98,7 @@ class CoordsRotateFunction(Function):
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
-		FullAtomModel.CoordsRotate_forward( input_coords_cpu, output_coords_cpu, R, num_atoms)
+		_FullAtomModel.CoordsRotate_forward( input_coords_cpu, output_coords_cpu, R, num_atoms)
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('CoordsRotateFunction: forward Nan'))	
@@ -118,7 +118,7 @@ class CoordsRotateFunction(Function):
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		FullAtomModel.CoordsRotate_backward(grad_output_coords_cpu, grad_input_coords_cpu, R, num_atoms)
+		_FullAtomModel.CoordsRotate_backward(grad_output_coords_cpu, grad_input_coords_cpu, R, num_atoms)
 		
 		if math.isnan(grad_input_coords_cpu.sum()):
 			raise(Exception('CoordsRotateFunction: backward Nan'))		
@@ -131,3 +131,37 @@ class CoordsRotate(Module):
 		
 	def forward(self, input_coords_cpu, R, num_atoms):
 		return CoordsRotateFunction.apply(input_coords_cpu, R, num_atoms)
+
+class Coords2CenteredCoords(Module):
+	def __init__(self, rotate=True, translate=True, box_size=120):
+		super(Coords2CenteredCoords, self).__init__()
+		self.rotate = rotate
+		self.translate = translate
+		self.box_size = box_size
+		self.rot = CoordsRotate()
+		self.tra = CoordsTranslate()
+
+	def forward(self, input_coords, num_atoms):
+		batch_size = input_coords.size(0)
+		a,b = getBBox(input_coords, num_atoms)
+		protein_center = (a+b)*0.5
+		coords = self.tra(input_coords, -protein_center, num_atoms)
+
+		box_center = torch.zeros(batch_size, 3, dtype=torch.double)
+		box_center.fill_(self.box_size/2.0)
+		
+		if self.rotate:	
+			rR = getRandomRotation(batch_size)
+			coords = self.rot(coords, rR, num_atoms)
+		
+		coords = self.tra(coords, box_center, num_atoms)
+
+		if self.translate:
+			a,b = getBBox(coords, num_atoms)
+			rT = getRandomTranslation(a, b, self.box_size)
+			coords = self.tra(coords, rT, num_atoms)
+
+		return coords
+
+
+

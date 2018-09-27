@@ -16,12 +16,11 @@ from Coords2TypedCoords.Coords2TypedCoords import Coords2TypedCoords
 from CoordsTransform import CoordsTranslate, getRandomTranslation, getBBox
 from CoordsTransform import CoordsRotate, getRandomRotation
 
-
-
 def test_translation(coords, num_atoms):
 	translate = CoordsTranslate()
 	a,b = getBBox(coords, num_atoms)
 	center = (a+b)*0.5
+	print (center)
 
 	centered_coords = translate(coords, -center, num_atoms)
 	a,b = getBBox(centered_coords, num_atoms)

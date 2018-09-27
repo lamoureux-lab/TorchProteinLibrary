@@ -10,6 +10,7 @@ void CoordsTranslate_forward(   at::Tensor input_coords,
                                 at::Tensor T,
                                 at::Tensor num_atoms
                                 ){
+
     if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || T.dtype() != at::kDouble 
     || num_atoms.dtype() != at::kInt){
         throw("Incorrect tensor types");
@@ -17,15 +18,13 @@ void CoordsTranslate_forward(   at::Tensor input_coords,
     if(input_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
-    
     int batch_size = input_coords.size(0);
     auto num_at = num_atoms.accessor<int,1>();
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
-        at::Tensor single_input_coords = single_input_coords[i];
+        at::Tensor single_input_coords = input_coords[i];
         at::Tensor single_output_coords = output_coords[i];
         auto aT = T.accessor<double,2>();
-        
         cVector3 translation(aT[i][0], aT[i][1], aT[i][2]);
         ProtUtil::translate(single_input_coords, translation, single_output_coords, num_at[i]);
     }

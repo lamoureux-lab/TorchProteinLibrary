@@ -1,1 +1,1 @@
-from PDB2Coords import PDB2Coords, PDB2CoordsBiopython
+from .PDB2Coords import PDB2CoordsBiopython

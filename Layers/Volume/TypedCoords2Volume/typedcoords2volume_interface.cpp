@@ -1,106 +1,69 @@
-#include <TH/TH.h>
-#include <THC/THC.h>
-#include "cPDBLoader.h"
+#include "typedcoords2volume_interface.h"
 #include <iostream>
 #include <string>
 #include <Kernels.h>
 
-extern THCState *state;
-
-extern "C" {
-
-    void TypedCoords2Volume_forward(    THCudaDoubleTensor *input_coords,
-                                        THCudaTensor *volume,
-                                        THCudaIntTensor *num_atoms_of_type,
-                                        THCudaIntTensor *offsets){
-        int num_atom_types=11;
-        if(input_coords->nDimension == 1){
-            
-                       
-            gpu_computeCoords2Volume(   THCudaDoubleTensor_data(state, input_coords), 
-                                        THCudaIntTensor_data(state, num_atoms_of_type), 
-                                        THCudaIntTensor_data(state, offsets), 
-                                        THCudaTensor_data(state, volume), volume->size[1], num_atom_types, 1.0);
-            
-        }else if(input_coords->nDimension == 2){
-            int batch_size = input_coords->size[0];
-
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THCudaIntTensor *single_num_atoms_of_type = THCudaIntTensor_new(state);
-                THCudaIntTensor *single_offsets = THCudaIntTensor_new(state);
-                THCudaIntTensor_select(state, single_num_atoms_of_type, num_atoms_of_type, 0, i);
-                THCudaIntTensor_select(state, single_offsets, offsets, 0, i);
-                THCudaTensor *single_volume = THCudaTensor_new(state);
-                THCudaDoubleTensor *single_input_coords = THCudaDoubleTensor_new(state);
-                THCudaTensor_select(state, single_volume, volume, 0, i);
-                THCudaDoubleTensor_select(state, single_input_coords, input_coords, 0, i);
-
-                gpu_computeCoords2Volume(   THCudaDoubleTensor_data(state, single_input_coords), 
-                                            THCudaIntTensor_data(state, single_num_atoms_of_type), 
-                                            THCudaIntTensor_data(state, single_offsets), 
-                                            THCudaTensor_data(state, single_volume), single_volume->size[1], num_atom_types, 1.0);
-                
-                THCudaTensor_free(state, single_volume);
-                THCudaDoubleTensor_free(state, single_input_coords);
-                THCudaIntTensor_free(state, single_num_atoms_of_type);
-                THCudaIntTensor_free(state, single_offsets);
-            }
-            
-        }else{
-            throw std::string("Not implemented");
-        }
-        
+void TypedCoords2Volume_forward(    at::Tensor input_coords,
+                                    at::Tensor volume,
+                                    at::Tensor num_atoms_of_type,
+                                    at::Tensor offsets){
+    int num_atom_types=11;
+    if( (!input_coords.type().is_cuda()) || (!volume.type().is_cuda()) || (!num_atoms_of_type.type().is_cuda()) 
+        || (!offsets.type().is_cuda())
+        || input_coords.dtype() != at::kDouble || volume.dtype() != at::kFloat
+        || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt){
+            throw("Incorrect tensor types");
     }
-    void TypedCoords2Volume_backward(   THCudaTensor *grad_volume,
-                                        THCudaDoubleTensor *grad_coords,
-                                        THCudaDoubleTensor *coords,
-                                        THCudaIntTensor *num_atoms_of_type,
-                                        THCudaIntTensor *offsets){
-        int num_atom_types=11;
-        if(grad_coords->nDimension == 1){
-                        
-            gpu_computeVolume2Coords(   THCudaDoubleTensor_data(state, coords), 
-                                        THCudaDoubleTensor_data(state, grad_coords),
-                                        THCudaIntTensor_data(state, num_atoms_of_type),
-                                        THCudaIntTensor_data(state, offsets), 
-                                        THCudaTensor_data(state, grad_volume), 
-                                        grad_volume->size[1], num_atom_types, 1.0);
-
-            
-        }else if(grad_coords->nDimension == 2){
-            int batch_size = grad_coords->size[0];
-
-            #pragma omp parallel for num_threads(10)
-            for(int i=0; i<batch_size; i++){
-                THCudaIntTensor *single_num_atoms_of_type = THCudaIntTensor_new(state);
-                THCudaIntTensor *single_offsets = THCudaIntTensor_new(state);
-                THCudaIntTensor_select(state, single_num_atoms_of_type, num_atoms_of_type, 0, i);
-                THCudaIntTensor_select(state, single_offsets, offsets, 0, i);
-                THCudaTensor *single_grad_volume = THCudaTensor_new(state);
-                THCudaDoubleTensor *single_coords = THCudaDoubleTensor_new(state);
-                THCudaDoubleTensor *single_grad_coords = THCudaDoubleTensor_new(state);
-                THCudaTensor_select(state, single_grad_volume, grad_volume, 0, i);
-                THCudaDoubleTensor_select(state, single_grad_coords, grad_coords, 0, i);
-                THCudaDoubleTensor_select(state, single_coords, coords, 0, i);
-
-                gpu_computeVolume2Coords(   THCudaDoubleTensor_data(state, single_coords), 
-                                            THCudaDoubleTensor_data(state, single_grad_coords),
-                                            THCudaIntTensor_data(state, single_num_atoms_of_type),
-                                            THCudaIntTensor_data(state, single_offsets), 
-                                            THCudaTensor_data(state, single_grad_volume), 
-                                            single_grad_volume->size[1], num_atom_types, 1.0);
-                
-                THCudaTensor_free(state, single_grad_volume);
-                THCudaDoubleTensor_free(state, single_coords);
-                THCudaDoubleTensor_free(state, single_grad_coords);
-                THCudaIntTensor_free(state, single_num_atoms_of_type);
-                THCudaIntTensor_free(state, single_offsets);
-            }
-        }else{
-            throw std::string("Not implemented");
-        
-        }
-        
+    if(input_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
     }
+    int batch_size = input_coords.size(0);
+
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_num_atoms_of_type = num_atoms_of_type[i];
+        at::Tensor single_offsets = offsets[i];
+        at::Tensor single_volume = volume[i];
+        at::Tensor single_input_coords = input_coords[i];
+        
+        gpu_computeCoords2Volume(   single_input_coords.data<double>(), 
+                                    single_num_atoms_of_type.data<int>(), 
+                                    single_offsets.data<int>(), 
+                                    single_volume.data<float>(), single_volume.size(1), num_atom_types, 1.0);
+    }
+    
+}
+void TypedCoords2Volume_backward(   at::Tensor grad_volume,
+                                    at::Tensor grad_coords,
+                                    at::Tensor coords,
+                                    at::Tensor num_atoms_of_type,
+                                    at::Tensor offsets){
+    int num_atom_types=11;
+    if( (!grad_coords.type().is_cuda()) || (!grad_volume.type().is_cuda()) || (!num_atoms_of_type.type().is_cuda()) 
+        || (!offsets.type().is_cuda()) || (!coords.type().is_cuda())
+        || grad_coords.dtype() != at::kDouble || coords.dtype() != at::kDouble || grad_volume.dtype() != at::kFloat
+        || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt){
+            throw("Incorrect tensor types");
+    }
+    if(grad_coords.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    int batch_size = grad_coords.size(0);
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_num_atoms_of_type = num_atoms_of_type[i];
+        at::Tensor single_offsets = offsets[i];
+        at::Tensor single_grad_volume = grad_volume[i];
+        at::Tensor single_coords = coords[i];
+        at::Tensor single_grad_coords = grad_coords[i];
+        
+        
+        gpu_computeVolume2Coords(   single_coords.data<double>(), 
+                                    single_grad_coords.data<double>(),
+                                    single_num_atoms_of_type.data<int>(),
+                                    single_offsets.data<int>(), 
+                                    single_grad_volume.data<float>(), 
+                                    single_grad_volume.size(1), num_atom_types, 1.0);
+    }
+    
 }

@@ -1,1 +1,1 @@
-from Coords2CenteredCoords import Coords2CenteredCoords
+from .CoordsTransform import *

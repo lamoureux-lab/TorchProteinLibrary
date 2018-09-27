@@ -10,15 +10,14 @@ import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from Angles2Coords.Angles2Coords import Angles2Coords
-from Coords2TypedCoords.Coords2TypedCoords import Coords2TypedCoords
-from Coords2CenteredCoords import Coords2CenteredCoords
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
+from FullAtomModel import Angles2Coords
+from FullAtomModel import Coords2TypedCoords
+from FullAtomModel import Coords2CenteredCoords
 from TypedCoords2Volume import TypedCoords2Volume
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-import Utils
+import _Volume
 
 if __name__=='__main__':
 
@@ -29,10 +28,10 @@ if __name__=='__main__':
 		atom_coords.append(1.0 + np.random.rand(3)*110.0)
 		atom_types.append(np.random.randint(low=0, high=11))
 	  
-	num_atoms_of_type = torch.IntTensor(1,11).zero_()
-	offsets = torch.IntTensor(1,11).zero_()
-	coords = torch.DoubleTensor(1, 3*num_atoms).zero_()
-	potential = torch.FloatTensor(1,11,120,120,120).zero_().cuda()
+	num_atoms_of_type = torch.zeros(1,11, dtype=torch.int)
+	offsets = torch.zeros(1,11, dtype=torch.int)
+	coords = torch.zeros(1, 3*num_atoms, dtype=torch.double)
+	potential = torch.zeros(1,11,120,120,120, dtype=torch.float, device='cuda')
 	for i in range(0,120):
 		potential[0,:,i,:,:] = float(i)/float(120.0) - 0.5
 
@@ -45,7 +44,7 @@ if __name__=='__main__':
 		if atom_type>0:
 			offsets[0, atom_type] = offsets[0, atom_type-1] + num_atoms_of_type[0, atom_type-1]
 	
-	current_num_atoms_of_type = [0 for i in xrange(0,11)]
+	current_num_atoms_of_type = [0 for i in range(11)]
 	for i, r in enumerate(atom_coords):
 		index = 3*offsets[0, atom_types[i]] + 3*current_num_atoms_of_type[atom_types[i]]
 		coords[0, index + 0 ] = r[0]
@@ -53,21 +52,18 @@ if __name__=='__main__':
 		coords[0, index + 2 ] = r[2]
 		current_num_atoms_of_type[atom_types[i]] += 1
 
-	print 'Test setting:'
+	print('Test setting:')
 	for i, atom_type in enumerate(atom_types):
-		print 'Type = ', atom_type, 'Coords = ', atom_coords[i][0], atom_coords[i][1], atom_coords[i][2]
+		print('Type = ', atom_type, 'Coords = ', atom_coords[i][0], atom_coords[i][1], atom_coords[i][2])
 	
 	for i in range(0,11):
-		print 'Type = ', i, 'Num atoms of type = ', num_atoms_of_type[0,i], 'Offset = ', offsets[0,i]
+		print('Type = ', i, 'Num atoms of type = ', num_atoms_of_type[0,i], 'Offset = ', offsets[0,i])
 
-	
-	num_atoms_of_type = Variable(num_atoms_of_type)
-	offsets = Variable(offsets)
-	coords = Variable(coords, requires_grad=True)
-	potential = Variable(potential, requires_grad=False)
+	coords.requires_grad_()
+	potential.requires_grad_()
 	
 	tc2v = TypedCoords2Volume()
-	density = tc2v(coords, num_atoms_of_type, offsets)
+	density = tc2v(coords.cuda(), num_atoms_of_type.cuda(), offsets.cuda())
 	E_0 = torch.sum(density*potential)
 	E_0.backward()
 	grad_an = torch.DoubleTensor(coords.grad.size()).copy_(coords.grad.data)
@@ -79,9 +75,9 @@ if __name__=='__main__':
 		x_1.data.copy_(coords.data)
 		x_1.data[0,i] += dx
 		
-		density = tc2v(x_1, num_atoms_of_type, offsets)
+		density = tc2v(x_1.cuda(), num_atoms_of_type.cuda(), offsets.cuda())
 		E_1 = torch.sum(density*potential)
-		grad_num.append( (E_1.data[0] - E_0.data[0])/dx )
+		grad_num.append( (E_1.data - E_0.data)/dx )
 
 
 	fig = plt.figure()

@@ -1,1 +1,1 @@
-from Angles2Coords import Angles2Coords
+from .Angles2Coords import Angles2Coords

@@ -1,2 +1,10 @@
-void TypedCoords2Volume_forward(    THCudaDoubleTensor *input_coords,THCudaTensor *volume,THCudaIntTensor *num_atoms_of_type,THCudaIntTensor *offsets);
-void TypedCoords2Volume_backward(   THCudaTensor *grad_volume,THCudaDoubleTensor *grad_coords,THCudaDoubleTensor *coords,THCudaIntTensor *num_atoms_of_type,THCudaIntTensor *offsets);
+#include <torch/torch.h>
+void TypedCoords2Volume_forward(    at::Tensor input_coords,
+                                        at::Tensor volume,
+                                        at::Tensor num_atoms_of_type,
+                                        at::Tensor offsets);
+void TypedCoords2Volume_backward(   at::Tensor grad_volume,
+                                        at::Tensor grad_coords,
+                                        at::Tensor coords,
+                                        at::Tensor num_atoms_of_type,
+                                        at::Tensor offsets);

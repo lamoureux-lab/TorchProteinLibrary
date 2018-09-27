@@ -1,0 +1,9 @@
+#include <torch/torch.h>
+#include <TypedCoords2Volume/typedcoords2volume_interface.h>
+#include <Volume2Xplor/volume2xplor_interface.h>
+
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+	m.def("TypedCoords2Volume_forward", &TypedCoords2Volume_forward, "TypedCoords2Volume forward");
+    m.def("TypedCoords2Volume_backward", &TypedCoords2Volume_backward, "TypedCoords2Volume backward");
+    m.def("Volume2Xplor", &Volume2Xplor, "Save 3D volume as xplor file");
+}

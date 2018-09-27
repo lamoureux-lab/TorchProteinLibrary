@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
-import FullAtomModel
+import _FullAtomModel
 import math
 
 import sys
@@ -28,7 +28,7 @@ class Coords2TypedCoordsFunction(Function):
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
-		FullAtomModel.Coords2TypedCoords_forward(   input_coords_cpu, input_resnames, input_atomnames, num_atoms,
+		_FullAtomModel.Coords2TypedCoords_forward(   input_coords_cpu, input_resnames, input_atomnames, num_atoms,
 													output_coords_cpu, num_atoms_of_type, offsets, ctx.atom_indexes)
 
 		if math.isnan(output_coords_cpu.sum()):
@@ -49,7 +49,7 @@ class Coords2TypedCoordsFunction(Function):
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu.data, grad_coords_cpu, 
+		_FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu.data, grad_coords_cpu, 
 															num_atoms_of_type, 
 															offsets, 
 															ctx.atom_indexes)

@@ -8,7 +8,7 @@ from Bio.PDB import *
 from Bio.PDB.Polypeptide import three_to_one
 import numpy as np
 
-import FullAtomModel
+import _FullAtomModel
 
 def get_sequence(structure):
 	sequence = ''
@@ -68,7 +68,7 @@ class PDB2Coords:
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-		FullAtomModel.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, int(self.strict))
+		_FullAtomModel.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, int(self.strict))
 	
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.num_atoms
 

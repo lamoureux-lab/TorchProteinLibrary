@@ -14,7 +14,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("Coords2TypedCoords_backward", &Coords2TypedCoords_backward, "Backward of Coords2TypedCoords");
 	m.def("CoordsTranslate_forward", &CoordsTranslate_forward, "Translate coordinates");
 	m.def("CoordsRotate_forward", &CoordsRotate_forward, "Rotate coordinates");
-	m.def("CoordsRotate_forward", &CoordsRotate_backward, "Backward of rotate coordinates");
+	m.def("CoordsRotate_backward", &CoordsRotate_backward, "Backward of rotate coordinates");
 	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
 	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
 	m.def("getRandomTranslation", &getRandomTranslation, "Get random translation");
