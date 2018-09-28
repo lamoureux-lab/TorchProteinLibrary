@@ -1,5 +1,7 @@
 #Temp files
 *~
+*.png
+*.pdb
 
 #Python 
 *.pyc

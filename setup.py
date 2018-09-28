@@ -3,6 +3,21 @@ from torch.utils.cpp_extension import CppExtension, BuildExtension, CUDAExtensio
 
 
 if __name__=='__main__':
+	PytorchInterace = [	#FullAtomModel
+						'TorchProteinLibrary/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/Angles2Coords/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/Angles2Coords/Angles2Coords.py',
+						'TorchProteinLibrary/FullAtomModel/Coords2TypedCoords/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/Coords2TypedCoords/Coords2TypedCoords.py',
+						'TorchProteinLibrary/FullAtomModel/CoordsTransform/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/CoordsTransform/CoordsTransform.py',
+						'TorchProteinLibrary/FullAtomModel/PDB2Coords/__init__.py',
+						'TorchProteinLibrary/FullAtomModel/PDB2Coords/PDB2Coords.py',
+						#Volume
+						'TorchProteinLibrary/Volume/TypedCoords2Volume/__init__.py',
+						'TorchProteinLibrary/Volume/TypedCoords2Volume/TypedCoords2Volume.py',
+					]
 	FullAtomModel = CppExtension('_FullAtomModel', 
 					sources = [
 					'Math/cMatrix33.cpp',
@@ -29,6 +44,19 @@ if __name__=='__main__':
 					'Layers/Volume/main.cpp'],
 					include_dirs = ['Layers/Volume'])
 	
-	setup(name='TorchProteinLayers',
-		ext_modules=[FullAtomModel, Volume],
-		cmdclass={'build_ext': BuildExtension})
+	setup(	name='TorchProteinLibrary',
+			version="0.1",
+			ext_modules=[FullAtomModel, Volume],
+			cmdclass={'build_ext': BuildExtension},
+			scripts = PytorchInterace,
+			author="Georgy Derevyanko",
+			author_email="georgy.derevyanko@gmail.com",
+			description="This is a collection of differentiable layers for pytorch, that applicable to protein data",
+			license="MIT",
+			keywords="pytorch, protein, deep learning",
+			url="https://github.com/lupoglaz/TorchProteinLibrary",
+			project_urls={
+				"Bug Tracker": "https://github.com/lupoglaz/TorchProteinLibrary/issues",
+				"Documentation": "https://github.com/lupoglaz/TorchProteinLibrary/tree/Release/Doc",
+				"Source Code": "https://github.com/lupoglaz/TorchProteinLibrary",
+			})

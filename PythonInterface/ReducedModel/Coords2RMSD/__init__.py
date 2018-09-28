@@ -1,2 +1,0 @@
-from coords2RMSD import Coords2RMSD
-from Exposed import cppCoords2RMSD
