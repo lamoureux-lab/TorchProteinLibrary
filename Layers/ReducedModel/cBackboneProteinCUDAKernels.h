@@ -1,5 +1,5 @@
-#include <THC/THC.h>
-#include <cMathCUDAKernels.h>
+
+#define REAL float
 
 void cpu_computeCoordinatesBackbone(REAL *angles, 
                                     REAL *dr, 
@@ -20,5 +20,4 @@ void cpu_backwardFromCoordsBackbone(REAL *angles,
 									REAL *A,
 									int *length,
 									int batch_size,
-									int angles_stride,
-									bool norm);
+									int angles_stride);

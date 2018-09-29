@@ -1,69 +1,60 @@
-#include <THC/THC.h>
+#include "angles2backbone_interface.h"
 #include <cBackboneProteinCUDAKernels.h>
 #include <iostream>
 
-extern THCState *state;
-#define CUDA_REAL_TENSOR_VAR THCudaTensor
-#define CUDA_REAL_TENSOR(X) THCudaTensor_##X
-// #define CUDA_REAL_TENSOR_VAR THCudaDoubleTensor
-// #define CUDA_REAL_TENSOR(X) THCudaDoubleTensor_##X
-bool int2bool(int add_terminal){
-    bool add_term;
-    if(add_terminal == 1){
-        add_term = true;
-    }else if(add_terminal == 0){
-        add_term = false;
-    }else{
-        std::cout<<"unknown add_terminal = "<<add_terminal<<std::endl;
-        throw std::string("unknown add_terminal");
+int Angles2Backbone_forward(at::Tensor input_angles, 
+                            at::Tensor output_coords, 
+                            at::Tensor angles_length, 
+                            at::Tensor A
+                        ){
+    if( input_angles.dtype() != at::kFloat || output_coords.dtype() != at::kFloat || angles_length.dtype() != at::kInt 
+    || A.dtype() != at::kFloat){
+        throw("Incorrect tensor types");
     }
-    return add_term;
+    if( (!input_angles.type().is_cuda()) || (!output_coords.type().is_cuda()) || (!angles_length.type().is_cuda()) 
+    || (!A.type().is_cuda()) ){
+        throw("Incorrect device");
+    }
+    if(input_angles.ndimension() != 3){
+        throw("Incorrect input ndim");
+    }
+    
+    cpu_computeCoordinatesBackbone(	input_angles.data<float>(), 
+                                    output_coords.data<float>(), 
+                                    A.data<float>(), 
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
 }
-extern "C" {
-    int Angles2Backbone_forward(  CUDA_REAL_TENSOR_VAR *input_angles, 
-                                CUDA_REAL_TENSOR_VAR *output_coords, 
-                                THCudaIntTensor *angles_length, 
-                                CUDA_REAL_TENSOR_VAR *A
+int Angles2Backbone_backward(   at::Tensor gradInput,
+                                at::Tensor gradOutput,
+                                at::Tensor input_angles, 
+                                at::Tensor angles_length, 
+                                at::Tensor A,   
+                                at::Tensor dr_dangle
                             ){
-        if(input_angles->nDimension!=3){
-            std::cout<<"incorrect input dimension"<<input_angles->nDimension<<std::endl;
-            throw("incorrect input dimension");
-        }
-        cpu_computeCoordinatesBackbone(	CUDA_REAL_TENSOR(data)(state, input_angles), 
-							CUDA_REAL_TENSOR(data)(state, output_coords), 
-							CUDA_REAL_TENSOR(data)(state, A), 
-							THCudaIntTensor_data(state, angles_length),
-                            input_angles->size[0],
-                            input_angles->size[2]);
+    if( gradInput.dtype() != at::kFloat || gradOutput.dtype() != at::kFloat || input_angles.dtype() != at::kFloat 
+    || A.dtype() != at::kFloat || dr_dangle.dtype() != at::kFloat || angles_length.dtype() != at::kInt ){
+        throw("Incorrect tensor types");
     }
-    int Angles2Backbone_backward(   CUDA_REAL_TENSOR_VAR *gradInput,
-                                    CUDA_REAL_TENSOR_VAR *gradOutput,
-                                    CUDA_REAL_TENSOR_VAR *input_angles, 
-                                    THCudaIntTensor *angles_length, 
-                                    CUDA_REAL_TENSOR_VAR *A,   
-                                    CUDA_REAL_TENSOR_VAR *dr_dangle,
-                                    int norm
-                            ){
-        if(gradInput->nDimension!=3){
-            std::cout<<"incorrect input dimension"<<gradInput->nDimension<<std::endl;
-            throw("incorrect input dimension");
-        }
-        bool bnorm = int2bool(norm);
-        cpu_computeDerivativesBackbone( CUDA_REAL_TENSOR(data)(state, input_angles),
-                                        CUDA_REAL_TENSOR(data)(state, dr_dangle),
-                                        CUDA_REAL_TENSOR(data)(state, A),
-                                        THCudaIntTensor_data(state, angles_length),
-                                        input_angles->size[0],
-                                        input_angles->size[2]);
-        
-        cpu_backwardFromCoordsBackbone( CUDA_REAL_TENSOR(data)(state, gradInput),
-                                CUDA_REAL_TENSOR(data)(state, gradOutput),
-                                CUDA_REAL_TENSOR(data)(state, dr_dangle),
-                                THCudaIntTensor_data(state, angles_length),
-                                input_angles->size[0],
-                                input_angles->size[2],
-                                bnorm);
+    if( (!gradInput.type().is_cuda()) || (!gradOutput.type().is_cuda()) || (!input_angles.type().is_cuda()) 
+    || (!A.type().is_cuda()) || (!angles_length.type().is_cuda()) || (!dr_dangle.type().is_cuda())){
+        throw("Incorrect device");
     }
-
-
+    if(gradOutput.ndimension() != 2){
+        throw("Incorrect input ndim");
+    }
+    cpu_computeDerivativesBackbone( input_angles.data<float>(),
+                                    dr_dangle.data<float>(),
+                                    A.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
+    
+    cpu_backwardFromCoordsBackbone( gradInput.data<float>(),
+                                    gradOutput.data<float>(),
+                                    dr_dangle.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
 }

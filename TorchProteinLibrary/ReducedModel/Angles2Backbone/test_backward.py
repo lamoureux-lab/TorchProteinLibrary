@@ -11,24 +11,21 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 import torch.optim as optim
 
-from angles2backbone import Angles2Backbone as Angles2Coords
+from Angles2Backbone import Angles2Backbone as Angles2Coords
 
 def test_gradient():
 	L=10
-	x0 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda(), requires_grad=True)
-	x1 = Variable(torch.FloatTensor(1, 2, L).normal_().cuda())
-	# x0 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda(), requires_grad=True)
-	# x1 = Variable(torch.DoubleTensor(1, 2, L).normal_().cuda())
-	length = Variable(torch.IntTensor(1).fill_(L).cuda())
+	x0 = torch.zeros(1, 2, L, dtype=torch.float, device='cuda').normal_().requires_grad_()
+	x1 = torch.zeros(1, 2, L, dtype=torch.float, device='cuda').normal_()
+	length = torch.zeros(1, dtype=torch.int, device='cuda').fill_(L)
 	
-	model = Angles2Coords(normalize=False)
+	model = Angles2Coords()
 		
 	basis_x0 = model(x0, length)
 	err_x0 = basis_x0.sum()
 	err_x0.backward()
-	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)
-	# back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
-	
+	back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.float, device='cpu').copy_(x0.grad.data)
+		
 	grads = [[],[]]
 	for a in range(0,2):
 		for i in range(0,L):
@@ -52,20 +49,16 @@ def test_gradient():
 def test_gradient_batch():
 	L=10
 	batch_size = 2
-	x0 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
-	x1 = Variable(torch.FloatTensor(batch_size, 2, L).normal_().cuda())
-	# x0 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda(), requires_grad=True)
-	# x1 = Variable(torch.DoubleTensor(batch_size, 2, L).normal_().cuda())
-	length = Variable(torch.IntTensor(batch_size).fill_(L).cuda())
+	x0 = torch.zeros(batch_size, 2, L, dtype=torch.float, device='cuda').normal_().requires_grad_()
+	x1 = torch.zeros(batch_size, 2, L, dtype=torch.float, device='cuda').normal_()
+	length = torch.zeros(batch_size, dtype=torch.int, device='cuda').fill_(L)
 		
-	model = Angles2Coords(normalize=False)
+	model = Angles2Coords()
 
 	basis_x0 = model(x0, length)
 	err_x0 = basis_x0.sum()
 	err_x0.backward()
-	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)
-	# back_grad_x0 = torch.DoubleTensor(x0.grad.size()).copy_(x0.grad.data)
-		
+	back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.float, device='cpu').copy_(x0.grad.data)
 	
 	for b in range(0,batch_size):
 		grads = [[],[]]

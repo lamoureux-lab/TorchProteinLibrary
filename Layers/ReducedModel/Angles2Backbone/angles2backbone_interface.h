@@ -1,2 +1,15 @@
-int Angles2Backbone_forward(THCudaTensor *input_angles, THCudaTensor *output_coords, THCudaIntTensor *angles_length, THCudaTensor *A);
-int Angles2Backbone_backward(THCudaTensor *gradInput,THCudaTensor *gradOutput,THCudaTensor *input_angles, THCudaIntTensor *angles_length, THCudaTensor *A, THCudaTensor *dr_dangle,  int norm);
+#include <torch/torch.h>
+
+int Angles2Backbone_forward(at::Tensor input_angles, 
+                            at::Tensor output_coords, 
+                            at::Tensor angles_length, 
+                            at::Tensor A
+                            );
+
+int Angles2Backbone_backward(   at::Tensor gradInput,
+                                at::Tensor gradOutput,
+                                at::Tensor input_angles, 
+                                at::Tensor angles_length, 
+                                at::Tensor A,   
+                                at::Tensor dr_dangle
+                            );

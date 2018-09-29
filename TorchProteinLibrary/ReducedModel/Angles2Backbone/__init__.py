@@ -1,1 +1,1 @@
-from angles2backbone import Angles2Backbone
+from .Angles2Backbone import Angles2Backbone

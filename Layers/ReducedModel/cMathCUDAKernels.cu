@@ -141,30 +141,6 @@ __device__ void invertMat44(REAL *d_dst, REAL *d_src){
 	d_dst[3] = -invTrans[0]; d_dst[7] = -invTrans[1]; d_dst[11] = -invTrans[2];
 }
 
-// __device__ void mat44Mul(REAL *d_m1, REAL *d_m2, REAL *dst){
-// 	if(dst == d_m1 || dst == d_m2){
-// 		REAL tmp[16];
-// 		for(int i=0;i<4;i++){
-// 			for(int j=0;j<4;j++){
-// 				tmp[i*4 + j] = 0.0;
-// 				for(int k=0; k<4; k++){
-// 					tmp[i*4+j] += d_m1[i*4+k]*d_m2[k*4+j];
-// 				}
-// 			}
-// 		}
-// 		memcpy(dst, tmp, 16*sizeof(REAL));
-// 	}else{
-// 		for(int i=0;i<4;i++){
-// 			for(int j=0;j<4;j++){
-// 				dst[i*4 + j] = 0.0;
-// 				for(int k=0; k<4; k++){
-// 					dst[i*4+j] += d_m1[i*4+k]*d_m2[k*4+j];
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
 __device__ void mat44Mul(REAL *d_m1, REAL *d_m2, REAL *dst){
 	dst[0] = d_m1[0]*d_m2[0] + d_m1[1]*d_m2[4] + d_m1[2]*d_m2[8] + d_m1[3]*d_m2[12];
 	dst[1] = d_m1[0]*d_m2[1] + d_m1[1]*d_m2[5] + d_m1[2]*d_m2[9] + d_m1[3]*d_m2[13];
@@ -211,26 +187,6 @@ __device__ void mat33Mul(REAL *d_m1, REAL *d_m2, REAL *dst){
 	}
 }
 
-
-// __device__ void mat44Vec4Mul(REAL *d_m, REAL *d_v, REAL *dst){
-// 	if(dst == d_v){
-// 		REAL tmp[4];
-// 		for(int i=0;i<4;i++){
-// 			tmp[i] = 0.0;
-// 			for(int j=0;j<4;j++){
-// 				tmp[i] += d_m[i*4+j]*d_v[j];
-// 			}
-// 		}
-// 		memcpy(dst, tmp, 4*sizeof(REAL));
-// 	}else{
-// 		for(int i=0;i<4;i++){
-// 			dst[i] = 0.0;
-// 			for(int j=0;j<4;j++){
-// 				dst[i] += d_m[i*4+j]*d_v[j];
-// 			}
-// 		}
-// 	}
-// }
 __device__ void mat44Vec4Mul(REAL *d_m, REAL *d_v, REAL *dst){
 	dst[0] = d_m[0]*d_v[0]+d_m[1]*d_v[1]+d_m[2]*d_v[2]+d_m[3]*d_v[3];
 	dst[1] = d_m[4]*d_v[0]+d_m[5]*d_v[1]+d_m[6]*d_v[2]+d_m[7]*d_v[3];
@@ -238,38 +194,12 @@ __device__ void mat44Vec4Mul(REAL *d_m, REAL *d_v, REAL *dst){
 	dst[3] = d_m[12]*d_v[0]+d_m[13]*d_v[1]+d_m[14]*d_v[2]+d_m[15]*d_v[3];
 }
 
-// __device__ void mat33Vec3Mul(REAL *d_m, REAL *d_v, REAL *dst){
-// 	if(dst == d_v){
-// 		REAL tmp[3];
-// 		for(int i=0;i<3;i++){
-// 			tmp[i] = 0.0;
-// 			for(int j=0;j<3;j++){
-// 				tmp[i] += d_m[i*3+j]*d_v[j];
-// 			}
-// 		}
-// 		memcpy(dst, tmp, 3*sizeof(REAL));
-// 	}else{
-// 		for(int i=0;i<3;i++){
-// 			dst[i] = 0.0;
-// 			for(int j=0;j<3;j++){
-// 				dst[i] += d_m[i*3+j]*d_v[j];
-// 			}
-// 		}
-// 	}
-// }
-
 __device__ void mat33Vec3Mul(REAL *d_m, REAL *d_v, REAL *dst){
 	dst[0] = d_m[0]*d_v[0]+d_m[1]*d_v[1]+d_m[2]*d_v[2];
 	dst[1] = d_m[3]*d_v[0]+d_m[4]*d_v[1]+d_m[5]*d_v[2];
 	dst[2] = d_m[6]*d_v[0]+d_m[7]*d_v[1]+d_m[8]*d_v[2];
 }
 
-// __device__ void mat44Vec3Mul(REAL *d_m, REAL *d_v, REAL *dst){
-//    REAL tmp[4], tmp1[4];
-//    memcpy(tmp, d_v, 3*sizeof(REAL));tmp[3]=1.0;
-//    mat44Vec4Mul(d_m, tmp, tmp1);
-//    memcpy(dst, tmp1, 3*sizeof(REAL));
-// }
 __device__ void mat44Vec3Mul(REAL *d_m, REAL *d_v, REAL *dst){
 	dst[0] = d_m[0]*d_v[0]+d_m[1]*d_v[1]+d_m[2]*d_v[2]+d_m[3];
 	dst[1] = d_m[4]*d_v[0]+d_m[5]*d_v[1]+d_m[6]*d_v[2]+d_m[7];

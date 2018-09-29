@@ -14,6 +14,9 @@ if __name__=='__main__':
 						'TorchProteinLibrary/FullAtomModel/CoordsTransform/CoordsTransform.py',
 						'TorchProteinLibrary/FullAtomModel/PDB2Coords/__init__.py',
 						'TorchProteinLibrary/FullAtomModel/PDB2Coords/PDB2Coords.py',
+						#ReducedModel
+						'TorchProteinLibrary/ReducedModel/Angles2Backbone/__init__.py',
+						'TorchProteinLibrary/ReducedModel/Angles2Backbone/Angles2Backbone.py',
 						#Volume
 						'TorchProteinLibrary/Volume/TypedCoords2Volume/__init__.py',
 						'TorchProteinLibrary/Volume/TypedCoords2Volume/TypedCoords2Volume.py',
@@ -43,10 +46,19 @@ if __name__=='__main__':
 					'Layers/Volume/Kernels.cu',
 					'Layers/Volume/main.cpp'],
 					include_dirs = ['Layers/Volume'])
+
+	ReducedModel = CUDAExtension('_ReducedModel',
+					sources = [
+					'Layers/ReducedModel/Angles2Backbone/angles2backbone_interface.cpp',
+					'Layers/ReducedModel/cBackboneProteinCUDAKernels.cu',
+					'Layers/ReducedModel/main.cpp'],
+					include_dirs = ['Layers/ReducedModel'])
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
-			ext_modules=[FullAtomModel, Volume],
+			ext_modules=[	FullAtomModel, 
+							Volume, 
+							ReducedModel],
 			cmdclass={'build_ext': BuildExtension},
 			scripts = PytorchInterace,
 			author="Georgy Derevyanko",
