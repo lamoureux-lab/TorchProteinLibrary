@@ -3,24 +3,20 @@ from torch.utils.cpp_extension import CppExtension, BuildExtension, CUDAExtensio
 
 
 if __name__=='__main__':
-	PytorchInterace = [	#FullAtomModel
-						'TorchProteinLibrary/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/Angles2Coords/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/Angles2Coords/Angles2Coords.py',
-						'TorchProteinLibrary/FullAtomModel/Coords2TypedCoords/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/Coords2TypedCoords/Coords2TypedCoords.py',
-						'TorchProteinLibrary/FullAtomModel/CoordsTransform/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/CoordsTransform/CoordsTransform.py',
-						'TorchProteinLibrary/FullAtomModel/PDB2Coords/__init__.py',
-						'TorchProteinLibrary/FullAtomModel/PDB2Coords/PDB2Coords.py',
-						#ReducedModel
-						'TorchProteinLibrary/ReducedModel/Angles2Backbone/__init__.py',
-						'TorchProteinLibrary/ReducedModel/Angles2Backbone/Angles2Backbone.py',
-						#Volume
-						'TorchProteinLibrary/Volume/TypedCoords2Volume/__init__.py',
-						'TorchProteinLibrary/Volume/TypedCoords2Volume/TypedCoords2Volume.py',
-					]
+	Packages = ['TorchProteinLibrary', 
+				#FullAtomModel
+				'TorchProteinLibrary.FullAtomModel', 
+				'TorchProteinLibrary.FullAtomModel.Angles2Coords', 
+				'TorchProteinLibrary.FullAtomModel.Coords2TypedCoords',
+				'TorchProteinLibrary.FullAtomModel.CoordsTransform',
+				'TorchProteinLibrary.FullAtomModel.PDB2Coords',
+				#ReducedModel
+				'TorchProteinLibrary.ReducedModel',
+				'TorchProteinLibrary.ReducedModel.Angles2Backbone',
+				#Volume
+				'TorchProteinLibrary.Volume',
+				'TorchProteinLibrary.Volume.TypedCoords2Volume'
+				]
 	FullAtomModel = CppExtension('_FullAtomModel', 
 					sources = [
 					'Math/cMatrix33.cpp',
@@ -60,7 +56,8 @@ if __name__=='__main__':
 							Volume, 
 							ReducedModel],
 			cmdclass={'build_ext': BuildExtension},
-			scripts = PytorchInterace,
+
+			packages = Packages,
 			author="Georgy Derevyanko",
 			author_email="georgy.derevyanko@gmail.com",
 			description="This is a collection of differentiable layers for pytorch, that applicable to protein data",
