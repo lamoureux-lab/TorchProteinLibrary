@@ -2,14 +2,14 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
-from Exposed import cppCoords2RMSD
+import _RMSD_CPU
 import math
 
 class Coords2RMSDFunction(Function):
 	"""
 	Protein coords, target coords -> rmsd function
 	"""
-	# @profile	
+	
 	@staticmethod
 	def forward(ctx, input, target, num_atoms):
 		
@@ -17,15 +17,15 @@ class Coords2RMSDFunction(Function):
 			batch_size = input.size()[0]
 			max_num_atoms = torch.max(num_atoms)
 			#allocating temp outputs on cpu
-			output = torch.DoubleTensor(batch_size)
-			ctx.c_coords_input = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			ctx.c_coords_target = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			ctx.U_coordinates_src = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
-			ctx.Ut_coordinates_dst = torch.DoubleTensor(batch_size, 3*max_num_atoms).zero_()
+			output = torch.zeros(batch_size, dtype=torch.double, device='cpu')
+			ctx.c_coords_input = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
+			ctx.c_coords_target = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
+			ctx.U_coordinates_src = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
+			ctx.Ut_coordinates_dst = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
 		else:
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
 		
-		cppCoords2RMSD.Coords2RMSD_forward( input, target, output,
+		_RMSD_CPU.Coords2RMSD_CPU_forward( input, target, output,
 											ctx.c_coords_input,
 											ctx.c_coords_target,
 											ctx.U_coordinates_src,
@@ -37,7 +37,7 @@ class Coords2RMSDFunction(Function):
 		
 		ctx.save_for_backward(output, num_atoms)
 		return output
-	# @profile		
+	
 	@staticmethod
 	def backward(ctx, gradOutput):
 
@@ -46,13 +46,11 @@ class Coords2RMSDFunction(Function):
 		if len(ctx.c_coords_input.size()) == 2:
 			batch_size = ctx.c_coords_input.size(0)
 			max_num_coords = ctx.c_coords_input.size(1)
-			gradInput = torch.DoubleTensor(batch_size, max_num_coords)
+			gradInput = torch.zeros(batch_size, max_num_coords, dtype=torch.double, device='cpu')
 		else:
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', c_coords_input.size())
-		
-		gradInput.fill_(0.0)
-		
-		cppCoords2RMSD.Coords2RMSD_backward(gradInput, gradOutput.data,
+				
+		_RMSD_CPU.Coords2RMSD_CPU_backward(gradInput, gradOutput,
 											ctx.c_coords_input,
 											ctx.c_coords_target,
 											ctx.U_coordinates_src,

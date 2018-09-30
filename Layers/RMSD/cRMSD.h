@@ -1,6 +1,7 @@
 #pragma once
 #include <cVector3.h>
 #include <cMatrix33.h>
+#include <torch/torch.h>
 
 class cRMSD{
     private:
@@ -16,7 +17,7 @@ class cRMSD{
 
     public:
         cRMSD(uint num_atoms);
-        cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, uint num_atoms);
+        cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, const uint num_atoms);
         ~cRMSD();
         double compute( double *src, double *dst );
         void grad( double *grad_atoms, double *grad_output );

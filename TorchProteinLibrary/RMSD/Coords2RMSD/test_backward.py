@@ -14,16 +14,16 @@ from Coords2RMSD import Coords2RMSD
 
 def test_gradient():
 	L=3
-	x0 = Variable(torch.DoubleTensor([[2,0,0, 3,0.1,1, 3,0.1,0 ]]), requires_grad=True)
-	x1 = Variable(torch.DoubleTensor(x0.size()).random_())
-	length = Variable(torch.IntTensor(1).fill_(L))
-	target = Variable(torch.DoubleTensor([[0,0,0, 1,1,0, 3,0,0]]))
+	x0 = torch.tensor([[2,0,0, 3,0.1,1, 3,0.1,0 ]], dtype=torch.double, device='cpu').requires_grad_()
+	x1 = torch.zeros(x0.size(), dtype=torch.double, device='cpu').random_()
+	length = torch.tensor([L], dtype=torch.int)
+	target = torch.tensor([[0,0,0, 1,1,0, 3,0,0]], dtype=torch.double)
 	loss = Coords2RMSD()
 	rmsd_x0 = loss(x0, target, length)
-	print rmsd_x0
+	print(rmsd_x0)
 	rmsd_x0.backward()
 	float_rmsd_x0 = np.sqrt(rmsd_x0.data[0])
-	back_grad_x0 = torch.FloatTensor(x0.grad.size()).copy_(x0.grad.data)
+	back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.double).copy_(x0.grad.data)
 	
 	aligned_x0 = torch.zeros(3*L)
 	aligned_target = torch.zeros(3*L)

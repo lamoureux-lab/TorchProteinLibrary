@@ -2,8 +2,8 @@
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
-#include <TH.h>
-
+#include <tuple>
+#include <limits>
 
 cRMSD::cRMSD(uint num_atoms){
     this->num_atoms = num_atoms;
@@ -17,7 +17,7 @@ cRMSD::cRMSD(uint num_atoms){
     external = false;
 }
 
-cRMSD::cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, uint num_atoms){
+cRMSD::cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, const uint num_atoms){
     this->num_atoms = num_atoms;
     centroid_src.setZero();
     centroid_dst.setZero();
@@ -38,10 +38,7 @@ cRMSD::~cRMSD(){
     }
 }
 
-double cRMSD::compute( double *src, double *dst ){
-    THDoubleTensor *vec = THDoubleTensor_newWithSize2d(4,4);
-    THDoubleTensor *eig = THDoubleTensor_newWithSize1d(4);
-        
+double cRMSD::compute( double *src, double *dst ){        
     //computing centroids
     for(int i=0; i<num_atoms; i++){
         centroid_src += cVector3(src+3*i);
@@ -74,30 +71,33 @@ double cRMSD::compute( double *src, double *dst ){
     }
 
     //Converting R to the T matrix
-    THDoubleTensor *Tmat = THDoubleTensor_newWithSize2d(4,4);
-    double *T = THDoubleTensor_data(Tmat);
+    at::Tensor Tmat = at::CPU(at::kDouble).zeros({4,4});
+    double *T = Tmat.data<double>();
     T[0] = R.m[0][0]+R.m[1][1]+R.m[2][2];T[1] = R.m[1][2]-R.m[2][1];T[2] = R.m[2][0]-R.m[0][2];T[3] = R.m[0][1]-R.m[1][0];
     T[4] = R.m[1][2]-R.m[2][1];T[5] = R.m[0][0]-R.m[1][1]-R.m[2][2];T[6] = R.m[0][1]+R.m[1][0];T[7] = R.m[0][2]+R.m[2][0];
     T[8] = R.m[2][0]-R.m[0][2];T[9] = R.m[0][1]+R.m[1][0];T[10] = -R.m[0][0]+R.m[1][1]-R.m[2][2];T[11] = R.m[1][2]+R.m[2][1];
     T[12] = R.m[0][1]-R.m[1][0];T[13] = R.m[0][2]+R.m[2][0];T[14] = R.m[1][2]+R.m[2][1];T[15] = -R.m[0][0]-R.m[1][1]+R.m[2][2];
         
     //soving eigenvalues problem
-    THDoubleTensor_syev(eig, vec, Tmat, "V", "U");
+    // THDoubleTensor_syev(eig, vec, Tmat, "V", "U");
+    std::tuple<at::Tensor, at::Tensor> result = Tmat.eig(true);
+    
     //getting maximum eigenvalue and eigenvector
-    double max_eig = THDoubleTensor_get1d(eig,0);
-    int max_eig_ind = 0;
-    double q[4];
-    for(int i=0; i<4; i++){
-        if(THDoubleTensor_get1d(eig,i)>=max_eig){
-            max_eig = THDoubleTensor_get1d(eig,i);
-            max_eig_ind = i;
-            for(int j=0;j<4;j++){
-                q[j] = THDoubleTensor_get2d(vec,j,i);
-            }
+    double max_eig_val = std::numeric_limits<double>::min();
+    at::Tensor max_eig_vec = at::CPU(at::kDouble).zeros({4});
+    auto q = max_eig_vec.accessor<double, 1>();
+
+    at::Tensor eig_vals = std::get<0>(result);
+    at::Tensor eig_vecs = std::get<1>(result);
+    auto eig_val = eig_vals.accessor<double, 2>();
+    for(int i=0; i<4; i++){    
+        if(max_eig_val < eig_val[i][0]){
+            max_eig_val = eig_val[i][0];        
+            for(int j=0;j<4; j++)max_eig_vec[j] = eig_vecs[j][i];
         }
     }
-    THDoubleTensor_free(Tmat);
     
+        
     // rotation matrix
     U.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
     U.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
@@ -121,7 +121,7 @@ double cRMSD::compute( double *src, double *dst ){
         R2 += ce_src_atom.norm2() + ce_dst_atom.norm2();
     }
     
-    double rmsd = (R2 - 2.0*fabs(max_eig))/(double(num_atoms));
+    double rmsd = (R2 - 2.0*fabs(max_eig_val))/(double(num_atoms));
     
     //transforming coordinates
     for(int i=0; i<num_atoms; i++){
@@ -131,11 +131,7 @@ double cRMSD::compute( double *src, double *dst ){
         cVector3 UT_dst_atom(UT_ce_dst+3*i);
         U_src_atom = U*ce_src_atom;
         UT_dst_atom = UT*ce_dst_atom;
-    }
-   
-    THDoubleTensor_free(vec);
-    THDoubleTensor_free(eig);
-    
+    } 
     
     return rmsd;
 }

@@ -16,6 +16,7 @@ if __name__=='__main__':
 				#Volume
 				'TorchProteinLibrary.Volume',
 				'TorchProteinLibrary.Volume.TypedCoords2Volume'
+				#RMSD
 				]
 	FullAtomModel = CppExtension('_FullAtomModel', 
 					sources = [
@@ -49,12 +50,24 @@ if __name__=='__main__':
 					'Layers/ReducedModel/cBackboneProteinCUDAKernels.cu',
 					'Layers/ReducedModel/main.cpp'],
 					include_dirs = ['Layers/ReducedModel'])
+
+	RMSD_CPU = CppExtension('_RMSD_CPU',
+					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Layers/RMSD/Coords2RMSD_CPU/coords2rmsd_interface.cpp',
+					'Layers/RMSD/cRMSD.cpp',
+					'Layers/RMSD/main.cpp'],
+					include_dirs = ['Layers/RMSD', 'Math'])
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
-			ext_modules=[	FullAtomModel, 
-							Volume, 
-							ReducedModel],
+			ext_modules=[	RMSD_CPU,
+							#FullAtomModel, 
+							#Volume, 
+							#ReducedModel
+						],
 			cmdclass={'build_ext': BuildExtension},
 
 			packages = Packages,
