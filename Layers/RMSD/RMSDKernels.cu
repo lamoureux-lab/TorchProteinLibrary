@@ -89,35 +89,3 @@ void cpu_transformCoordinates( double *d_coordinates_src, //input: coordinates t
     int max_num_atoms = coords_stride/3;
     gpu_transformCoordinates<<<max_num_atoms, batch_size>>>(d_coordinates_src, d_coordinates_dst, d_matrix, max_num_atoms);
 }
-
-
-void toGPUTensor(THCState*state, double *cpu_T, THCudaDoubleTensor *gpu_T){
-    uint size = 1;
-    for(int i=0; i<gpu_T->nDimension; i++)
-        size *= gpu_T->size[i];
-    cudaMemcpy( THCudaDoubleTensor_data(state, gpu_T), 
-                cpu_T,
-                size*sizeof(double), cudaMemcpyHostToDevice);
-}
-
-void toCPUTensor(THCState*state, THDoubleTensor *cpu_T, THCudaDoubleTensor *gpu_T){
-    uint size = 1;
-    for(int i=0; i<gpu_T->nDimension; i++)
-        size *= gpu_T->size[i];
-    cudaMemcpy( THDoubleTensor_data(cpu_T), 
-                THCudaDoubleTensor_data(state, gpu_T),
-                size*sizeof(double), cudaMemcpyDeviceToHost);
-}
-
-THCudaDoubleTensor* toGPU(THCState*state, THDoubleTensor *T){
-    THCudaDoubleTensor *gpu_T = THCudaDoubleTensor_newWithSize(state, THDoubleTensor_newSizeOf(T), THDoubleTensor_newStrideOf(T));
-    toGPUTensor(state, THDoubleTensor_data(T), gpu_T);
-    return gpu_T;
-}
-
-THDoubleTensor* fromGPU(THCState*state, THCudaDoubleTensor *T){
-    THDoubleTensor *cpu_T = THDoubleTensor_newWithSize(THCudaDoubleTensor_newSizeOf(state, T), THCudaDoubleTensor_newStrideOf(state, T));
-    toCPUTensor(state, cpu_T, T);
-    return cpu_T;
-}
-

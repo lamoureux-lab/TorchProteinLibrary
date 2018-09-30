@@ -58,12 +58,20 @@ if __name__=='__main__':
 					'Math/cVector3.cpp',
 					'Layers/RMSD/Coords2RMSD_CPU/coords2rmsd_interface.cpp',
 					'Layers/RMSD/cRMSD.cpp',
-					'Layers/RMSD/main.cpp'],
+					'Layers/RMSD/main_cpu.cpp'],
 					include_dirs = ['Layers/RMSD', 'Math'])
+	
+	RMSD_GPU = CppExtension('_RMSD_GPU',
+					sources = [
+					'Layers/RMSD/Coords2RMSD_GPU/coords2rmsd_interface.cpp',
+					'Layers/RMSD/RMSDKernels.cu',
+					'Layers/RMSD/main_gpu.cpp'],
+					include_dirs = ['Layers/RMSD'])
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
 			ext_modules=[	RMSD_CPU,
+							RMSD_GPU,
 							#FullAtomModel, 
 							#Volume, 
 							#ReducedModel

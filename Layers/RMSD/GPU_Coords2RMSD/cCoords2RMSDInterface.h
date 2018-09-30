@@ -1,1 +1,0 @@
-void Coords2RMSD_forward(THCudaDoubleTensor *re_coordinates_src, THCudaDoubleTensor *re_coordinates_dst, THCudaDoubleTensor *output, THCudaIntTensor *num_atoms,THCudaDoubleTensor *Ut_coordinates_dst);

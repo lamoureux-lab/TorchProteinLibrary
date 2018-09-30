@@ -12,18 +12,18 @@ import seaborn as sea
 import torch.optim as optim
 from Coords2RMSD import Coords2RMSD
 
-def test_gradient():
+def test_gradient(device = 'cpu'):
 	L=3
-	x0 = torch.tensor([[2,0,0, 3,0.1,1, 3,0.1,0 ]], dtype=torch.double, device='cpu').requires_grad_()
-	x1 = torch.zeros(x0.size(), dtype=torch.double, device='cpu').random_()
-	length = torch.tensor([L], dtype=torch.int)
-	target = torch.tensor([[0,0,0, 1,1,0, 3,0,0]], dtype=torch.double)
+	x0 = torch.tensor([[2,0,0, 3,0.1,1, 3,0.1,0 ]], dtype=torch.double, device=device).requires_grad_()
+	x1 = torch.zeros(x0.size(), dtype=torch.double, device=device).random_()
+	length = torch.tensor([L], dtype=torch.int, device=device)
+	target = torch.tensor([[0,0,0, 1,1,0, 3,0,0]], dtype=torch.double, device=device)
 	loss = Coords2RMSD()
 	rmsd_x0 = loss(x0, target, length)
 	print(rmsd_x0)
 	rmsd_x0.backward()
 	float_rmsd_x0 = np.sqrt(rmsd_x0.data[0])
-	back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.double).copy_(x0.grad.data)
+	back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.double, device=device).copy_(x0.grad.data)
 	
 	aligned_x0 = torch.zeros(3*L)
 	aligned_target = torch.zeros(3*L)
@@ -42,9 +42,10 @@ def test_gradient():
 	plt.plot(grads,'-r', label = 'num grad')
 	plt.plot(back_grad_x0[0,:3*L].numpy(),'bo', label = 'an grad')
 	plt.legend()
-	plt.savefig('TestFig/rmsd_gradients.png')
+	plt.savefig('TestFig/rmsd_gradients_%s.png'%device)
 
 if __name__=='__main__':
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
-	test_gradient()
+	test_gradient('cpu')
+	test_gradient('cuda')
