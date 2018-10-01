@@ -58,7 +58,7 @@ class Coords2RMSD_GPU_Function(Function):
 		gradInput_gpu = (ctx.c_coords_input - ctx.Ut_coordinates_dst)
 		
 		for i in range(batch_size):
-			gradInput_gpu[i,:] = gradInput_gpu[i,:]/(math.sqrt(output[i]+1E-5)*num_atoms[i])
+			gradInput_gpu[i,:] = gradInput_gpu[i,:]/(math.sqrt(output[i]+1E-5)*num_atoms[i].double())
 		
 		if math.isnan(gradInput_gpu.sum()):
 			raise(Exception('Coords2RMSD_GPU_Function: backward Nan'))		

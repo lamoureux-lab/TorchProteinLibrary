@@ -34,7 +34,6 @@ void Coords2RMSD_GPU_forward(   at::Tensor re_coordinates_src, at::Tensor re_coo
     
     //computing eigenvectors and eigenvalues on CPU: CPU is not implemented in Torch, need Magma!!
     at::Tensor cpu_T = T.toBackend(at::Backend::CUDA);
-    auto num_atoms_acc = num_atoms.accessor<int, 1>();
     for(int i=0;i<batch_size;i++){
         at::Tensor cpu_T_single = cpu_T[i];
         at::Tensor rot_mat_t_single = rot_mat_t[i];
@@ -49,15 +48,20 @@ void Coords2RMSD_GPU_forward(   at::Tensor re_coordinates_src, at::Tensor re_coo
         at::Tensor max_eig_vec = at::CPU(at::kDouble).zeros({4});
         auto q = max_eig_vec.accessor<double, 1>();
 
-        at::Tensor eig_vals = std::get<0>(result);
-        at::Tensor eig_vecs = std::get<1>(result);
+        at::Tensor eig_vals = at::CPU(at::kDouble).zeros({4,2});
+        eig_vals.copy_(std::get<0>(result));
+        at::Tensor eig_vecs = at::CPU(at::kDouble).zeros({4,4}); 
+        eig_vecs.copy_(std::get<1>(result));
         auto eig_val = eig_vals.accessor<double, 2>();
+
         for(int i=0; i<4; i++){    
             if(max_eig_val < eig_val[i][0]){
                 max_eig_val = eig_val[i][0];        
-                for(int j=0;j<4; j++)max_eig_vec[j] = eig_vecs[j][i];
+                for(int j=0;j<4; j++){
+                    max_eig_vec[j] = eig_vecs[j][i];
+                }
             }
-        }  
+        }
         
         // rotation matrix
         double U[9];
@@ -72,23 +76,24 @@ void Coords2RMSD_GPU_forward(   at::Tensor re_coordinates_src, at::Tensor re_coo
         U[6] = 2.0*(q[1]*q[3] - q[0]*q[2]);
         U[7] = 2.0*(q[2]*q[3] + q[0]*q[1]);
         U[8] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
-
-        auto Ut = rot_mat_t_single.accessor<double,2>();
+        
         for(int j=0;j<3;j++){
             for(int k=0;k<3;k++){
-                Ut[j][k] = U[3*k+j];
+                rot_mat_t_single[j][k] = U[3*k+j];
         }}
         
+        int num_atoms_cpu = at::Scalar(num_atoms[i]).toInt();
         //computing R2 coefficient
         at::Tensor R2 = at::CUDA(at::kDouble).zeros({1});
-        auto R2_acc = R2.accessor<double,1>();
+        // auto R2_acc = R2.accessor<double,1>();
         at::Tensor R2_tmp = at::CUDA(at::kDouble).zeros({3});
-        cpu_computeR2(re_coords_src_single.data<double>(), num_atoms_acc[i], R2_tmp.data<double>());
+        cpu_computeR2(re_coords_src_single.data<double>(), num_atoms_cpu, R2_tmp.data<double>());
         R2 += R2_tmp.sum();
-        cpu_computeR2(re_coords_dst_single.data<double>(), num_atoms_acc[i], R2_tmp.data<double>());
+        cpu_computeR2(re_coords_dst_single.data<double>(), num_atoms_cpu, R2_tmp.data<double>());
         R2 += R2_tmp.sum();
-                
-        double rmsd = (R2_acc[0] - 2.0*fabs(max_eig_val))/(double(num_atoms_acc[i]));
+    
+        double R2_cpu = at::Scalar(R2[0]).toDouble();       
+        double rmsd = (R2_cpu - 2.0*fabs(max_eig_val))/(double(num_atoms_cpu));
         output[i] = rmsd;
     }
 

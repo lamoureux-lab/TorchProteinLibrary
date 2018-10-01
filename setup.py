@@ -15,8 +15,10 @@ if __name__=='__main__':
 				'TorchProteinLibrary.ReducedModel.Angles2Backbone',
 				#Volume
 				'TorchProteinLibrary.Volume',
-				'TorchProteinLibrary.Volume.TypedCoords2Volume'
+				'TorchProteinLibrary.Volume.TypedCoords2Volume',
 				#RMSD
+				'TorchProteinLibrary.RMSD',
+				'TorchProteinLibrary.RMSD.Coords2RMSD',
 				]
 	FullAtomModel = CppExtension('_FullAtomModel', 
 					sources = [
@@ -72,9 +74,9 @@ if __name__=='__main__':
 			version="0.1",
 			ext_modules=[	RMSD_CPU,
 							RMSD_GPU,
-							#FullAtomModel, 
-							#Volume, 
-							#ReducedModel
+							FullAtomModel, 
+							Volume, 
+							ReducedModel
 						],
 			cmdclass={'build_ext': BuildExtension},
 

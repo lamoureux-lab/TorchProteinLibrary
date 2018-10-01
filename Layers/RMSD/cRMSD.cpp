@@ -87,8 +87,12 @@ double cRMSD::compute( double *src, double *dst ){
     at::Tensor max_eig_vec = at::CPU(at::kDouble).zeros({4});
     auto q = max_eig_vec.accessor<double, 1>();
 
-    at::Tensor eig_vals = std::get<0>(result);
-    at::Tensor eig_vecs = std::get<1>(result);
+    // at::Tensor eig_vals = std::get<0>(result);
+    // at::Tensor eig_vecs = std::get<1>(result);
+    at::Tensor eig_vals = at::CPU(at::kDouble).zeros({4,2});
+    eig_vals.copy_(std::get<0>(result));
+    at::Tensor eig_vecs = at::CPU(at::kDouble).zeros({4,4}); 
+    eig_vecs.copy_(std::get<1>(result));
     auto eig_val = eig_vals.accessor<double, 2>();
     for(int i=0; i<4; i++){    
         if(max_eig_val < eig_val[i][0]){

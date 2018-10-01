@@ -40,7 +40,7 @@ def test_gradient(device = 'cpu'):
 	
 	fig = plt.figure()
 	plt.plot(grads,'-r', label = 'num grad')
-	plt.plot(back_grad_x0[0,:3*L].numpy(),'bo', label = 'an grad')
+	plt.plot(back_grad_x0[0,:3*L].cpu().numpy(),'bo', label = 'an grad')
 	plt.legend()
 	plt.savefig('TestFig/rmsd_gradients_%s.png'%device)
 
