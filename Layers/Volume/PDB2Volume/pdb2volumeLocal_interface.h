@@ -1,1 +1,0 @@
-void PDB2VolumeLocal( THByteTensor *filenames, THCudaTensor *volume, THCudaTensor *coords, THCudaIntTensor *num_atoms, int rotate, int translate);

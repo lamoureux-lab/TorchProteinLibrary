@@ -1,1 +1,8 @@
-void selectVolume_forward(  THCudaTensor *volume,THCudaTensor *coords,THCudaIntTensor *num_atoms,THCudaTensor *features,float res);
+#include <torch/torch.h>
+
+void SelectVolume_forward(  at::Tensor volume,
+                            at::Tensor coords,
+                            at::Tensor num_atoms,
+                            at::Tensor features,
+                            float res
+                        );

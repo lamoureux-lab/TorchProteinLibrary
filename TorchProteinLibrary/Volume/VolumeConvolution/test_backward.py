@@ -20,9 +20,9 @@ def test_gradient():
 	vc = VolumeConvolution(num_features=1)
 	vc.W.data.fill_(1.0)
 	v_size = 30
-	inp1 = Variable(torch.FloatTensor(1, 1, v_size, v_size, v_size).fill_(0.0).cuda(), requires_grad=True)
-	inp1tmp = Variable(torch.FloatTensor(1, 1, v_size, v_size, v_size).fill_(0.0).cuda())
-	inp2 = Variable(torch.FloatTensor(1, 1, v_size, v_size, v_size).fill_(0.0).cuda(), requires_grad=True)
+	inp1 = torch.zeros(1, 1, v_size, v_size, v_size, dtype=torch.float, device='cuda').requires_grad_()
+	inp1tmp = torch.zeros(1, 1, v_size, v_size, v_size, dtype=torch.float, device='cuda')
+	inp2 = torch.zeros(1, 1, v_size, v_size, v_size, dtype=torch.float, device='cuda').requires_grad_()
 	fill_delta(np.array([1,6,5]), inp1)
 	fill_delta(np.array([5,5,5]), inp2)
 	
@@ -30,7 +30,7 @@ def test_gradient():
 	E = out.sum()
 	E.backward()
 	
-	back_grad_x0 = torch.FloatTensor(inp1.grad.size()).copy_(inp1.grad.data)
+	back_grad_x0 = torch.zeros(inp1.grad.size(), dtype=torch.float, device='cpu').copy_(inp1.grad.data)
 	inp1tmp.data.copy_(inp1.data)
 	grads = []
 	real_grads = []
@@ -54,14 +54,10 @@ def test_gradient():
 		plt.legend()
 		plt.savefig('TestFig/test_backward.png')
 
-
-
-
 if __name__=='__main__':
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
 	test_gradient()
 
-	# print out
 
 

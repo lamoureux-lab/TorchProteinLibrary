@@ -1,4 +1,3 @@
-#include <THC/THC.h>
 
 #define REAL float
 // #define REAL double

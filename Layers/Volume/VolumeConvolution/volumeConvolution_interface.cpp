@@ -1,50 +1,55 @@
-#include <THC/THC.h>
+#include "volumeConvolution_interface.h"
 #include <VolumeConv.h>
 #include <iostream>
 
-extern THCState *state;
-#define CUDA_REAL_TENSOR_VAR THCudaTensor
-#define CUDA_REAL_TENSOR(X) THCudaTensor_##X
-// #define CUDA_REAL_TENSOR_VAR THCudaDoubleTensor
-// #define CUDA_REAL_TENSOR(X) THCudaDoubleTensor_##X
 
-extern "C" {
-    void VolumeConvolution_forward(  CUDA_REAL_TENSOR_VAR *volume1, 
-                                    CUDA_REAL_TENSOR_VAR *volume2, 
-                                    CUDA_REAL_TENSOR_VAR *output){
-        if(volume1->nDimension!=4){
-            std::cout<<"incorrect input dimension"<<volume1->nDimension<<std::endl;
-            throw("incorrect input dimension");
-        }
-        cpu_VolumeConv(	CUDA_REAL_TENSOR(data)(state, volume1), 
-							CUDA_REAL_TENSOR(data)(state, volume2), 
-							CUDA_REAL_TENSOR(data)(state, output), 
-							volume1->size[0],
-                            volume1->size[1]);
+void VolumeConvolution_forward( at::Tensor volume1, 
+                                at::Tensor volume2, 
+                                at::Tensor output){
+    if( volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat || output.dtype() != at::kFloat){
+        throw("Incorrect tensor types");
     }
-    void VolumeConvolution_backward( CUDA_REAL_TENSOR_VAR *gradOutput,
-                                    CUDA_REAL_TENSOR_VAR *gradVolume1,
-                                    CUDA_REAL_TENSOR_VAR *gradVolume2,
-                                    CUDA_REAL_TENSOR_VAR *volume1, 
-                                    CUDA_REAL_TENSOR_VAR *volume2){
-        if(gradOutput->nDimension!=4){
-            std::cout<<"incorrect input dimension"<<gradOutput->nDimension<<std::endl;
-            throw("incorrect input dimension");
-        }
-        
-        cpu_VolumeConv(	CUDA_REAL_TENSOR(data)(state, gradOutput), 
-							CUDA_REAL_TENSOR(data)(state, volume2), 
-							CUDA_REAL_TENSOR(data)(state, gradVolume1), 
-							volume1->size[0],
-                            volume1->size[1]);
-        
-        cpu_VolumeConv(	CUDA_REAL_TENSOR(data)(state, gradOutput), 
-							CUDA_REAL_TENSOR(data)(state, volume1), 
-							CUDA_REAL_TENSOR(data)(state, gradVolume2), 
-							volume1->size[0],
-                            volume1->size[1]);
-        
+    if( (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) || (!output.type().is_cuda()) ){
+        throw("Incorrect device");
     }
-
-
+    if(volume1.ndimension()!=4){
+        throw("incorrect input dimension");
+    }
+    cpu_VolumeConv(	volume1.data<float>(), 
+                    volume2.data<float>(), 
+                    output.data<float>(), 
+                    volume1.size(0),
+                    volume1.size(1));
 }
+void VolumeConvolution_backward(    at::Tensor gradOutput,
+                                    at::Tensor gradVolume1,
+                                    at::Tensor gradVolume2,
+                                    at::Tensor volume1, 
+                                    at::Tensor volume2){
+    if( gradOutput.dtype() != at::kFloat || gradVolume1.dtype() != at::kFloat || gradVolume2.dtype() != at::kFloat
+        || volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat){
+        throw("Incorrect tensor types");
+    }
+    if( (!gradOutput.type().is_cuda()) || (!gradVolume1.type().is_cuda()) || (!gradVolume2.type().is_cuda())
+        || (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) ){
+        throw("Incorrect device");
+    }
+    if(gradOutput.ndimension()!=4){
+        throw("incorrect input dimension");
+    }
+        
+    cpu_VolumeConv(	gradOutput.data<float>(), 
+                    volume2.data<float>(), 
+                    gradVolume1.data<float>(), 
+                        volume1.size(0),
+                        volume1.size(1));
+    
+    cpu_VolumeConv(	gradOutput.data<float>(), 
+                    volume1.data<float>(), 
+                    gradVolume2.data<float>(), 
+                    volume1.size(0),
+                    volume1.size(1));
+    
+}
+
+

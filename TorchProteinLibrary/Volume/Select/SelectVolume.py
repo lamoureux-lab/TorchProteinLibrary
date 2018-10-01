@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
-from Exposed import cppSelect
+import _Volume
 import math
 
 class SelectVolume:
@@ -15,15 +15,12 @@ class SelectVolume:
 		if len(volume.size())==5 and len(coords.size())==2:
 			batch_size = volume.size(0)
 			num_features = volume.size(1)
-			max_num_atoms = coords.size(1)/3
-						
-			features = torch.FloatTensor(batch_size, num_features, max_num_atoms).cuda()
-
+			max_num_atoms = int(coords.size(1)/3)
+			features = torch.zeros(batch_size, num_features, max_num_atoms, dtype=torch.float, device='cuda')
 		else:
 			raise(Exception("SelectVolume: Wrong input sizes", volume.size(), coords.size()))
 		
-		features.fill_(0.0)
-		cppSelect.selectVolume_forward(volume, coords, num_atoms, features, self.resolution)
+		_Volume.SelectVolume_forward(volume, coords, num_atoms, features, self.resolution)
 
 		return features
 		

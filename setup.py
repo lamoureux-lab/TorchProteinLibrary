@@ -1,8 +1,10 @@
 from setuptools import setup
 from torch.utils.cpp_extension import CppExtension, BuildExtension, CUDAExtension
-
+import os
+import sysconfig
 
 if __name__=='__main__':
+	
 	Packages = ['TorchProteinLibrary', 
 				#FullAtomModel
 				'TorchProteinLibrary.FullAtomModel', 
@@ -16,10 +18,13 @@ if __name__=='__main__':
 				#Volume
 				'TorchProteinLibrary.Volume',
 				'TorchProteinLibrary.Volume.TypedCoords2Volume',
+				'TorchProteinLibrary.Volume.Select',
+				'TorchProteinLibrary.Volume.VolumeConvolution',
 				#RMSD
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
 				]
+
 	FullAtomModel = CppExtension('_FullAtomModel', 
 					sources = [
 					'Math/cMatrix33.cpp',
@@ -36,22 +41,34 @@ if __name__=='__main__':
 					'Layers/FullAtomModel/Coords2TypedCoords/coords2typedcoords_interface.cpp',
 					'Layers/FullAtomModel/CoordsTransform/coordsTransform_interface.cpp',
 					'Layers/FullAtomModel/main.cpp'],
-					include_dirs = ['Layers/FullAtomModel',
-					'Math'])
+					include_dirs = ['Layers/FullAtomModel', 'Math'],
+					libraries = ['gomp'],
+					extra_compile_args=['-fopenmp'])
 	Volume = CUDAExtension('_Volume',
 					sources = [
 					'Layers/Volume/TypedCoords2Volume/typedcoords2volume_interface.cpp',
 					'Layers/Volume/Volume2Xplor/volume2xplor_interface.cpp',
+					'Layers/Volume/Select/select_interface.cpp',
+					'Layers/Volume/VolumeConvolution/volumeConvolution_interface.cpp',
 					'Layers/Volume/Kernels.cu',
+					'Layers/Volume/VolumeConv.cu',
 					'Layers/Volume/main.cpp'],
-					include_dirs = ['Layers/Volume'])
+					include_dirs = ['Layers/Volume'],
+					libraries = ['gomp', 'cufft'],
+					extra_compile_args={'cxx': ['-fopenmp'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+						)
 
 	ReducedModel = CUDAExtension('_ReducedModel',
 					sources = [
 					'Layers/ReducedModel/Angles2Backbone/angles2backbone_interface.cpp',
 					'Layers/ReducedModel/cBackboneProteinCUDAKernels.cu',
 					'Layers/ReducedModel/main.cpp'],
-					include_dirs = ['Layers/ReducedModel'])
+					include_dirs = ['Layers/ReducedModel'],
+					libraries = ['gomp'],
+					extra_compile_args={'cxx': ['-fopenmp'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+					)
 
 	RMSD_CPU = CppExtension('_RMSD_CPU',
 					sources = [
