@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from VolumeConvolution import VolumeConvolution
+from TorchProteinLibrary.Volume import VolumeConvolution
 
 def fill_delta(r0, volume):
 	# volume.data.fill_(-0.1)

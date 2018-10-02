@@ -1,17 +1,15 @@
 import sys
 import os
 import torch
-from torch.autograd import Variable
 import matplotlib.pylab as plt
 import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 import torch.optim as optim
 
-from Angles2Backbone import Angles2Backbone
+from TorchProteinLibrary.FullAtomModel import Angles2Coords
+from TorchProteinLibrary.ReducedModel import Angles2Backbone
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-from FullAtomModel import Angles2Coords
 
 if __name__=='__main__':
 	L=700

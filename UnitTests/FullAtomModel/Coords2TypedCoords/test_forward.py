@@ -9,14 +9,12 @@ import matplotlib.pylab as plt
 import numpy as np
 import mpl_toolkits.mplot3d.axes3d as p3
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from Angles2Coords.Angles2Coords import Angles2Coords
-from Coords2TypedCoords import Coords2TypedCoords
+from TorchProteinLibrary.FullAtomModel import Angles2Coords, Coords2TypedCoords
 
 if __name__=='__main__':
 
 	sequence = ['GGGGGG', 'AAA']
-	angles = Variable(torch.DoubleTensor(len(sequence), 7,len(sequence[0])).zero_())
+	angles = torch.zeros(len(sequence), 7,len(sequence[0]), dtype=torch.double, device='cpu')
 	angles[0,0,:] = -1.047
 	angles[0,1,:] = -0.698
 	angles[0,2:,:] = 110.4*np.pi/180.0

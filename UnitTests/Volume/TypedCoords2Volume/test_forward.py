@@ -12,10 +12,10 @@ import seaborn as sea
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from FullAtomModel import Angles2Coords
-from FullAtomModel import Coords2TypedCoords
-from FullAtomModel import Coords2CenteredCoords
-from TypedCoords2Volume import TypedCoords2Volume
+from TorchProteinLibrary.FullAtomModel import Angles2Coords
+from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords
+from TorchProteinLibrary.FullAtomModel import Coords2CenteredCoords
+from TorchProteinLibrary.Volume import TypedCoords2Volume
 
 import _Volume
 

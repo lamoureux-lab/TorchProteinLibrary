@@ -6,13 +6,11 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 
 import torch
-from PDB2Coords import PDB2CoordsBiopython
+from TorchProteinLibrary import FullAtomModel
 
 if __name__=='__main__':
-    # coords = torch.DoubleTensor(3*1309)
-    # cppPDB2Coords.PDB2Coords("TestFig/2lzm.pdb", coords)
 
-    p2c = PDB2CoordsBiopython()
+    p2c = FullAtomModel.PDB2Coords.PDB2CoordsBiopython()
     coords, res, anames, num_atoms = p2c(["f4TQ1_B.pdb"], ["A"])
     print (coords.size())
     print (res.size())

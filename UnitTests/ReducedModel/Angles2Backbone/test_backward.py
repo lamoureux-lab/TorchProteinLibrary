@@ -11,7 +11,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import seaborn as sea
 import torch.optim as optim
 
-from Angles2Backbone import Angles2Backbone as Angles2Coords
+from TorchProteinLibrary.ReducedModel import Angles2Backbone as Angles2Coords
 
 def test_gradient():
 	L=10

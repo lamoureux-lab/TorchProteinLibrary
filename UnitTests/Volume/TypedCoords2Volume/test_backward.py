@@ -1,21 +1,13 @@
 import sys
 import os
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from torch.autograd import Function
-from torch.nn.modules.module import Module
 import matplotlib.pylab as plt
 import numpy as np
-import mpl_toolkits.mplot3d.axes3d as p3
-import seaborn as sea
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-
-from FullAtomModel import Angles2Coords
-from FullAtomModel import Coords2TypedCoords
-from FullAtomModel import Coords2CenteredCoords
-from TypedCoords2Volume import TypedCoords2Volume
+from TorchProteinLibrary.FullAtomModel import Angles2Coords
+from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords
+from TorchProteinLibrary.FullAtomModel import Coords2CenteredCoords
+from TorchProteinLibrary.Volume import TypedCoords2Volume
 
 import _Volume
 
@@ -66,10 +58,10 @@ if __name__=='__main__':
 	density = tc2v(coords.cuda(), num_atoms_of_type.cuda(), offsets.cuda())
 	E_0 = torch.sum(density*potential)
 	E_0.backward()
-	grad_an = torch.DoubleTensor(coords.grad.size()).copy_(coords.grad.data)
+	grad_an = torch.zeros(coords.grad.size(), dtype=torch.double, device='cpu').copy_(coords.grad.data)
 
 	grad_num = []
-	x_1 = Variable(torch.DoubleTensor(1, 3*num_atoms), requires_grad=False)
+	x_1 = torch.zeros(1, 3*num_atoms, dtype=torch.double, device='cpu').requires_grad_()
 	dx = 0.01
 	for i in range(0,3*num_atoms):
 		x_1.data.copy_(coords.data)

@@ -1,20 +1,9 @@
 import sys
 import os
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from torch.autograd import Function
-from torch.nn.modules.module import Module
-import matplotlib.pylab as plt
 import numpy as np
-import mpl_toolkits.mplot3d.axes3d as p3
-import seaborn as sea
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from Angles2Coords.Angles2Coords import Angles2Coords
-from Coords2TypedCoords.Coords2TypedCoords import Coords2TypedCoords
-from CoordsTransform import CoordsTranslate, getRandomTranslation, getBBox
-from CoordsTransform import CoordsRotate, getRandomRotation
+from TorchProteinLibrary.FullAtomModel.CoordsTransform import CoordsTranslate, getRandomTranslation, getBBox, CoordsRotate, getRandomRotation
+from TorchProteinLibrary.FullAtomModel import Angles2Coords, Coords2TypedCoords
 
 def test_translation(coords, num_atoms):
 	translate = CoordsTranslate()

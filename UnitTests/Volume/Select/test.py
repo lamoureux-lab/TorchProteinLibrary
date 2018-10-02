@@ -2,17 +2,12 @@ import sys
 import os
 import torch
 import numpy as np
-from SelectVolume import SelectVolume
-sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 import TorchProteinLibrary
 from TorchProteinLibrary.FullAtomModel import Angles2Coords
 from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords
 from TorchProteinLibrary.FullAtomModel import Coords2CenteredCoords
-from TorchProteinLibrary.Volume import TypedCoords2Volume
-
-
-
+from TorchProteinLibrary.Volume import TypedCoords2Volume, SelectVolume
 
 if __name__=='__main__':
 	sequence = ['GGAGRRRGGWG', 'GGAGRRR']

@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from VolumeConvolution import VolumeConvolution
+from TorchProteinLibrary.Volume import VolumeConvolution
 
 def fill_exp(r0, volume):
 	volume_size = volume.size(2)

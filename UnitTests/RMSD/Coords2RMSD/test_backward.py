@@ -1,16 +1,9 @@
 import sys
 import os
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from torch.autograd import Function
-from torch.nn.modules.module import Module
 import matplotlib.pylab as plt
 import numpy as np
-import mpl_toolkits.mplot3d.axes3d as p3
-import seaborn as sea
-import torch.optim as optim
-from Coords2RMSD import Coords2RMSD
+from TorchProteinLibrary.RMSD import Coords2RMSD
 
 def test_gradient(device = 'cpu'):
 	L=3

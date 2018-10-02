@@ -1,1 +1,0 @@
-from rotamers import getAngles
