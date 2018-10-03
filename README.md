@@ -1,38 +1,57 @@
-# ProteinClassesLibrary
-This library contains C++ and CUDA procedures for working with protein structures in a differentiable way. They are accompanied by the PyTorch interface.
+# TorchProteinLibrary
+This library contains C++ and CUDA procedures for working with protein structures in a differentiable way. 
+They are accompanied by the PyTorch interface.
+
+# Requirements
+ - GCC > 4.9
+ - CUDA >= 9.0
+ - PyTorch >= 0.4.1
+ - Python >= 3.5
+ - Biopython
+ - setuptools
+
+# Installation
+
+Clone the repository:
+
+*git clone https://github.com/lupoglaz/TorchProteinLibrary.git*
+
+then run the following command:
+
+*python setup.py install*
+
+# Contents
+## FullAtomModel
+This module deals with full-atom representation of a protein.
+Layers:
+- **Angles2Coords**: computes the coordinates of protein atoms, given angles
+- **Coords2TypedCoords**: rearranges coordinates according to predefined atom types 
+- **CoordsTransform**: implementations of translation, rotation, centering in a box, random rotation matrix, random translation
+- **PDB2CoordsBiopython**: load pdb atomic coordinates in the same order as in the pdb file
+- **PDB2Coords**: load pdb atomic coordinates in the same order as in the output of **Angles2Coords** layer
+
+## ReducedModel
+The coarse-grained representation of protein.
+- **Angles2Backbone**: computes the coordinates of protein backbone atoms, given angles
+
+## RMSD
+For now, contains only implementation of differentiable least-RMSD.
+Layers:
+- **Coords2RMSD**: computes minimum RMSD by optimizing *wrt* translation and rotation of input coordinates
+
+## Volume
+Deals with volumentric representation of a protein
+- **TypedCoords2Volume**: computes 3d density maps of coordinates with assigned types
+- **Select**: selects cells from a set of volumes at scaled input coordinates
+- **VolumeConvolution**: computes correlation of two volumes of equal size
+Additional useful function in c++ extension **_Volume**:
+**_Volume._Volume2Xplor**: saves volume to xplor format
+
 
 # General design decisions
 The library is structures in the following way:
-- Cmake file compiles C++ UnitTests and CUDA static libraries
-- Each module is a C++ class, that wraps CUDA calls
-- Each python module has its own build script, it compiles interface C++ files and links the static libraries compiled at the previos step
+- Layers directory contains c++/cuda implementations
+- Each layer has **<layer_name>_ interface.h** and .cpp files, that have implementations of functions that are exposed to python
+- Each python extension has **main.cpp** file, that contains macros with definitions of exposed functions
 
 We found that these principles provide readability and overall cleaner design.
-
-# Contents
-## C-alpha model
-The C++ directory is *Layers/C_alpha_protein*.  
-The PyTorch modules are *PythonInterface/C_alpha_protein*.  
-The list of modules:
-- **Angles to coordinates**: computes the coordinates of C-alpha model given the tensor of phi-psi angles
-- **Angles to basis**: computes the basis vectors cantered on each C-alpha atom given the tensor of phi-psi angles
-- **Coordinates to pairs**: computes the pairwise difference between coordinates given the coordinates
-- **Pairs to distributions**: computes the pairwise distance distributions of C-alpha atoms given the pairwise coordinates differences
-
-## PDB
-These layers are not designed to work together with C-alpha model layers. The format of the coordinates is different from the C-alpha atoms coordinates. The gradients are not implemented for these modules.
-The list of modules:
-- **PDB to coordinates**: this layer reads PDB file, assigns atoms 11 types and rearranges the data
-- **Coordinates to volume**: applies random uniform rotation and translation and projects the coordinates data on the corresponding 3D grids.
-
-## Visualization
-This module provide a way to visualize all the 11 atomic densities simultaneously using the marching cubes algorithm.
-
-## Utils
-This module helps saving the density maps to the XPlor format that is readable by PyMOL.
-
-# Installation
-1. Create *build* directory
-2. Change to the *build* directory, run *cmake* and *make*
-3. Go to PythonInterface and compile the modules you need using the *build.py* scripts
-4. The modules can then be imported from the root directory of the library
