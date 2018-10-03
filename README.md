@@ -44,7 +44,9 @@ Deals with volumentric representation of a protein
 - **TypedCoords2Volume**: computes 3d density maps of coordinates with assigned types
 - **Select**: selects cells from a set of volumes at scaled input coordinates
 - **VolumeConvolution**: computes correlation of two volumes of equal size
+
 Additional useful function in c++ extension **_Volume**:
+
 **_Volume._Volume2Xplor**: saves volume to xplor format
 
 
