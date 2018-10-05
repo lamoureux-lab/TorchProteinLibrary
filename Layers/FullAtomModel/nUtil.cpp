@@ -707,7 +707,7 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 			fullAtomName == std::string("CYSCB") ){
 			assignedType = 11;
 		}else{
-            std::cout<<std::string("Unknown atom type") + res_name + atom_name<<std::endl;
+            // std::cout<<std::string("Unknown atom type") + res_name + atom_name<<std::endl;
 			throw std::string("Unknown atom type") + res_name + atom_name;
 		}
 

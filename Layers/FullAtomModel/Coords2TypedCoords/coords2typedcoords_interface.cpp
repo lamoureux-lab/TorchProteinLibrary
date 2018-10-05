@@ -52,9 +52,14 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
         for(int j=0; j<num_atoms; j++){
             single_atom_name = single_atom_names[j];
             single_res_name = single_res_names[j];
-
-            int type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_name), 
-                                                StringUtil::tensor2String(single_atom_name), false);
+            int type;
+            try{
+                type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_name), 
+                                                    StringUtil::tensor2String(single_atom_name), false);
+            }catch(std::string e){
+                // std::cout<<e<<std::endl;
+                // std::cout<<StringUtil::tensor2String(single_res_name)<<" "<<StringUtil::tensor2String(single_atom_name)<<std::endl;
+            }
             atom_types[j] = type;
             single_output_num_atoms_of_type[type] += 1;
         }

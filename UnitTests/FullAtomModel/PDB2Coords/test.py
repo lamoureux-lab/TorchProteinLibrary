@@ -10,8 +10,9 @@ from TorchProteinLibrary import FullAtomModel
 
 if __name__=='__main__':
 
-    p2c = FullAtomModel.PDB2Coords.PDB2CoordsBiopython()
-    coords, res, anames, num_atoms = p2c(["f4TQ1_B.pdb"], ["A"])
+    # p2c = FullAtomModel.PDB2Coords.PDB2CoordsBiopython()
+    p2c = FullAtomModel.PDB2CoordsUnordered()
+    coords, res, anames, num_atoms = p2c(["f4TQ1_B.pdb"])
     print (coords.size())
     print (res.size())
     print (anames.size())

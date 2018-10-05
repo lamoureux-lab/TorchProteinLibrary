@@ -28,7 +28,8 @@ Layers:
 - **Coords2TypedCoords**: rearranges coordinates according to predefined atom types 
 - **CoordsTransform**: implementations of translation, rotation, centering in a box, random rotation matrix, random translation
 - **PDB2CoordsBiopython**: load pdb atomic coordinates in the same order as in the pdb file
-- **PDB2Coords**: load pdb atomic coordinates in the same order as in the output of **Angles2Coords** layer
+- **PDB2CoordsOrdered**: load pdb atomic coordinates in the same order as in the output of **Angles2Coords** layer
+- **PDB2CoordsUnordered**: load pdb atomic coordinates in the same order as in the pdb file
 
 ## ReducedModel
 The coarse-grained representation of protein.

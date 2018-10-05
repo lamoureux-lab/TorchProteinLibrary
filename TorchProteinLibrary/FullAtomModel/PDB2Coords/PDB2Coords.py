@@ -47,11 +47,8 @@ def convertString(string):
 	'''Converts a string to 0-terminated byte tensor'''  
 	return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
-class PDB2Coords:
-	def __init__(self, strict=True):
-		self.strict = strict
-
-		
+class PDB2CoordsOrdered:
+					
 	def __call__(self, filenames):
 		
 		self.filenamesTensor = convertStringList(filenames)
@@ -68,9 +65,24 @@ class PDB2Coords:
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2Coords(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, int(self.strict))
+		_FullAtomModel.PDB2CoordsOrdered(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu)
 	
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.num_atoms
+
+class PDB2CoordsUnordered:
+					
+	def __call__(self, filenames):
+		
+		filenamesTensor = convertStringList(filenames)
+		batch_size = len(filenames)
+		num_atoms = torch.zeros(batch_size, dtype=torch.int)
+		output_coords_cpu = torch.zeros(batch_size, 1, dtype=torch.double)
+		output_resnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+
+		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms)
+	
+		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
 
 class PDB2CoordsBiopython:
 	def __init__(self):
@@ -84,24 +96,35 @@ class PDB2CoordsBiopython:
 			structure = self.parser.get_structure('X', filename)
 			chain_structures.append(structure[0][chain])
 		
-		num_atoms = [len(list(chain.get_atoms())) for chain in chain_structures]
+		num_atoms = [0 for i in filenames]
+		for n, chain in enumerate(chain_structures):
+			for atom_idx, atom in enumerate(chain.get_atoms()):
+				if atom.element == 'H':
+					continue
+				num_atoms[n] += 1
+		
 		max_num_atoms = max(num_atoms)
-
+		print(num_atoms)
 		output_coords_cpu = torch.zeros(batch_size, max_num_atoms*3, dtype=torch.double)
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
+		atom_idx = 0
 		for n, chain in enumerate(chain_structures):
-			for atom_idx, atom in enumerate(chain.get_atoms()):
+			for atom in chain.get_atoms():
+				if atom.element == 'H':
+					continue
 				vec = atom.get_coord()
+				# print(torch.from_numpy(vec).to(dtype=torch.double))
 				output_coords_cpu.data[n, 3*atom_idx : 3*atom_idx+3] = torch.from_numpy(vec).to(dtype=torch.double)
 				residue = atom.get_parent()
 				atom_name = convertString(atom.get_name())
+				print(atom_idx, atom_name, max_num_atoms)
 				res_name = convertString(residue.get_resname())
-				output_atomnames_cpu[n, atom_idx, :atom_name.size(0)] = atom_name
-				output_resnames_cpu[n, atom_idx, :res_name.size(0)] = res_name
+				output_atomnames_cpu.data[n, atom_idx, :atom_name.size(0)].copy_(atom_name.data)
+				output_resnames_cpu.data[n, atom_idx, :res_name.size(0)].copy_(res_name.data)
 				atom_idx += 1
-
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
+		print(output_atomnames_cpu)
+		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, torch.tensor(num_atoms, dtype=torch.int, device='cpu')
 
 
