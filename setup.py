@@ -100,9 +100,9 @@ if __name__=='__main__':
 			packages = Packages,
 			author="Georgy Derevyanko",
 			author_email="georgy.derevyanko@gmail.com",
-			description="This is a collection of differentiable layers for pytorch, that applicable to protein data",
+			description="This is a collection of differentiable layers for pytorch, applicable to protein data",
 			license="MIT",
-			keywords="pytorch, protein, deep learning",
+			keywords="pytorch, protein structure, deep learning",
 			url="https://github.com/lupoglaz/TorchProteinLibrary",
 			project_urls={
 				"Bug Tracker": "https://github.com/lupoglaz/TorchProteinLibrary/issues",

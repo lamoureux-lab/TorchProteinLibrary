@@ -162,8 +162,8 @@ cVector3 ProtUtil::getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3
     auto default_gen = &at::globalContext().defaultGenerator(at::kCPU);
     at::Tensor uni_rnd = at::CPU(at::kDouble).zeros({3});
     uni_rnd[0].uniform_(-dx_max, dx_max, default_gen);
-    uni_rnd[1].uniform_(-dy_max,dy_max, default_gen);
-    uni_rnd[2].uniform_(-dz_max,dz_max, default_gen);
+    uni_rnd[1].uniform_(-dy_max, dy_max, default_gen);
+    uni_rnd[2].uniform_(-dz_max, dz_max, default_gen);
     auto acc = uni_rnd.accessor<double,1>();
     return cVector3(acc[0], acc[1], acc[2]);
 }
@@ -235,7 +235,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
         if(atom_name == std::string("O"))
             return 5;
         if(atom_name == std::string("OXT"))
-            return 5;
+            return 6;
     }
 
     if(res_name == std::string("CYS") || res_name == std::string("C")){
@@ -547,7 +547,7 @@ std::string ProtUtil::convertRes1to3(char resName){
         case 'T':
             return std::string("THR");    
         case 'R':
-                return std::string("ARG");
+            return std::string("ARG");
         case 'K':
             return std::string("LYS");
         case 'D':

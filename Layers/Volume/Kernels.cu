@@ -3,12 +3,12 @@
 
 __global__ void projectToTensor(double* coords, int* num_atoms_of_type, int* offsets, float *volume, 
                                 int spatial_dim, float res){
-	/*
-    Input:
+/*
+Input:
         coords: coordinates in a flat array:
-            coords: {protein1, ... proteinN}
-            protein1: {atom_type1 .. atom_typeM}
-            atom_type: {x1,y1,z1 .. xL,yL,zL}
+                coords: {protein1, ... proteinN}
+                protein1: {atom_type1 .. atom_typeM}
+                atom_type: {x1,y1,z1 .. xL,yL,zL}
         num_atoms_of_type: number of atoms in each atom_type 
         offsets: offset for coordinates for each atom_type volume
 Output: 
@@ -43,8 +43,8 @@ Output:
 	}
 }
 
-__global__ void projectFromTensor(	double* coords, double* grad, int* num_atoms_of_type, int* offsets, float *volume,
-                                    int spatial_dim, float res){
+__global__ void projectFromTensor(double* coords, double* grad, int* num_atoms_of_type, int* offsets, float *volume,
+                                  int spatial_dim, float res){
 /*
 Input:
 	coords: coordinates in a flat array:
