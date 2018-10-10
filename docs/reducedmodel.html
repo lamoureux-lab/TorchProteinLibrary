@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+	<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="js/scripts.js"></script>
+	
+	<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+	</script>
+	<script type="text/javascript"
+		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
+
+	<title>TorchProteinLibrary documentation</title>
+	</head>
+
+	<body>
+	<header>
+		<div class="collapse bg-dark" id="navbarHeader">
+			<div class="container">
+			<div class="row">
+				<div class="col-sm-8 col-md-7 py-4">
+				<h4 class="text-white">About</h4>
+				<p class="text-muted">This library was created by Georgy Derevyanko (Concordia University) under the superviosion of 
+					Guillaume Lamoureux (Concordia University) and Yoshua Bengio (MILA, University of Montreal).</p>
+				</div>
+			</div>
+			</div>
+		</div>
+
+		<div class="navbar navbar-dark bg-dark shadow-sm">
+			<div class="container d-flex justify-content-between">
+			<a href="index.html" class="navbar-brand d-flex align-items-center">
+				<strong>TorchProteinLibrary v0.1 Documentation</strong>
+			</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			</div>
+		</div>
+		</header>
+
+	<main role="main">
+
+	<section class="jumbotron text-center">
+		<div class="container">
+		<h1 class="jumbotron-heading">ReducedModel</h1>
+		<p class="lead text-muted">This module contains implementation of angles to coordinates conversion for reduced protein models.</p>
+		</div>
+	</section>
+	
+	<section class="jumbotron text-left">
+		<div class="container" id="Angles2Backbone">
+			<p class="text-light bg-dark"><h2>class ReducedModel.<b>Angles2Backbone</b></h2></p>
+			<div class="container">
+				This layer converts angles to coordinates of backbone atoms.
+				The position of the $i$-th atom in the chain is obtained by:
+				$$\mathbf{x}_i = B_0 \cdot \dots \cdot B_i \mathbf{x}_0$$
+				where $\mathbf{x}_0$ is the reference frame origin and $B_i$ is the transformation matrix, parametrized by dihedral angles:
+
+				$$B(\alpha, \beta, R) = \begin{bmatrix}
+				\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & R\cos(\beta) \\
+				0 & \cos(\alpha) & -\sin(\alpha) & 0 \\
+				-\sin(\beta) & \sin(\alpha)\cos(\beta) & \cos(\alpha)\cos(\beta) & -R\sin(\beta) \\
+				0 & 0 & 0 & 1
+				\end{bmatrix}$$
+
+				The parameters of transformation depend on the index as follows:
+				<ul class="list-group">
+						<li class="list-group-item"> $N$--$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, R) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
+						<li class="list-group-item"> $C_{\alpha}$--$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, R) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
+						<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, R) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
+				</ul>
+
+				
+				During the forward pass, we save the products of transformation matrixes for each atom:
+				
+				$$A_i = B_0 \cdot \dots \cdot B_i$$
+				
+				Notice, that the atom $3j$, where $j$ is integer is always N, $3j + 1$ is CA and $3j+2$ is C. Thus
+				transformation matrixes $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
+				
+				During the backward pass, we first compute gradients of each atomic coordinate w.r.t each angle:
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \dots \frac{\partial B_{3j+1}}{\partial \phi_j} \dots B_i \cdot \mathbf{x}_0
+				$$
+
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \dots \frac{\partial B_{3j+2}}{\partial \psi_j} \dots B_i \cdot \mathbf{x}_0
+				$$
+
+				We can rewrite these expressions using the matrixes $A$, that we saved during the forward pass:
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} \cdot A_{3j+1}^{-1} A_{i} \cdot \mathbf{x}_0
+				$$
+
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} \cdot A_{3j+2}^{-1} A_{i} \cdot \mathbf{x}_0
+				$$
+
+				We also notice that transformation matrixes have two properties:
+				<ul class="list-group">
+						<li class="list-group-item"> Product of transformation matrixes is a transformation matrix, therefore matrixes $A$ are transformation matrixes</li>
+						<li class="list-group-item"> Inverse of a transformation matrix can be computed as follows:<br>
+						If 
+						$
+						T = \begin{bmatrix}
+								R & \mathbf{x} \\
+								0 & 1
+						\end{bmatrix} 
+						$,
+						then $T^{-1} = \begin{bmatrix}
+								R^{T} & -R^{T}\cdot\mathbf{x} \\
+								0 & 1
+						\end{bmatrix} 
+						$</li>
+				</ul>
+				Therefore we can compute all the derivatives simultaneously on GPU. To compute the derivatives of input of the layer with respect to the output we just have to 
+				calculate the following sums:
+				$$\sum_i \frac{\partial L_k}{\mathbf{x}_i}\frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
+				$$\sum_i \frac{\partial L_k}{\mathbf{x}_i}\frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
+				
+			</div>
+		</div>
+		<script>
+			generate_table("Angles2Backbone", 
+							[
+								["Angles", "GPU", "float", "[batch_size, 2, number of amino-acids]"], 
+								["NumAminoAcids", "GPU", "int", "[batch_size]"]
+							],
+							[
+								["Coordinates", "GPU", "float", "[batch_size, 3 x 3 x number of amino-acids]"],
+							]
+							);
+		</script>
+		</section>
+	
+	
+	</main>
+
+	<footer class="text-muted">
+	<div class="container">
+	<p>This site was created with &copy; Bootstrap.</p>
+	</div>
+	</footer>
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+</html>

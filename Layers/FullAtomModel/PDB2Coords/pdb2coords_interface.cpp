@@ -66,7 +66,7 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
     int batch_size = filenames.size(0);
 
     // int std::vector<int> num_atoms(batch_size);
-    
+    // std::cout<<"Start "<<batch_size<<std::endl;
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         at::Tensor single_filename = filenames[i];
@@ -75,6 +75,7 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
         num_atoms[i] = int(pdb.r.size());
     }
     int max_num_atoms = num_atoms.max().data<int>()[0];
+    // std::cout<<max_num_atoms<<std::endl;
     int64_t size_coords[] = {batch_size, max_num_atoms*3};
     int64_t size_names[] = {batch_size, max_num_atoms, 4};
     

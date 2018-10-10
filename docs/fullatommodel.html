@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="js/scripts.js"></script>
+	<title>TorchProteinLibrary documentation</title>
+  </head>
+
+  <body>
+	<header>
+	<div class="collapse bg-dark" id="navbarHeader">
+		<div class="container">
+		<div class="row">
+			<div class="col-sm-8 col-md-7 py-4">
+			<h4 class="text-white">About</h4>
+			<p class="text-muted">This library was created by Georgy Derevyanko (Concordia University) under the superviosion of 
+				Guillaume Lamoureux (Concordia University) and Yoshua Bengio (MILA, University of Montreal).</p>
+			</div>
+		</div>
+		</div>
+	</div>
+
+	<div class="navbar navbar-dark bg-dark shadow-sm">
+		<div class="container d-flex justify-content-between">
+		<a href="index.html" class="navbar-brand d-flex align-items-center">
+		<strong>TorchProteinLibrary v0.1 Documentation</strong>
+		</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+		</button>
+		</div>
+	</div>
+	</header>
+	
+
+	<main role="main">
+
+	<section class="jumbotron text-center">
+		<div class="container">
+		<h1 class="jumbotron-heading">FullAtomModel</h1>
+		<p class="lead text-muted">This module contains layers to convert angles to coordinates, load PDB files, assign atom types
+			and transform coordinates of a protein.</p>
+		</div>
+	</section>
+	
+	<section class="jumbotron text-left">
+	<div class="container" id="Angles2Coords">
+		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
+		<div class="container">
+			This layer converts angles and sequences to atomic coordinates.
+		</div>
+	</div>
+	<script>
+		generate_table("Angles2Coords", 
+						[
+							["Angles", "CPU", "double", "[batch_size, 7, number of amino-acids]"], 
+							["Sequences", "CPU", "list of strings", "length = batch size"]
+						],
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["ResidueNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["AtomNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"],
+						]
+						);
+								
+	</script>
+	</section>
+
+	
+
+	<section class="jumbotron text-left">
+	<div class="container" id = "Coords2TypedCoords">
+		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Coords2TypedCoords</b></h2></p>
+		<div class="container">
+			This layer assigns atom types and rearranges coordinates according to types.
+		</div>
+	</div>
+	<script>
+		generate_table("Coords2TypedCoords", 
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["ResidueNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["AtomNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"]
+						],
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["NumAtomsOfType", "CPU", "int", "[batch_size, num atoms types]"],
+							["Offsets", "CPU", "int", "[batch_size, num atoms types]"],
+						]
+						);
+								
+	</script>
+	</section>
+
+	<section class="jumbotron text-left">
+	<div class="container" id = "PDB2CoordsUnordered">
+		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>PDB2CoordsUnordered</b></h2></p>
+		<div class="container">
+			Reads PDB and outputs coordinates, residue and atom names and number of atoms. The order of atoms is the same as in the PDB file.
+		</div>
+	</div>
+	<script>
+		generate_table("PDB2CoordsUnordered", 
+						[
+							["Filenames", "CPU", "list of strings", "length = batch_size"],
+						],
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["ResidueNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["AtomNames", "CPU", "byte", "[batch_size, number of amino-acids, 4]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"]
+						]
+						);
+									
+	</script>
+	</section>
+	
+	<section class="jumbotron text-left">
+	<div class="container" id = "CoordsTranslate">
+		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsTranslate</b></h2></p>
+		<div class="container">
+			Translates coordinates.
+		</div>
+		
+	</div>
+	<script>
+		generate_table("CoordsTranslate", 
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Translation", "CPU", "double", "[batch_size, 3]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"]
+						],
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+						]
+						);
+									
+	</script>
+	</section>
+	
+	<section class="jumbotron text-left">
+	<div class="container" id = "CoordsRotate">
+		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsRotate</b></h2></p>
+		<div class="container">
+			Rotates coordinates.
+		</div>
+	</div>
+	<script>
+		generate_table("CoordsRotate", 
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Rotation", "CPU", "double", "[batch_size, 3, 3]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"]
+						],
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+						]
+						);
+									
+	</script>
+	</section>
+
+	<section class="jumbotron text-left">
+	<div class="container" id ="getBBox">
+		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getBBox</b>(Coordinates, NumAtoms)</h2></p>
+		<div class="container">
+			Computes bounding box, non-differentiable.
+		</div>
+	</div>
+	<script>
+		generate_table("getBBox", 
+						[
+							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["NumAtoms", "CPU", "int", "[batch_size]"]
+						],
+						[
+							["A", "CPU", "double", "[batch_size, 3]"],
+							["B", "CPU", "double", "[batch_size, 3]"],
+						]
+						);
+									
+	</script>
+	</section>
+
+	<section class="jumbotron text-left">
+	<div class="container" id = "getRandomTranslation">
+		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
+		<div class="container">
+			Computes random translation, that does not translate protein out of the box.
+		</div>
+	</div>
+	<script>
+		generate_table("getRandomTranslation", 
+						[
+							["A", "CPU", "double", "[batch_size, 3]"],
+							["B", "CPU", "double", "[batch_size, 3]"],
+							["VolumeSize", "CPU", "python float", "-"],
+						],
+						[
+							["RandomTranslations", "CPU", "double", "[batch_size, 3]"],
+						]
+						);
+									
+	</script>
+	</section>
+
+	<section class="jumbotron text-left">
+		<div class="container" id = "getRandomRotation">
+		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
+		<div class="container">
+			Computes random rotation.
+		</div>
+	</div>
+	<script>
+		generate_table("getRandomRotation", 
+						[
+							["BatchSize", "CPU", "python int", "-"],
+						],
+						[
+							["RandomRotations", "CPU", "double", "[batch_size, 3, 3]"],
+						]
+						);
+									
+	</script>
+	</section>
+
+	</main>
+
+	<footer class="text-muted">
+	<div class="container">
+	<p>This site was created with &copy; Bootstrap.</p>
+	</div>
+	</footer>
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+</html>

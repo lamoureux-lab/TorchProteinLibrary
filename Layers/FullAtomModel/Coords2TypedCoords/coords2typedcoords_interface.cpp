@@ -39,7 +39,7 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
         at::Tensor single_output_num_atoms_of_type = output_num_atoms_of_type[i];
         at::Tensor single_output_offsets = output_offsets[i];
         at::Tensor single_output_atom_indexes = output_atom_indexes[i];
-
+        // std::cout<<num_atoms<<std::endl;
         int num_atoms_added[num_atom_types];
         int atom_types[num_atoms];
         for(int j=0;j<num_atom_types;j++){
@@ -57,17 +57,19 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
                 type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_name), 
                                                     StringUtil::tensor2String(single_atom_name), false);
             }catch(std::string e){
-                // std::cout<<e<<std::endl;
-                // std::cout<<StringUtil::tensor2String(single_res_name)<<" "<<StringUtil::tensor2String(single_atom_name)<<std::endl;
+                std::cout<<e<<std::endl;
+                std::cout<<StringUtil::tensor2String(single_res_name)<<" "<<StringUtil::tensor2String(single_atom_name)<<std::endl;
+                throw(std::string("TypeAssignmentError"));
             }
             atom_types[j] = type;
             single_output_num_atoms_of_type[type] += 1;
         }
-        
+        // std::cout<<"assigned types"<<std::endl;
         //Compute memory offsets for an atom type
         for(int j=1;j<num_atom_types; j++){
             single_output_offsets[j] = single_output_offsets[j-1] + single_output_num_atoms_of_type[j-1];
         }
+        // std::cout<<"assigned offsets"<<std::endl;
         //Copy information
         auto a_single_output_offsets = single_output_offsets.accessor<int,1>();
         for(int j=0;j<num_atoms; j++){
@@ -80,6 +82,7 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
             single_output_atom_indexes[offset + num_atoms_added[type]] = j;
             num_atoms_added[type] += 1;
         }
+        // std::cout<<"rearranged coordinates"<<std::endl;
     }
     
 }

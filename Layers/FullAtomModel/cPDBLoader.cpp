@@ -31,32 +31,25 @@ cPDBLoader::cPDBLoader(std::string filename) {
 		header = line.substr(0,4);
                 
         if( header.compare("ATOM")==0){
-            atom_name = trim(line.substr(13,4));
+            atom_name = trim(line.substr(12,4));
+            // std::cout<<atom_name<<" ";
             if(isHeavyAtom(atom_name)){
                 xStr = line.substr(30,8);
                 yStr = line.substr(38,8);
                 zStr = line.substr(46,8);
                 res_name = trim(line.substr(17,3));
-                res_num = std::stoi(line.substr(23,4));
+                res_num = std::stoi(line.substr(22,4));
                 r.push_back(cVector3(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
                 res_names.push_back(res_name);
                 res_nums.push_back(res_num);
                 atom_names.push_back(atom_name);
+                // std::cout<<res_name<<" "<<atom_name;
             }
+            // std::cout<<std::endl;
+            
 		}
 	}
     
-    // reorganizing according to residue numbers
-    int num_residues = res_nums.back() - res_nums[0] + 1;
-    res_r.resize(num_residues);
-    res_atom_names.resize(num_residues);
-    res_res_names.resize(num_residues);
-    for(int i=0; i<r.size(); i++){
-        res_num = res_nums[i] - res_nums[0];
-        res_r[res_num].push_back(r[i]);
-        res_atom_names[res_num].push_back(atom_names[i]);
-        res_res_names[res_num] = res_names[i];
-    }
 }
 cPDBLoader::~cPDBLoader() {
 		
@@ -66,6 +59,23 @@ void cPDBLoader::reorder(double *coords, bool add_terminal){
     int global_ind=0;
     int local_ind;
     std::string lastO("O");
+
+    // std::cout<<"==="<<std::endl;
+    // reorganizing according to residue numbers
+    int num_residues = res_nums.back() - res_nums[0] + 1;
+    // std::cout<<"Num residues = "<<num_residues<<std::endl;
+    res_r.resize(num_residues);
+    res_atom_names.resize(num_residues);
+    res_res_names.resize(num_residues);
+    for(int i=0; i<r.size(); i++){
+        int res_num = res_nums[i] - res_nums[0];
+        // std::cout<<"res_num = "<<res_num<<std::endl;
+        res_r[res_num].push_back(r[i]);
+        res_atom_names[res_num].push_back(atom_names[i]);
+        res_res_names[res_num] = res_names[i];
+    }
+    // std::cout<<"end loading"<<std::endl;
+
     // reordering atoms according to cConformation output
     for(int i=0; i<res_r.size(); i++){
         for(int j=0; j<res_r[i].size(); j++){

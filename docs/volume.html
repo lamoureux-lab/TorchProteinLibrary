@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="js/scripts.js"></script>
+	<title>TorchProteinLibrary documentation</title>
+  </head>
+
+  <body>
+	<header>
+		<div class="collapse bg-dark" id="navbarHeader">
+		  <div class="container">
+			<div class="row">
+			  <div class="col-sm-8 col-md-7 py-4">
+				<h4 class="text-white">About</h4>
+				<p class="text-muted">This library was created by Georgy Derevyanko (Concordia University) under the superviosion of 
+					Guillaume Lamoureux (Concordia University) and Yoshua Bengio (MILA, University of Montreal).</p>
+			  </div>
+			</div>
+		  </div>
+		</div>
+
+		<div class="navbar navbar-dark bg-dark shadow-sm">
+		  <div class="container d-flex justify-content-between">
+			<a href="index.html" class="navbar-brand d-flex align-items-center">
+			  <strong>TorchProteinLibrary v0.1 Documentation</strong>
+			</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+			  <span class="navbar-toggler-icon"></span>
+			</button>
+		  </div>
+		</div>
+	  </header>
+
+	<main role="main">
+
+	<section class="jumbotron text-center">
+		<div class="container">
+		<h1 class="jumbotron-heading">Volume</h1>
+		<p class="lead text-muted">This module contains layers working with volumetric representation of proteins.</p>
+		</div>
+	</section>
+  
+	<section class="jumbotron text-left">
+	<div class="container" id="TypedCoords2Volume">
+		<p class="text-light bg-dark"><h2>class Volume.<b>TypedCoords2Volume</b>(box_size=120)</h2></p>
+		<div class="container">
+			Computes 3D atomic densities of each atom type. 
+		</div>
+	</div>
+	<script>
+		generate_table("TypedCoords2Volume", 
+						[
+							["Coordinates", "GPU", "double", "[batch_size, 3 x number of atoms]"],
+							["NumAtomsOfType", "GPU", "int", "[batch_size, num atoms types]"],
+							["Offsets", "GPU", "int", "[batch_size, num atoms types]"],
+						],
+						[
+							["Volume", "GPU", "float", "[batch_size, num atom types, box_size, box_size, box_size]"],
+						]
+						);
+								
+	</script>
+	</section>
+
+	<section class="jumbotron text-left">
+	<div class="container" id="SelectVolume">
+		<p class="text-light bg-dark"><h2>class Volume.<b>SelectVolume</b>(box_size_bins=120, box_size_ang=120)</h2></p>
+		<div class="container">
+			Computes feature columns from set of volumes using coordinates, scaled according to proportion of initial volume size (box_size_bins) 
+			and current volume size (box_size_ang).
+		</div>
+	</div>
+	<script>
+		generate_table("SelectVolume", 
+						[
+							["Volume", "GPU", "float", "[batch_size, number of features, box_size, box_size, box_size]"],
+							["Coordinates", "GPU", "double", "[batch_size, 3 x number of atoms]"],
+							["NumAtoms", "GPU", "int", "[batch_size]"],
+						],
+						[
+							["Features", "GPU", "float", "[batch_size, number of features, number of atoms]"],
+						]
+						);
+								
+	</script>
+	</section>
+	
+	<section class="jumbotron text-left">
+	<div class="container" id="VolumeConvolution">
+		<p class="text-light bg-dark"><h2>class Volume.<b>VolumeConvolution</b>(num_features)</h2></p>
+		<div class="container">
+			Computes parametric weighted correlation between two sets of volumes of the same size. 
+		</div>
+	</div>
+	<script>
+		generate_table("VolumeConvolution", 
+						[
+							["Volume1", "GPU", "float", "[batch_size, number of features, box_size, box_size, box_size]"],
+							["Volume2", "GPU", "float", "[batch_size, number of features, box_size, box_size, box_size]"],
+						],
+						[
+							["OutputVolume", "GPU", "float", "[batch_size, box_size, box_size, box_size]"],
+						],
+						[
+							["W", "GPU", "float", "[1, number of features, 1, 1 ,1]"],
+						]
+						);
+	</script>
+	</section>
+
+
+	</main>
+
+	<footer class="text-muted">
+	<div class="container">
+	<p>This site was created with &copy; Bootstrap.</p>
+	</div>
+	</footer>
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+</html>
