@@ -8,6 +8,12 @@
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
 	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+	</script>
+	<script type="text/javascript"
+		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
 	<script src="js/scripts.js"></script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
@@ -53,7 +59,43 @@
 	<div class="container" id="Angles2Coords">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
 		<div class="container">
-			This layer converts angles and sequences to atomic coordinates.
+			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
+			This layer converts angles and sequences to atomic coordinates. It does so by building a graph of transforms, acting on rigid groups of atoms. 
+			For example, Figure 1 shows alanine, it has 5 rigid groups in total and is parametrized by 4 transforms. Each transform is parametrized by one angle 
+			and has the following form: 
+			$$ R(\alpha, \beta, d) = R_y (\beta) \cdot T_x(d) \cdot R_x(\alpha) $$
+			where $R_x$ and $R_y$ are the 4x4 rotation matrixes around axis $x$ and $y$; $T_x(d)$ is the 4x4 translation matrix along the axis $x$. 
+			The parametrization shown on Figure 1 can be written as follows:
+			$$ R_1(\phi) = R(\phi, \theta_1, d_1)$$
+			where $\theta_1$ and $d_1$ are fixed parameters of bonds. We do not compute derivatives of these parameters.
+			To compute coordinates of a rigid group of atoms, we need to multiply each coordinate in an intial reference frame by this matrix.
+			During the forward pass we construct a graph of cummulative transformations, shown on the Figure 2. 
+			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
+			$$\begin{eqnarray}
+			M_1 &=& R_1(\phi)\\
+			M_2 &=& R_1(\phi) \cdot R_2(\xi)\\
+			M_3 &=& R_1(\phi) \cdot R_3(\psi)\\
+			M_4 &=& R_1(\phi) \cdot R_3(\psi) \cdot R_4(\omega)
+			\end{eqnarray}$$
+			or in shorter form to get the cummulative transform of a node $M_{node}$, we take the cummulative transform 
+			$M_{parent~~node}$ and multiply it by the tranform of the current node $R_{node} (parameters)$. The coordinates of atoms are then 
+			computed by multiplying each ridig group atomic coordinates by its cummulative transform. <br><br>
+
+			To compute gradients we save matrixes $F_i = M_{i-1} \cdot R_i \cdot M^{-1}_{i}$. 
+			The gradients are then computed in reversed deepth-first traversal of the graph:
+			$$
+			\frac{\partial r_{i}}{\partial \theta_j} += \left(\frac{\partial L}{\partial r_{i}}, \sum_j F_i \cdot r_j \right)
+			$$
+			<br><br>
+			
+			The input and output tensors have the following structure:<br><br>
+			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="..." width=100%>
+			<br><br>
+			Each angle-set for an amino-acid consists of ${\phi, \psi, \xi_1, \xi2, \xi_3, \xi_4, \xi_5}$ in the order of increasing the index. If 
+			an amino-acid does no require certain angles for its parametrization, they are ignored. Names are ancoded in ASCII, with the last symbol 
+			always set to '\0'.
+			<br><br>
+
 		</div>
 	</div>
 	<script>
