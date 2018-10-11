@@ -63,7 +63,7 @@
 			This layer converts amino acid sequences and dihedral angles to atomic coordinates. It does so by building a graph of transforms, acting on rigid groups of atoms. 
 			For example, Figure 1 shows alanine, which has 5 rigid groups in total and is parametrized by 4 transforms. Each transform is parametrized by one angle 
 			and has the following form: 
-			$$ R(\alpha, \beta, d) = R_y (\beta) \cdot T_x(d) \cdot R_x(\alpha) $$
+			$$ R(\alpha, \beta, d) = R_y (\beta) T_x(d) R_x(\alpha) $$
 			where $R_x(\alpha)$ and $R_y(\beta)$ are the 4x4 rotation matrices around axes $x$ and $y$; $T_x(d)$ is the 4x4 translation matrix along the axis $x$. 
 			The parametrization shown on Figure 1 can be written as follows:
 			$$ R_1(\phi) = R(\phi, \theta_1, d_1)$$
@@ -73,18 +73,18 @@
 			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
 			$$\begin{eqnarray}
 			M_1 &=& R_1(\phi)\\
-			M_2 &=& R_1(\phi) \cdot R_2(\xi)\\
-			M_3 &=& R_1(\phi) \cdot R_3(\psi)\\
-			M_4 &=& R_1(\phi) \cdot R_3(\psi) \cdot R_4(\omega)
+			M_2 &=& R_1(\phi) R_2(\xi)\\
+			M_3 &=& R_1(\phi) R_3(\psi)\\
+			M_4 &=& R_1(\phi) R_3(\psi) R_4(\omega)
 			\end{eqnarray}$$
 			or in shorter form to get the cumulative transform of a node $M_{i}$, we take the cumulative transform 
 			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i} (parameters)$. The coordinates of atoms are then 
 			computed by multiplying each rigid group atomic coordinates by its cumulative transform. <br><br>
 
-			To compute gradients we save matrices $F_i = M_{i-1} \cdot R_i \cdot M^{-1}_{i}$. 
+			To compute gradients we save matrices $F_i = M_{i-1} R_i M^{-1}_{i}$. 
 			The gradients are then computed in reversed depth-first traversal of the graph:
 			$$
-			\frac{\partial r_{i}}{\partial \theta_j} \mathrel{+\!=} \left(\frac{\partial L}{\partial r_{i}}, \sum_j F_i \cdot r_j \right)
+			\frac{\partial\mathbf{r}_{i}}{\partial \theta_j} \mathrel{+\!=} \frac{\partial L}{\partial\mathbf{r}_{i}} \cdot \sum_j F_i \mathbf{r}_j
 			$$
 			<br><br>
 			
