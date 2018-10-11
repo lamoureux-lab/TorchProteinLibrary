@@ -61,52 +61,52 @@
 			<div class="container">
 				This layer converts angles to coordinates of backbone atoms.
 				The position of the $i$-th atom in the chain is obtained by:
-				$$\mathbf{x}_i = B_0 \cdot \dots \cdot B_i \mathbf{x}_0$$
+				$$\mathbf{x}_i = B_0 B_1 \cdots B_i \mathbf{x}_0$$
 				where $\mathbf{x}_0$ is the reference frame origin and $B_i$ is the transformation matrix, parametrized by dihedral angles:
 
-				$$B(\alpha, \beta, R) = \begin{bmatrix}
-				\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & R\cos(\beta) \\
+				$$B(\alpha, \beta, d) = \begin{bmatrix}
+				\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & d\cos(\beta) \\
 				0 & \cos(\alpha) & -\sin(\alpha) & 0 \\
-				-\sin(\beta) & \sin(\alpha)\cos(\beta) & \cos(\alpha)\cos(\beta) & -R\sin(\beta) \\
+				-\sin(\beta) & \sin(\alpha)\cos(\beta) & \cos(\alpha)\cos(\beta) & -d\sin(\beta) \\
 				0 & 0 & 0 & 1
 				\end{bmatrix}$$
 
 				The parameters of transformation depend on the index as follows:
 				<ul class="list-group">
-						<li class="list-group-item"> $N$--$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, R) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
-						<li class="list-group-item"> $C_{\alpha}$--$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, R) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
-						<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, R) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
+						<li class="list-group-item"> $N$-$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, d) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
+						<li class="list-group-item"> $C_{\alpha}$-$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, d) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
+						<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, d) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
 				</ul>
 
 				
-				During the forward pass, we save the products of transformation matrixes for each atom:
+				During the forward pass, we save the products of transformation matrices for each atom:
 				
-				$$A_i = B_0 \cdot \dots \cdot B_i$$
+				$$A_i = B_0 B_1 \cdots B_i$$
 				
-				Notice, that the atom $3j$, where $j$ is integer is always N, $3j + 1$ is CA and $3j+2$ is C. Thus
-				transformation matrixes $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
+				Notice that atom $3j$ is always N, atom $3j + 1$ is always CA, and atom $3j+2$ is always C. Thus
+				transformation matrices $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
 				
-				During the backward pass, we first compute gradients of each atomic coordinate w.r.t each angle:
+				During the backward pass, we first compute gradients of each atomic coordinate with respect to each angle:
 				$$
-				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \dots \frac{\partial B_{3j+1}}{\partial \phi_j} \dots B_i \cdot \mathbf{x}_0
-				$$
-
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \dots \frac{\partial B_{3j+2}}{\partial \psi_j} \dots B_i \cdot \mathbf{x}_0
-				$$
-
-				We can rewrite these expressions using the matrixes $A$, that we saved during the forward pass:
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} \cdot A_{3j+1}^{-1} A_{i} \cdot \mathbf{x}_0
+				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \cdots \frac{\partial B_{3j+1}}{\partial \phi_j} \cdots B_i \mathbf{x}_0
 				$$
 
 				$$
-				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} \cdot A_{3j+2}^{-1} A_{i} \cdot \mathbf{x}_0
+				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \cdots \frac{\partial B_{3j+2}}{\partial \psi_j} \cdots B_i \mathbf{x}_0
 				$$
 
-				We also notice that transformation matrixes have two properties:
+				We can rewrite these expressions using the matrices $A$, that we saved during the forward pass:
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} A_{3j+1}^{-1} A_{i} \mathbf{x}_0
+				$$
+
+				$$
+				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} A_{3j+2}^{-1} A_{i} \mathbf{x}_0
+				$$
+
+				We also notice that transformation matrices have two properties:
 				<ul class="list-group">
-						<li class="list-group-item"> Product of transformation matrixes is a transformation matrix, therefore matrixes $A$ are transformation matrixes</li>
+						<li class="list-group-item"> Product of transformation matrices is a transformation matrix, therefore matrices $A$ are transformation matrices</li>
 						<li class="list-group-item"> Inverse of a transformation matrix can be computed as follows:<br>
 						If 
 						$
@@ -116,15 +116,15 @@
 						\end{bmatrix} 
 						$,
 						then $T^{-1} = \begin{bmatrix}
-								R^{T} & -R^{T}\cdot\mathbf{x} \\
+								R^{T} & -R^{T}\mathbf{x} \\
 								0 & 1
 						\end{bmatrix} 
 						$</li>
 				</ul>
 				Therefore we can compute all the derivatives simultaneously on GPU. To compute the derivatives of input of the layer with respect to the output we just have to 
 				calculate the following sums:
-				$$\sum_i \frac{\partial L_k}{\mathbf{x}_i}\frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
-				$$\sum_i \frac{\partial L_k}{\mathbf{x}_i}\frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
+				$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
+				$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
 				
 			</div>
 		</div>
