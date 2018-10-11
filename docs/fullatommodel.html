@@ -122,6 +122,79 @@
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Coords2TypedCoords</b></h2></p>
 		<div class="container">
 			This layer assigns atom types and rearranges coordinates according to types.
+			Currently we use 11 atom types defined in the table:
+			<table class="table">
+				<thead>
+				  <tr>
+					<th scope="col">Type</th>
+					<th scope="col">Description</th>
+					<th scope="col">Atoms</th>
+				  </tr>
+				</thead>
+				<tbody>
+				  <tr>
+					<th scope="row">1</th>
+					<td>Sulfur/selenium</td>
+					<td>CYS:SG, MET:SD, MSE:SE</td>
+				  </tr>
+				  <tr>
+					<th scope="row">2</th>
+					<td>Nitrogen (amide)</td>
+					<td>ASN:ND2, GLN:NE2, backbone N (including N-terminal)</td>
+				  </tr>
+				  <tr>
+					<th scope="row">3</th>
+					<td>Nitrogen (aromatic)</td>
+					<td>HIS:ND1/NE1, TRP:NE1</td>
+				  </tr>
+				  <tr>
+					<th scope="row">4</th>
+					<td>Nitrogen (guanidinium)</td>
+					<td>ARG:NE/NH*</td>
+				  </tr>
+				  <tr>
+					<th scope="row">5</th>
+					<td>Nitrogen (ammonium)</td>
+					<td>LYS:NZ</td>
+				  </tr>
+				  <tr>
+					<th scope="row">6</th>
+					<td>Oxygen (carbonyl)</td>
+					<td>ASN:OD1, GLN:OE1, backbone O (except C-terminal)</td>
+				  </tr>
+				  <tr>
+					<th scope="row">7</th>
+					<td>Oxygen (hydroxyl)</td>
+					<td>SER:OG, THR:OG1, TYR:OH</td>
+				  </tr>
+				  <tr>
+					<th scope="row">8</th>
+					<td>Oxygen (carboxyl)</td>
+					<td>ASP:OD*, GLU:OE*, C-terminal O, C-terminal OXT</td>
+				  </tr>
+				  <tr>
+					<th scope="row">9</th>
+					<td>Carbon (sp2)</td>
+					<td>ARG:CZ, ASN:CG, ASP:CG, GLN:CD, GLU:CD, backbone C</td>
+				  </tr>
+				  <tr>
+					<th scope="row">10</th>
+					<td>Carbon (aromatic)</td>
+					<td>HIS:CG/CD2/CE1, PHE:CG/CD*/CE*/CZ, TRP:CG/CD*/CE*/CZ*/CH2, TYR:CG/CD*/CE*/CZ </td>
+				  </tr>
+				  <tr>
+					<th scope="row">11</th>
+					<td>Carbon (sp3)</td>
+					<td>ALA:CB, ARG:CB/CG/CD, ASN:CB, ASP:CB, CYS:CB, GLN:CB/CG, GLU:CB/CG, HIS:CB, ILE:CB/CG*/CD1, 
+						LEU:CB/CG/CD*, LYS:CB/CG/CD/CE, MET:CB/CG/CE, MSE:CB/CG/CE, PHE:CB, PRO:CB/CG/CD, SER:CB, THR:CB/CG2, 
+						TRP:CB, TYR:CB, VAL:CB/CG*, backbone CA</td>
+				  </tr>
+				</tbody>
+			</table>
+			Output coordinates are arranged in the way, that atoms of one type are grouped together in a contiguous stretch of memory.
+			NumAtomsOfType stores the number of atoms of particular type and offsets are the number of atoms in the memory, before 
+			particular atom type stretch of coordinates begins. For example, to get the first atom of type 8 in sample $i$ we have to compute:
+			$$ r_x = Coordinates[i, 3(Offsets[8] + 0)] $$
 		</div>
 	</div>
 	<script>
@@ -169,7 +242,10 @@
 	<div class="container" id = "CoordsTranslate">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsTranslate</b></h2></p>
 		<div class="container">
-			Translates coordinates.
+			Translates coordinates, namely:
+			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
+			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch~size}$
+			and $N_k$ is the number of atoms in the k-th batch sample.
 		</div>
 		
 	</div>
@@ -192,7 +268,10 @@
 	<div class="container" id = "CoordsRotate">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsRotate</b></h2></p>
 		<div class="container">
-			Rotates coordinates.
+			Rotates coordinates, namely:
+			$$ \mathbf{r}_i' = \mathbf{R}_k \cdot \mathbf{r}_i $$
+			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch~size}$
+			and $N_k$ is the number of atoms in the k-th batch sample.
 		</div>
 	</div>
 	<script>
@@ -214,7 +293,8 @@
 	<div class="container" id ="getBBox">
 		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getBBox</b>(Coordinates, NumAtoms)</h2></p>
 		<div class="container">
-			Computes bounding box, non-differentiable.
+			Computes axis-aligned bounding box, non-differentiable. A is the corner with the smallest coordinates and 
+			B is the corner with the highest coordinates.
 		</div>
 	</div>
 	<script>
@@ -236,7 +316,7 @@
 	<div class="container" id = "getRandomTranslation">
 		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
 		<div class="container">
-			Computes random translation, that does not translate protein out of the box.
+			Computes random translation, that does not translate protein bounding box out of the volume.
 		</div>
 	</div>
 	<script>
@@ -258,7 +338,25 @@
 		<div class="container" id = "getRandomRotation">
 		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
 		<div class="container">
-			Computes random rotation.
+			Computes random rotation by uniformly sampling $SO(3)$ group. In particular we draw $u_1, u_2, u_3$ from the 
+			uniform distibution on the interval $(0, 1)$, then compute the following quaternion:
+			$$\begin{eqnarray}
+			q_0 &=& \sqrt{1-u_1} \sin(2\pi u_2) \\
+			q_1 &=& \sqrt{1-u_1} \cos(2\pi u_2) \\
+			q_2 &=& \sqrt{u_1} \sin(2\pi u_3) \\
+			q_3 &=& \sqrt{u_1} \cos(2\pi u_3) \\
+			\end{eqnarray}
+			$$
+			and then using the quaternion $\mathbf{q}$ we compute rotation matrix:
+			$$
+			R = \begin{bmatrix}
+			q^2_0 + q^2_1 - q^2_2 - q^2_3 & 2(q_1 q_2 - q_0 q_3) & 2(q_1 q_3 + q_0 q_2) \\
+			2(q_1 q_2 + q_0 q_3) & q^2_0 - q^2_1 + q^2_2 - q^2_3 & 2(q_2 q_3 - q_0 q_1) \\
+			2(q_1 q_3 - q_0 q_2) & 2(q_2 q_3 + q_0 q_1) & q^2_0 - q^2_1 - q^2_2 + q^2_3
+			\end{bmatrix}
+			$$
+			The in-deph explanation of this sampling technique can be found in 
+			<p><em>Kirk, David. Graphics Gems III (IBM Version): Ibm Version. Elsevier, 2012.</em></p>
 		</div>
 	</div>
 	<script>

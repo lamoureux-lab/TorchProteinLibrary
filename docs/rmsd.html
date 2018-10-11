@@ -8,6 +8,12 @@
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
 	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+	</script>
+	<script type="text/javascript"
+		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
 	<script src="js/scripts.js"></script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
@@ -51,7 +57,43 @@
 	<div class="container" id="Coords2RMSD">
 		<p class="text-light bg-dark"><h2>class RMSD.<b>Coords2RMSD</b></h2></p>
 		<div class="container">
-			Computes least RMSD between two sets of coordinates.
+			Computes least RMSD between two sets of coordinates. 
+			This layer implements the publication 
+			<p><em>Coutsias, Evangelos A., Chaok Seok, and Ken A. Dill. "Using quaternions to calculate RMSD." 
+				Journal of computational chemistry 25.15 (2004): 1849-1857.</em></p>
+			
+
+			First we move both target and input structures ($\mathbf{x}_i$ and $\mathbf{y}_i$) to their centers of mass, 
+			then we compute correlation matrix $R$:
+			$$ R = \sum_i^{N_{atoms}} \mathbf{x}_i \mathbf{y}^T_i $$
+
+			Then using this matrix we compute $T$:
+			$$
+			T = \begin{bmatrix}
+			R_{11} + R_{22} + R_{33} & R_{23} - R_{32} & R_{31} - R_{13} & R_{12} - R_{21} \\
+			R_{23} - R_{32} & R_{11} - R_{22} - R_{33} & R_{12} + R_{21} & R_{13} + R_{31} \\
+			R_{31} - R_{13} & R_{12} + R_{21} & -R_{11} + R_{22} - R_{33} & R_{23} + R_{32} \\
+			R_{12} - R_{21} & R_{13} + R_{31} & R_{23} + R_{32} & -R_{11} - R_{22} + R_{33} \\
+			\end{bmatrix}
+			$$
+
+			Afterwards we compute the maximum eigenvalue $\lambda$ and eigenvector $\mathbf{q}$ of the matrix $T$. This eigenvector corresponds 
+			to the quaternion that gives optimal rotation of one structure with respect to another. The roatation matrix can be computed using the 
+			following expression:
+			$$
+			U = \begin{bmatrix}
+			q^2_0 + q^2_1 - q^2_2 - q^2_3 & 2(q_1 q_2 - q_0 q_3) & 2(q_1 q_3 + q_0 q_2) \\
+			2(q_1 q_2 + q_0 q_3) & q^2_0 - q^2_1 + q^2_2 - q^2_3 & 2(q_2 q_3 - q_0 q_1) \\
+			2(q_1 q_3 - q_0 q_2) & 2(q_2 q_3 + q_0 q_1) & q^2_0 - q^2_1 - q^2_2 + q^2_3
+			\end{bmatrix}
+			$$
+			Corresponding minimum RMSD is computed using the formula:
+			$$\min{RMSD} = \sqrt{\frac{\sum_i{|\mathbf{x}_i|^2 + |\mathbf{y}_i|^2} - 2\lambda}{N_{atoms}}} $$
+
+			The derivative of RMSD with respect to coordinates of the input is computed using the formula:
+			$$
+			\frac{\partial RMSD}{\partial \mathbf{x}_i} = \mathbf{x}_i - U^T \cdot \mathbf{y}_i
+			$$
 		</div>
 	</div>
 	<script>
