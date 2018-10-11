@@ -9,6 +9,12 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
 	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 	<script src="js/scripts.js"></script>
+	<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+	</script>
+	<script type="text/javascript"
+		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
 
@@ -51,7 +57,13 @@
 	<div class="container" id="TypedCoords2Volume">
 		<p class="text-light bg-dark"><h2>class Volume.<b>TypedCoords2Volume</b>(box_size=120)</h2></p>
 		<div class="container">
-			Computes 3D atomic densities of each atom type. 
+			Computes 3D atomic densities of each atom type. Let's denote the position of $j$-th atom of the type $i$ as $\mathbf{x}_{ij}$. 
+			Then the volumetric density of atom type $i$ will read:
+			$$
+			V_i(\mathbf{r}) = \sum_j exp\left[ -\frac{|\mathbf{r} - \mathbf{x}_{ij}|}{\sigma} \right]
+			$$
+			when we compute this density, we truncate exponents of each atom to 2 adjacent cells. 
+			Version 0.1 contains naive implementation of this module. <br><br>
 		</div>
 	</div>
 	<script>
@@ -74,7 +86,13 @@
 		<p class="text-light bg-dark"><h2>class Volume.<b>SelectVolume</b>(box_size_bins=120, box_size_ang=120)</h2></p>
 		<div class="container">
 			Computes feature columns from set of volumes using coordinates, scaled according to proportion of initial volume size (box_size_bins) 
-			and current volume size (box_size_ang).
+			and current volume size (box_size_ang). 
+			This process is illustrated on the image below:
+			<br><br>
+			<img src="Fig/VolumeSelect.png" class="rounded mx-auto d-block float-center" alt="..." width=70%>
+			<br><br>
+			In the version 0.1 of this library this layer is not differentiable.
+			<br><br>
 		</div>
 	</div>
 	<script>
@@ -96,7 +114,29 @@
 	<div class="container" id="VolumeConvolution">
 		<p class="text-light bg-dark"><h2>class Volume.<b>VolumeConvolution</b>(num_features)</h2></p>
 		<div class="container">
-			Computes parametric weighted correlation between two sets of volumes of the same size. 
+			Computes parametric weighted correlation between two sets of volumes of the same size. Let's denote 
+			feature $i$ volume as $V_i$. The correlation between two sets of volumes is:
+			$$
+				Corr = \sum_i W_i (V^{(1)}_i * V^{(2)}_i)
+			$$
+			where 
+			$$
+			(V^{(1)}_i * V^{(2)}_i) (x,y,z) = \sum_{klm} V^{(1)}_i (k,l,m) V^{(1)}_i (k+x,l+y,m+z)
+			$$
+			To compute this sum for all $x$, $y$ and $z$ simultaneously we use FFT:
+			$$
+			(V^{(1)}_i * V^{(2)}_i) (x,y,z) = IFFT \left[ FFT(V^{(1)}_i) \cdot conj(FFT(V^{(2)}_i)) \right]
+			$$
+			The derivative of a function $L$, that depends on the correlation is:
+			$$\begin{eqnarray}
+				\frac{\partial L }{\partial V^{(1)}_i } &=& \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)} * V^{(2)}_i \\
+				\frac{\partial L }{\partial V^{(2)}_i } &=& \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)} * V^{(1)}_i
+				\end{eqnarray}
+			$$
+			This layer is implemented using cuFFT. It should be taken into account that the correlation is curcular, therefore 
+			each volume is padded with zeros to twice its size. Also, the output volume has certain structure that is dictated by the circularity 
+			along each dimension.
+			<br><br>
 		</div>
 	</div>
 	<script>
