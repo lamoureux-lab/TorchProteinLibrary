@@ -102,7 +102,7 @@
 		generate_table("Angles2Coords", 
 						[
 							["Angles", "CPU", "double", "[batch_size, 7, number of amino acids]"], 
-							["Sequences", "CPU", "list of strings", "length = batch size"]
+							["Sequences", "CPU", "list of strings", "length = batch_size"]
 						],
 						[
 							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
@@ -193,8 +193,8 @@
 			</table>
 			Output coordinates are arranged such that atoms of one type are grouped together in a contiguous stretch of memory.
 			NumAtomsOfType stores the number of atoms of particular type and offsets are the number of atoms in the memory, before 
-			particular atom type stretch of coordinates begins. For example, to get the first atom of type 8 in sample $i$ we have to compute:
-			$$ r_x = Coordinates[i, 3(Offsets[8] + 0)] $$
+			particular atom type stretch of coordinates begins. For example, we get the coordinates of the first atom of type 8 in sample $i$ using:
+			$$ r = Coordinates[i, 3(Offsets[8] + 0)] $$
 		</div>
 	</div>
 	<script>
@@ -244,8 +244,8 @@
 		<div class="container">
 			Translates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
-			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch~size}$
-			and $N_k$ is the number of atoms in the k-th batch sample.
+			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
+			and $N_k$ is the number of atoms in the $k$-th batch sample.
 		</div>
 		
 	</div>
@@ -270,8 +270,8 @@
 		<div class="container">
 			Rotates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{R}_k \cdot \mathbf{r}_i $$
-			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch~size}$
-			and $N_k$ is the number of atoms in the k-th batch sample.
+			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
+			and $N_k$ is the number of atoms in the $k$-th batch sample.
 		</div>
 	</div>
 	<script>
@@ -355,7 +355,7 @@
 			2(q_1 q_3 - q_0 q_2) & 2(q_2 q_3 + q_0 q_1) & q^2_0 - q^2_1 - q^2_2 + q^2_3
 			\end{bmatrix}
 			$$
-			The in-deph explanation of this sampling technique can be found in 
+			The in-depth explanation of this sampling technique can be found in 
 			<p><em>Kirk, David. Graphics Gems III (IBM Version): Ibm Version. Elsevier, 2012.</em></p>
 		</div>
 	</div>
