@@ -12,9 +12,12 @@ void TypedCoords2Volume_forward(    at::Tensor input_coords,
         || (!offsets.type().is_cuda())
         || input_coords.dtype() != at::kDouble || volume.dtype() != at::kFloat
         || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt){
+            std::cout<<"Incorrect tensor types"<<std::endl;
             throw("Incorrect tensor types");
+
     }
     if(input_coords.ndimension() != 2){
+        std::cout<<"Incorrect input ndim"<<std::endl;
         throw("Incorrect input ndim");
     }
     int batch_size = input_coords.size(0);

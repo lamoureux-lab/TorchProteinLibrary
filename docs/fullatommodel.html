@@ -15,6 +15,9 @@
 		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 	</script>
 	<script src="js/scripts.js"></script>
+	<link rel="stylesheet" href="css/default.css">
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
 
@@ -60,11 +63,15 @@
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
 		<div class="container">
 			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
-			This layer converts amino acid sequences and dihedral angles to atomic coordinates. It does so by building a graph of transforms, acting on rigid groups of atoms. 
-			For example, Figure 1 shows alanine, which has 5 rigid groups in total and is parametrized by 4 transforms. Each transform is parametrized by one angle 
+			This layer converts amino acid sequences and dihedral angles to atomic coordinates. 
+			It does so by building a graph of transforms, acting on rigid groups of atoms. 
+			For example, Figure 1 shows schematic representation of Threonine amino-acid, 
+			which has 5 rigid groups in total and is parametrized by 4 transforms. 
+			Each transform is parametrized by one angle 
 			and has the following form: 
 			$$ R(\alpha, \beta, d) = R_y (\beta) T_x(d) R_x(\alpha) $$
-			where $R_x(\alpha)$ and $R_y(\beta)$ are the 4x4 rotation matrices around axes $x$ and $y$; $T_x(d)$ is the 4x4 translation matrix along the axis $x$. 
+			where $R_x(\alpha)$ and $R_y(\beta)$ are the 4x4 rotation matrices around axes $x$ and $y$; $T_x(d)$ is 
+			the 4x4 translation matrix along the axis $x$. 
 			The parametrization shown on Figure 1 can be written as follows:
 			$$ R_1(\phi) = R(\phi, \theta_1, d_1)$$
 			where $\theta_1$ and $d_1$ are fixed parameters of bonds. We do not compute derivatives of these parameters.
@@ -91,12 +98,13 @@
 			The input and output tensors have the following structure:<br><br>
 			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="..." width=100%>
 			<br><br>
-			Each amino acid is described by a set of angles $\{\phi, \psi, \xi_1, \xi_2, \xi_3, \xi_4, \xi_5\}$ in the order of increasing the index. If 
-			an amino acid does no require certain angles for its parametrization, they are ignored. Atom names are encoded in ASCII following the standard PDB nomenclature, with the last symbol 
+			Each amino acid is described by a set of angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ in the order of increasing the index. If 
+			an amino acid does no require certain angles for its parametrization, they are ignored. 
+			Atom names are encoded in ASCII following the standard PDB nomenclature, with the last symbol 
 			always set to '\0'.
 			<br><br>
-
 		</div>
+		
 	</div>
 	<script>
 		generate_table("Angles2Coords", 
@@ -111,8 +119,65 @@
 							["NumAtoms", "CPU", "int", "[batch_size]"],
 						]
 						);
-								
 	</script>
+	<div class="container" id="ExampleAngles2Coords">
+		<p class="text-light bg-dark"><h3>Example</h3></p>
+			<pre class="pre-scrollable"><code class="python">
+import torch
+from TorchProteinLibrary import FullAtomModel
+import numpy as np
+import matplotlib.pylab as plt
+import mpl_toolkits.mplot3d.axes3d as p3
+
+
+if __name__=='__main__':
+	a2c = FullAtomModel.Angles2Coords()
+	sequences = ['GGMLGWAHFGY']
+	
+	#Setting conformation to alpha-helix
+	angles = torch.zeros(len(sequences), 7, len(sequences[-1]), dtype=torch.double, device='cpu')
+	angles.data[:,0,:] = -1.047
+	angles.data[:,1,:] = -0.698
+	angles.data[:,2:,:] = 110.4*np.pi/180.0
+
+	#Converting angles to coordinates
+	coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
+	
+	#Making a mask on CA, C, N atoms
+	is0C = torch.eq(atom_names[:,:,0], 67).squeeze()
+	is1A = torch.eq(atom_names[:,:,1], 65).squeeze()
+	is20 = torch.eq(atom_names[:,:,2], 0).squeeze()
+	is0N = torch.eq(atom_names[:,:,0], 78).squeeze()
+	is10 = torch.eq(atom_names[:,:,1], 0).squeeze()
+	isCA = is0C*is1A*is20
+	isC = is0C*is10
+	isN = is0N*is10
+	isSelected = torch.ge(isCA + isC + isN, 1)
+
+	#Resizing coordinates array for convenience (to match selection mask)
+	N = int(num_atoms.data[0])
+	coords.resize_(1, N, 3)
+	
+	backbone_x = torch.masked_select(coords[0,:,0], isSelected)
+	backbone_y = torch.masked_select(coords[0,:,1], isSelected)
+	backbone_z = torch.masked_select(coords[0,:,2], isSelected)
+
+	#Plotting all atoms with the red dots and backbone with the blue line
+	sx, sy, sz = coords[0,:,0].numpy(), coords[0,:,1].numpy(), coords[0,:,2].numpy()
+	bx, by, bz = backbone_x.numpy(), backbone_y.numpy(), backbone_z.numpy()
+	
+	fig = plt.figure()
+	plt.title("Full atom model")
+	ax = p3.Axes3D(fig)
+	ax.plot(sx,sy,sz, 'r.', label = 'atoms')
+	ax.plot(bx,by,bz, 'b-', label = 'backbone')
+	ax.legend()
+	plt.savefig("ExampleAngles2Coords.png")
+
+			</code></pre>
+		<p class="text-light bg-dark"><h3>Output</h3></p>
+		<img src="Fig/examples/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+	</div>
 	</section>
 
 	
@@ -236,6 +301,39 @@
 						);
 									
 	</script>
+	<div class="container" id="ExamplePDB2CoordsUnordered">
+			<p class="text-light bg-dark"><h3>Example</h3></p>
+				<pre class="pre-scrollable"><code class="python">
+import torch
+from TorchProteinLibrary import FullAtomModel
+import numpy as np
+import matplotlib.pylab as plt
+import mpl_toolkits.mplot3d.axes3d as p3
+
+
+if __name__=='__main__':
+	
+	#Reading pdb file
+	p2c = FullAtomModel.PDB2CoordsUnordered()
+	coords, res_names, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
+	
+	#Resizing coordinates array for convenience
+	N = int(num_atoms.data[0])
+	coords.resize_(1, N, 3)
+
+	#Plotting all atoms with the red dots
+	sx, sy, sz = coords[0,:,0].numpy(), coords[0,:,1].numpy(), coords[0,:,2].numpy()
+	fig = plt.figure()
+	plt.title("Full atom model")
+	ax = p3.Axes3D(fig)
+	ax.plot(sx,sy,sz, 'r.', label = 'atoms')
+	ax.legend()
+	plt.savefig("ExamplePDB2CoordsUnordered.png")
+	
+				</code></pre>
+			<p class="text-light bg-dark"><h3>Output</h3></p>
+			<img src="Fig/examples/ExamplePDB2CoordsUnordered.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+		</div>
 	</section>
 	
 	<section class="jumbotron text-left">
