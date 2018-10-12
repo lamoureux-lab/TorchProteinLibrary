@@ -2,6 +2,7 @@
 *~
 *.png
 *.pdb
+*.xplor
 
 #Python 
 *.pyc
