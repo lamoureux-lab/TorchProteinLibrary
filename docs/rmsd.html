@@ -15,10 +15,12 @@
 		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 	</script>
 	<script src="js/scripts.js"></script>
+	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
+	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
 	<header>
 		<div class="collapse bg-dark" id="navbarHeader">
 		  <div class="container">
@@ -43,6 +45,22 @@
 		  </div>
 		</div>
 	  </header>
+	
+		<div class="row">
+				<div class="col-sm-2">
+					<nav id="toc" data-toggle="toc" class="sticky-top">
+						<ul class="nav navbar-nav">
+							<li><a class="nav-link active" href="fullatommodel.html"><b>FullAtomModel</b></a></li>
+							<li><a class="nav-link active" href="#"><b>RMSD</b></a></li>
+							<ul class="nav navbar-nav">
+									<li><a class="nav-link active" href="#Coords2RMSD">Coords2RMSD</a>
+							</ul>
+							<li><a class="nav-link active" href="reducedmodel.html"><b>ReducedModel</b></a></li>
+							<li><a class="nav-link active" href="volume.html"><b>Volume</b></a></li>
+							<li><a class="nav-link active" href="examples.html"><b>Examples</b></a></li>
+						</ul>
+					</nav>
+				</div>
 
 	<main role="main">
 
@@ -52,10 +70,14 @@
 		<p class="lead text-muted">This module contains implementation of least-RMSD loss function.</p>
 		</div>
 	</section>
+
 	
-	<section class="jumbotron text-left">
+	
+	
 	<div class="container" id="Coords2RMSD">
-		<p class="text-light bg-dark"><h2>class RMSD.<b>Coords2RMSD</b></h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class RMSD.<b>Coords2RMSD</b></h2></p>
+		</div>
 		<div class="container">
 			Computes least RMSD between two sets of coordinates. 
 			This layer implements the publication 
@@ -109,11 +131,9 @@
 						);
 								
 	</script>
-	</section>
-	
-  
+	  
 	</main>
-
+	</div>
 	<footer class="text-muted">
 	<div class="container">
 	<p>This site was created with &copy; Bootstrap.</p>

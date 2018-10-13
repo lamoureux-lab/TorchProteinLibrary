@@ -19,10 +19,12 @@
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
+	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
 	<title>TorchProteinLibrary documentation</title>
 	</head>
 
-	<body>
+	<body data-spy="scroll" data-target="#toc">
 	<header>
 		<div class="collapse bg-dark" id="navbarHeader">
 			<div class="container">
@@ -47,7 +49,23 @@
 			</div>
 		</div>
 		</header>
-
+	
+	<div class="row">
+		<div class="col-sm-2">
+			<nav id="toc" data-toggle="toc" class="sticky-top">
+				<ul class="nav navbar-nav">
+					<li><a class="nav-link active" href="fullatommodel.html"><b>FullAtomModel</b></a></li>
+					<li><a class="nav-link active" href="rmsd.html"><b>RMSD</b></a></li>
+					<li><a class="nav-link active" href="reducedmodel.html"><b>ReducedModel</b></a></li>
+					<li><a class="nav-link active" href="volume.html"><b>Volume</b></a></li>
+					<li><a class="nav-link active" href="#"><b>Examples</b></a></li>
+					<ul class="nav navbar-nav">
+						<li><a class="nav-link active" href="#Angles2Backbone">Angles2Backbone</a></li>
+					</ul>
+				</ul>
+			</nav>
+		</div>
+	
 	<main role="main">
 
 	<section class="jumbotron text-center">
@@ -57,14 +75,16 @@
 		</div>
 	</section>
 	
-	<section class="jumbotron text-left">
-		<div class="container" id="Angles2Backbone">
+	
+	<div class="container" id="Angles2Backbone">
+		<div class="container">
 			<p class="text-light bg-dark"><h2>Fitting backbone using reduced protein model.</h2></p>
-			<div class="container">
+		</div>
+		<div class="container">
 
-                First we read the pdb file using <b>FullAtomModel.PDB2CoordsUnordered</b>: 
+			First we read the pdb file using <b>FullAtomModel.PDB2CoordsUnordered</b>: 
 
-                <pre class="pre-scrollable"><code class="python">
+			<pre class="pre-scrollable"><code class="python">
 #Reading pdb file
 p2c = FullAtomModel.PDB2CoordsUnordered()
 coords_dst, res_names_dst, atom_names_dst, num_atoms_dst = p2c(["FullAtomModel/f4TQ1_B.pdb"])
@@ -191,20 +211,19 @@ anim = animation.FuncAnimation(fig, update_plot,
                                     frames=300, interval=20, blit=True)
 ax.legend()
 anim.save("ExampleFitBackboneResult.gif", dpi=80, writer='imagemagick')
-                </code></pre>
-                And the resulting movie should look like this:
-                <div class="embed-responsive embed-responsive-1by1">
-                    <video width="640" height="480" controls>
-                        <source src="Fig/examples/ExampleFitBackbone.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
+			</code></pre>
+			And the resulting movie should look like this:
+			<div class="embed-responsive embed-responsive-1by1">
+				<video width="640" height="480" controls>
+					<source src="Fig/examples/ExampleFitBackbone.mp4" type="video/mp4">
+					Your browser does not support the video tag.
+				</video>
 			</div>
 		</div>
-		
-	</section>
+	</div>
 	
 	</main>
+	</div>
 
 	<footer class="text-muted">
 	<div class="container">

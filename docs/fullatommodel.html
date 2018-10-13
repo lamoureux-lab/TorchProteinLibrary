@@ -18,12 +18,16 @@
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+
+	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
+	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
 	
 	<title>TorchProteinLibrary documentation</title>
 
-  </head>
 
-  <body>
+  </head>
+  
+  <body data-spy="scroll" data-target="#toc">
 		<object data="Examples/FullAtomModel/ExampleAngles2Coords.py" id = "ExampleAngles2Coords.py" onloadeddata="copyFileContents();" type="text/plain" style="display:none">
 		</object>
 		<object data="Examples/FullAtomModel/ExamplePDB2CoordsUnordered.py" id = "ExamplePDB2CoordsUnordered.py" type="text/plain" style="display:none" ></object>
@@ -52,7 +56,35 @@
 	</div>
 	</header>
 	
-
+	<div class="row">
+	<div class="col-sm-2">
+		<nav id="toc" data-toggle="toc" class="sticky-top">
+			<ul class="nav navbar-nav">
+				<li><a class="nav-link active" href="#"><b>FullAtomModel</b></a></li>
+				<ul class="nav navbar-nav">
+					<li><a class="nav-link active" href="#Angles2Coords">Angles2Coords</a>
+					<ul class="nav navbar-nav">
+						<li><a class="nav-link active" href="#ExampleAngles2Coords">Example</a></li>
+					</ul></li>
+					<li><a class="nav-link active" href="#Coords2TypedCoords">Coords2TypedCoords</a></li>
+					<li><a class="nav-link active" href="#PDB2CoordsUnordered">PDB2CoordsUnordered</a>
+					<ul class="nav navbar-nav">
+							<li><a class="nav-link active" href="#ExamplePDB2CoordsUnordered">Example</a>
+					</ul></li>
+					<li><a class="nav-link active" href="#CoordsTranslate">CoordsTranslate</a></li>
+					<li><a class="nav-link active" href="#CoordsRotate">CoordsRotate</a></li>
+					<li><a class="nav-link active" href="#getBBox">getBBox</a></li>
+					<li><a class="nav-link active" href="#getRandomTranslation">getRandomTranslation</a></li>
+					<li><a class="nav-link active" href="#getRandomRotation">getRandomRotation</a></li>
+				</ul>
+				<li><a class="nav-link active" href="rmsd.html"><b>RMSD</b></a></li>
+				<li><a class="nav-link active" href="reducedmodel.html"><b>ReducedModel</b></a></li>
+				<li><a class="nav-link active" href="volume.html"><b>Volume</b></a></li>
+				<li><a class="nav-link active" href="examples.html"><b>Examples</b></a></li>
+			</ul>
+		</nav>
+	</div>
+	
 	<main role="main">
 
 	<section class="jumbotron text-center">
@@ -63,9 +95,10 @@
 		</div>
 	</section>
 	
-	<section class="jumbotron text-left">
 	<div class="container" id="Angles2Coords">
-		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
+		</div>
 		<div class="container">
 			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
 			This layer converts amino acid sequences and dihedral angles to atomic coordinates. 
@@ -188,15 +221,10 @@ if __name__=='__main__':
 		<img src="Fig/examples/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 	</div>
 	
-	
-	
-	</section>
-
-	
-
-	<section class="jumbotron text-left">
 	<div class="container" id = "Coords2TypedCoords">
-		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Coords2TypedCoords</b></h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Coords2TypedCoords</b></h2></p>
+		</div>
 		<div class="container">
 			This layer assigns atom types and rearranges coordinates according to types.
 			Currently we use 11 atom types defined as following:
@@ -290,11 +318,12 @@ if __name__=='__main__':
 						);
 								
 	</script>
-	</section>
+	
 
-	<section class="jumbotron text-left">
 	<div class="container" id = "PDB2CoordsUnordered">
+		<div class="container">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>PDB2CoordsUnordered</b></h2></p>
+		</div>
 		<div class="container">
 			Reads PDB and outputs coordinates, residue and atom names and number of atoms. The order of atoms is the same as in the PDB file.
 		</div>
@@ -346,11 +375,12 @@ if __name__=='__main__':
 			<p class="text-light bg-dark"><h3>Output</h3></p>
 			<img src="Fig/examples/ExamplePDB2CoordsUnordered.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 		</div>
-	</section>
 	
-	<section class="jumbotron text-left">
+	
 	<div class="container" id = "CoordsTranslate">
-		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsTranslate</b></h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsTranslate</b></h2></p>
+		</div>
 		<div class="container">
 			Translates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
@@ -372,11 +402,13 @@ if __name__=='__main__':
 						);
 									
 	</script>
-	</section>
 	
-	<section class="jumbotron text-left">
+	
+	
 	<div class="container" id = "CoordsRotate">
+		<div class="container">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsRotate</b></h2></p>
+		</div>
 		<div class="container">
 			Rotates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{R}_k \cdot \mathbf{r}_i $$
@@ -397,11 +429,11 @@ if __name__=='__main__':
 						);
 									
 	</script>
-	</section>
-
-	<section class="jumbotron text-left">
+	
 	<div class="container" id ="getBBox">
+		<div class="container">
 		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getBBox</b>(Coordinates, NumAtoms)</h2></p>
+		</div>
 		<div class="container">
 			Computes axis-aligned bounding box, non-differentiable. A is the corner with the lowest coordinates and 
 			B is the corner with the highest coordinates.
@@ -420,11 +452,11 @@ if __name__=='__main__':
 						);
 									
 	</script>
-	</section>
-
-	<section class="jumbotron text-left">
+	
 	<div class="container" id = "getRandomTranslation">
-		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
+		</div>
 		<div class="container">
 			Computes random translation, that does not translate protein bounding box out of the volume.
 		</div>
@@ -442,11 +474,12 @@ if __name__=='__main__':
 						);
 									
 	</script>
-	</section>
-
-	<section class="jumbotron text-left">
-		<div class="container" id = "getRandomRotation">
-		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
+	
+	
+	<div class="container" id = "getRandomRotation">
+		<div class="container">
+			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
+		</div>
 		<div class="container">
 			Computes random rotation by uniformly sampling $SO(3)$ group. In particular we draw $u_1, u_2, u_3$ from the 
 			uniform distibution on the interval $(0, 1)$, then compute the following quaternion:
@@ -480,10 +513,9 @@ if __name__=='__main__':
 						);
 									
 	</script>
-	</section>
-
+	
 	</main>
-
+	</div>
 	<footer class="text-muted">
 	<div class="container">
 	<p>This site was created with &copy; Bootstrap.</p>

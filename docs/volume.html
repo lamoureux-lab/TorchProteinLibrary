@@ -18,10 +18,12 @@
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
+	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
 	<title>TorchProteinLibrary documentation</title>
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
 	<header>
 		<div class="collapse bg-dark" id="navbarHeader">
 		  <div class="container">
@@ -46,6 +48,27 @@
 		  </div>
 		</div>
 	  </header>
+	
+	<div class="row">
+		<div class="col-sm-2">
+			<nav id="toc" data-toggle="toc" class="sticky-top">
+				<ul class="nav navbar-nav">
+					<li><a class="nav-link active" href="fullatommodel.html"><b>FullAtomModel</b></a></li>
+					<li><a class="nav-link active" href="rmsd.html"><b>RMSD</b></a></li>
+					<li><a class="nav-link active" href="reducedmodel.html"><b>ReducedModel</b></a></li>
+					<li><a class="nav-link active" href="#"><b>Volume</b></a></li>
+					<ul class="nav navbar-nav">
+						<li><a class="nav-link active" href="#TypedCoords2Volume">TypedCoords2Volume</a>
+						<ul class="nav navbar-nav">
+							<li><a class="nav-link active" href="#ExampleTypedCoords2Volume">Example</a></li>
+						</ul></li>
+						<li><a class="nav-link active" href="#SelectVolume">SelectVolume</a></li>
+						<li><a class="nav-link active" href="#VolumeConvolution">VolumeConvolution</a></li>
+					</ul>
+					<li><a class="nav-link active" href="examples.html"><b>Examples</b></a></li>
+				</ul>
+			</nav>
+		</div>
 
 	<main role="main">
 
@@ -56,9 +79,11 @@
 		</div>
 	</section>
   
-	<section class="jumbotron text-left">
+	
 	<div class="container" id="TypedCoords2Volume">
-		<p class="text-light bg-dark"><h2>class Volume.<b>TypedCoords2Volume</b>(box_size=120)</h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class Volume.<b>TypedCoords2Volume</b>(box_size=120)</h2></p>
+		</div>
 		<div class="container">
 			Computes 3D atomic densities of each atom type. Let's denote the position of $j$-th atom of the type $i$ as $\mathbf{x}_{ij}$. 
 			Then the volumetric density of atom type $i$ will read:
@@ -82,7 +107,7 @@
 						);
 								
 	</script>
-	<div class="container" id="ExampleAngles2Backbone">
+	<div class="container" id="ExampleTypedCoords2Volume">
 			<p class="text-light bg-dark"><h3>Example</h3></p>
 				<pre class="pre-scrollable"><code class="python">
 import torch
@@ -133,11 +158,12 @@ if __name__=='__main__':
 			<p class="text-light bg-dark"><h3>Output</h3></p>
 			<img src="Fig/examples/ExampleTypedCoords2Volume.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 		</div>
-	</section>
-
-	<section class="jumbotron text-left">
+	
+	
 	<div class="container" id="SelectVolume">
-		<p class="text-light bg-dark"><h2>class Volume.<b>SelectVolume</b>(box_size_bins=120, box_size_ang=120)</h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class Volume.<b>SelectVolume</b>(box_size_bins=120, box_size_ang=120)</h2></p>
+		</div>
 		<div class="container">
 			Computes feature columns from set of volumes using coordinates, scaled according to proportion of initial volume size (box_size_bins) 
 			and current volume size (box_size_ang). 
@@ -162,11 +188,11 @@ if __name__=='__main__':
 						);
 								
 	</script>
-	</section>
 	
-	<section class="jumbotron text-left">
 	<div class="container" id="VolumeConvolution">
-		<p class="text-light bg-dark"><h2>class Volume.<b>VolumeConvolution</b>(num_features)</h2></p>
+		<div class="container">
+			<p class="text-light bg-dark"><h2>class Volume.<b>VolumeConvolution</b>(num_features)</h2></p>
+		</div>
 		<div class="container">
 			Computes parametric weighted correlation between two sets of volumes of the same size. Let's denote 
 			feature $i$ volume as $V_i$. The correlation between two sets of volumes is:
@@ -207,11 +233,10 @@ if __name__=='__main__':
 						]
 						);
 	</script>
-	</section>
-
+	
 
 	</main>
-
+	</div>
 	<footer class="text-muted">
 	<div class="container">
 	<p>This site was created with &copy; Bootstrap.</p>

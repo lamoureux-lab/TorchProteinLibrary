@@ -20,9 +20,11 @@
 	<script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
 	<title>TorchProteinLibrary documentation</title>
+	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
+	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
 	</head>
 
-	<body>
+	<body data-spy="scroll" data-target="#toc">
 	<header>
 		<div class="collapse bg-dark" id="navbarHeader">
 			<div class="container">
@@ -46,7 +48,26 @@
 			</button>
 			</div>
 		</div>
-		</header>
+	</header>
+
+	<div class="row">
+	<div class="col-sm-2">
+		<nav id="toc" data-toggle="toc" class="sticky-top">
+			<ul class="nav navbar-nav">
+				<li><a class="nav-link active" href="fullatommodel.html"><b>FullAtomModel</b></a></li>
+				<li><a class="nav-link active" href="rmsd.html"><b>RMSD</b></a></li>
+				<li><a class="nav-link active" href="#"><b>ReducedModel</b></a></li>
+				<ul class="nav navbar-nav">
+					<li><a class="nav-link active" href="#Angles2Backbone">Angles2Backbone</a>
+					<ul class="nav navbar-nav">
+						<li><a class="nav-link active" href="#ExampleAngles2Backbone">Example</a></li>
+					</ul></li>
+				</ul>
+				<li><a class="nav-link active" href="volume.html"><b>Volume</b></a></li>
+				<li><a class="nav-link active" href="examples.html"><b>Examples</b></a></li>
+			</ul>
+		</nav>
+	</div>
 
 	<main role="main">
 
@@ -56,94 +77,98 @@
 		<p class="lead text-muted">This module contains implementation of angles to coordinates conversion for reduced protein models.</p>
 		</div>
 	</section>
+
 	
-	<section class="jumbotron text-left">
-		<div class="container" id="Angles2Backbone">
+
+	
+	<div class="container" id="Angles2Backbone">
+		<div class="container">
 			<p class="text-light bg-dark"><h2>class ReducedModel.<b>Angles2Backbone</b></h2></p>
-			<div class="container">
-				This layer converts angles to coordinates of backbone atoms.
-				The position of the $i$-th atom in the chain is obtained by:
-				$$\mathbf{x}_i = B_0 B_1 \cdots B_i \mathbf{x}_0$$
-				where $\mathbf{x}_0$ is the reference frame origin and $B_i$ is the transformation matrix, parametrized by dihedral angles:
-
-				$$B(\alpha, \beta, d) = \begin{bmatrix}
-				\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & d\cos(\beta) \\
-				0 & \cos(\alpha) & -\sin(\alpha) & 0 \\
-				-\sin(\beta) & \sin(\alpha)\cos(\beta) & \cos(\alpha)\cos(\beta) & -d\sin(\beta) \\
-				0 & 0 & 0 & 1
-				\end{bmatrix}$$
-
-				The parameters of transformation depend on the index as follows:
-				<ul class="list-group">
-						<li class="list-group-item"> $N$-$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, d) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
-						<li class="list-group-item"> $C_{\alpha}$-$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, d) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
-						<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, d) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
-				</ul>
-
-				
-				During the forward pass, we save the products of transformation matrices for each atom:
-				
-				$$A_i = B_0 B_1 \cdots B_i$$
-				
-				Notice that atom $3j$ is always N, atom $3j + 1$ is always CA, and atom $3j+2$ is always C. Thus
-				transformation matrices $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
-				
-				During the backward pass, we first compute gradients of each atomic coordinate with respect to each angle:
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \cdots \frac{\partial B_{3j+1}}{\partial \phi_j} \cdots B_i \mathbf{x}_0
-				$$
-
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \cdots \frac{\partial B_{3j+2}}{\partial \psi_j} \cdots B_i \mathbf{x}_0
-				$$
-
-				We can rewrite these expressions using the matrices $A$, that we saved during the forward pass:
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} A_{3j+1}^{-1} A_{i} \mathbf{x}_0
-				$$
-
-				$$
-				\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} A_{3j+2}^{-1} A_{i} \mathbf{x}_0
-				$$
-
-				We also notice that transformation matrices have two properties:
-				<ul class="list-group">
-						<li class="list-group-item"> Product of transformation matrices is a transformation matrix, therefore matrices $A$ are transformation matrices</li>
-						<li class="list-group-item"> Inverse of a transformation matrix can be computed as follows:<br>
-						If 
-						$
-						T = \begin{bmatrix}
-								R & \mathbf{x} \\
-								0 & 1
-						\end{bmatrix} 
-						$,
-						then $T^{-1} = \begin{bmatrix}
-								R^{T} & -R^{T}\mathbf{x} \\
-								0 & 1
-						\end{bmatrix} 
-						$</li>
-				</ul>
-				Therefore we can compute all the derivatives simultaneously on GPU. To compute the derivatives of input of the layer with respect to the output we just have to 
-				calculate the following sums:
-				$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
-				$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
-				
-			</div>
 		</div>
-		<script>
-			generate_table("Angles2Backbone", 
-							[
-								["Angles", "GPU", "float", "[batch_size, 2, number of amino-acids]"], 
-								["NumAminoAcids", "GPU", "int", "[batch_size]"]
-							],
-							[
-								["Coordinates", "GPU", "float", "[batch_size, 3 x 3 x number of amino-acids]"],
-							]
-							);
-		</script>
-		<div class="container" id="ExampleAngles2Backbone">
-		<p class="text-light bg-dark"><h3>Example</h3></p>
-			<pre class="pre-scrollable"><code class="python">
+		<div class="container">
+			This layer converts angles to coordinates of backbone atoms.
+			The position of the $i$-th atom in the chain is obtained by:
+			$$\mathbf{x}_i = B_0 B_1 \cdots B_i \mathbf{x}_0$$
+			where $\mathbf{x}_0$ is the reference frame origin and $B_i$ is the transformation matrix, parametrized by dihedral angles:
+
+			$$B(\alpha, \beta, d) = \begin{bmatrix}
+			\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & d\cos(\beta) \\
+			0 & \cos(\alpha) & -\sin(\alpha) & 0 \\
+			-\sin(\beta) & \sin(\alpha)\cos(\beta) & \cos(\alpha)\cos(\beta) & -d\sin(\beta) \\
+			0 & 0 & 0 & 1
+			\end{bmatrix}$$
+
+			The parameters of transformation depend on the index as follows:
+			<ul class="list-group">
+					<li class="list-group-item"> $N$-$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, d) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
+					<li class="list-group-item"> $C_{\alpha}$-$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, d) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
+					<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, d) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
+			</ul>
+
+			
+			During the forward pass, we save the products of transformation matrices for each atom:
+			
+			$$A_i = B_0 B_1 \cdots B_i$$
+			
+			Notice that atom $3j$ is always N, atom $3j + 1$ is always CA, and atom $3j+2$ is always C. Thus
+			transformation matrices $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
+			
+			During the backward pass, we first compute gradients of each atomic coordinate with respect to each angle:
+			$$
+			\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \cdots \frac{\partial B_{3j+1}}{\partial \phi_j} \cdots B_i \mathbf{x}_0
+			$$
+
+			$$
+			\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \cdots \frac{\partial B_{3j+2}}{\partial \psi_j} \cdots B_i \mathbf{x}_0
+			$$
+
+			We can rewrite these expressions using the matrices $A$, that we saved during the forward pass:
+			$$
+			\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} A_{3j+1}^{-1} A_{i} \mathbf{x}_0
+			$$
+
+			$$
+			\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} A_{3j+2}^{-1} A_{i} \mathbf{x}_0
+			$$
+
+			We also notice that transformation matrices have two properties:
+			<ul class="list-group">
+					<li class="list-group-item"> Product of transformation matrices is a transformation matrix, therefore matrices $A$ are transformation matrices</li>
+					<li class="list-group-item"> Inverse of a transformation matrix can be computed as follows:<br>
+					If 
+					$
+					T = \begin{bmatrix}
+							R & \mathbf{x} \\
+							0 & 1
+					\end{bmatrix} 
+					$,
+					then $T^{-1} = \begin{bmatrix}
+							R^{T} & -R^{T}\mathbf{x} \\
+							0 & 1
+					\end{bmatrix} 
+					$</li>
+			</ul>
+			Therefore we can compute all the derivatives simultaneously on GPU. To compute the derivatives of input of the layer with respect to the output we just have to 
+			calculate the following sums:
+			$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
+			$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
+			
+		</div>
+	</div>
+	<script>
+		generate_table("Angles2Backbone", 
+						[
+							["Angles", "GPU", "float", "[batch_size, 2, number of amino-acids]"], 
+							["NumAminoAcids", "GPU", "int", "[batch_size]"]
+						],
+						[
+							["Coordinates", "GPU", "float", "[batch_size, 3 x 3 x number of amino-acids]"],
+						]
+						);
+	</script>
+	<div class="container" id="ExampleAngles2Backbone">
+	<p class="text-light bg-dark"><h3>Example</h3></p>
+		<pre class="pre-scrollable"><code class="python">
 import torch
 from TorchProteinLibrary import ReducedModel
 import numpy as np
@@ -183,15 +208,17 @@ if __name__=='__main__':
 	# plt.show()
 	plt.savefig("ExampleAngles2Backbone.png")
 	
-				</code></pre>
-			<p class="text-light bg-dark"><h3>Output</h3></p>
-			<img src="Fig/examples/ExampleAngles2Backbone.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
-		</div>
-		</section>
+			</code></pre>
+		<p class="text-light bg-dark"><h3>Output</h3></p>
+		<img src="Fig/examples/ExampleAngles2Backbone.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+	</div>
+		
 	
 	
 	</main>
-
+	
+	</div>
+	
 	<footer class="text-muted">
 	<div class="container">
 	<p>This site was created with &copy; Bootstrap.</p>
