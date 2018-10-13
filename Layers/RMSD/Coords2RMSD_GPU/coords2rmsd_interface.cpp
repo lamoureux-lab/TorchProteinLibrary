@@ -24,14 +24,12 @@ void Coords2RMSD_GPU_forward(   at::Tensor re_coordinates_src, at::Tensor re_coo
     int batch_size = num_atoms.size(0);
     at::Tensor T = at::CUDA(at::kDouble).zeros({batch_size, 4, 4});
     at::Tensor rot_mat_t = at::CUDA(at::kDouble).zeros({batch_size, 3, 3});
-                            
     //correlation matrix T
     cpu_correlationMatrix(  re_coordinates_src.data<double>(),
                             re_coordinates_dst.data<double>(),
                             T.data<double>(),
                             num_atoms.data<int>(), batch_size, re_coordinates_src.size(1));
 
-    
     //computing eigenvectors and eigenvalues on CPU: CPU is not implemented in Torch, need Magma!!
     at::Tensor cpu_T = T.toBackend(at::Backend::CUDA);
     for(int i=0;i<batch_size;i++){
@@ -40,6 +38,7 @@ void Coords2RMSD_GPU_forward(   at::Tensor re_coordinates_src, at::Tensor re_coo
         at::Tensor re_coords_src_single = re_coordinates_src[i];
         at::Tensor re_coords_dst_single = re_coordinates_dst[i];
         
+
         //soving eigenvalues problem
         std::tuple<at::Tensor, at::Tensor> result = cpu_T_single.eig(true);
         

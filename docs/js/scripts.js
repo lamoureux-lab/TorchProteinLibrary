@@ -26,6 +26,7 @@ function generate_row(array){
     }
     return row;
 }
+
 function generate_table(container,
                         inputs,
                         outputs,
@@ -86,3 +87,22 @@ function generate_table(container,
 
     container.appendChild(tbl);
 }
+
+function copyFileContents(src, dst){
+    var srcObj = document.getElementById(src);
+    var dstObj = document.getElementById(dst);
+    var doc = srcObj.textContent;
+    console.log("Loaded");
+    console.log(srcObj);
+    
+    console.log(doc);
+    var code_obj = document.createElement("code");
+    code_obj.className = "python";
+    var code_text = document.createTextNode("from TorchProteinLibrary import FullAtomModel");
+    code_obj.appendChild(code_text);
+    dstObj.appendChild(code_obj);
+    // console.log(src);
+    // console.log(src.dataset);
+
+}
+

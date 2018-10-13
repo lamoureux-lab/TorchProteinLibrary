@@ -18,10 +18,15 @@
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+	
 	<title>TorchProteinLibrary documentation</title>
+
   </head>
 
   <body>
+		<object data="Examples/FullAtomModel/ExampleAngles2Coords.py" id = "ExampleAngles2Coords.py" onloadeddata="copyFileContents();" type="text/plain" style="display:none">
+		</object>
+		<object data="Examples/FullAtomModel/ExamplePDB2CoordsUnordered.py" id = "ExamplePDB2CoordsUnordered.py" type="text/plain" style="display:none" ></object>
 	<header>
 	<div class="collapse bg-dark" id="navbarHeader">
 		<div class="container">
@@ -120,9 +125,11 @@
 						]
 						);
 	</script>
-	<div class="container" id="ExampleAngles2Coords">
+	<div class="container">
 		<p class="text-light bg-dark"><h3>Example</h3></p>
-			<pre class="pre-scrollable"><code class="python">
+			<pre class="pre-scrollable" id="Emb1">
+				<code class="python" id="ExampleAngles2Coords">
+<!-- <object data="Examples/FullAtomModel/ExampleAngles2Coords.py" type="text/x-python" onload="copyFileContents('Emb1', 'ExampleAngles2Coords');"></object> -->
 import torch
 from TorchProteinLibrary import FullAtomModel
 import numpy as np
@@ -173,11 +180,16 @@ if __name__=='__main__':
 	ax.plot(bx,by,bz, 'b-', label = 'backbone')
 	ax.legend()
 	plt.savefig("ExampleAngles2Coords.png")
-
 			</code></pre>
+		<div class="codebox">
+			<script src = "Examples/FullAtomModel/ExampleAngles2Coords.py" type="text/x-python"></script>
+		</div>
 		<p class="text-light bg-dark"><h3>Output</h3></p>
 		<img src="Fig/examples/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 	</div>
+	
+	
+	
 	</section>
 
 	

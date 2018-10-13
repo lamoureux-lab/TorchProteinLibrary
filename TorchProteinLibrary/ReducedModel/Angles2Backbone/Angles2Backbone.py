@@ -38,7 +38,7 @@ class Angles2BackboneFunction(Function):
 			dr_dangle = torch.zeros(batch_size, 2, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.float, device='cuda')
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
-		print(gradOutput.size())		
+			
 		_ReducedModel.Angles2Backbone_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
 		
 		if math.isnan(torch.sum(gradInput_gpu)):

@@ -18,7 +18,7 @@ class Coords2RMSD_GPU_Function(Function):
 		max_atoms = torch.max(num_atoms)
 		if len(input.size())==2:
 			batch_size = input.size(0)
-			output = torch.DoubleTensor(batch_size).cuda()
+			output = torch.zeros(batch_size, dtype=torch.double, device='cuda')
 			ctx.Ut_coordinates_dst = torch.zeros(batch_size, 3*max_atoms, dtype=torch.double, device='cuda')
 		else:
 			raise ValueError('Coords2RMSD_GPU_Function: ', 'Incorrect input size:', input.size())
@@ -54,7 +54,7 @@ class Coords2RMSD_GPU_Function(Function):
 			gradInput_gpu = torch.zeros(batch_size, 3*max_atoms, dtype=torch.double, device='cuda')
 		else:
 			raise ValueError('Coords2RMSD_GPU_Function: ', 'Incorrect input size:', gradOutput.size())
-					
+		
 		gradInput_gpu = (ctx.c_coords_input - ctx.Ut_coordinates_dst)
 		
 		for i in range(batch_size):
