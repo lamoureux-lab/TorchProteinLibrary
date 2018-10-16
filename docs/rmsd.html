@@ -79,17 +79,18 @@
 			<p class="text-light bg-dark"><h2>class RMSD.<b>Coords2RMSD</b></h2></p>
 		</div>
 		<div class="container">
-			Computes least RMSD between two sets of coordinates. 
-			This layer implements the publication 
-			<p><em>Evangelos A. Coutsias, Chaok Seok, and Ken A. Dill. "Using quaternions to calculate RMSD." 
-				Journal of computational chemistry 25.15 (2004): 1849-1857.</em></p>
-			
+			Computes the least RMSD between two sets of coordinates. 
+			This layer implements the method from: 
+			<em>Evangelos A. Coutsias, Chaok Seok, and Ken A. Dill. "Using quaternions to calculate RMSD". 
+			Journal of computational chemistry 25:15 (2004) 1849-1857</em>
+			(<a href="http://dx.doi.org/10.1002/jcc.20110">link</a>).
+			<br><br>
 
 			First we move both target and input structures (positions $\mathbf{x}_i$ and $\mathbf{y}_i$) to their centers of mass, 
-			then we compute correlation matrix $R$:
+			then we compute the correlation matrix $R$:
 			$$ R = \sum_i^{N_{atoms}} \mathbf{x}_i \mathbf{y}^T_i $$
 
-			Then using this matrix we compute $T$:
+			Using this matrix we compute $T$:
 			$$
 			T = \begin{bmatrix}
 			R_{11} + R_{22} + R_{33} & R_{23} - R_{32} & R_{31} - R_{13} & R_{12} - R_{21} \\
@@ -99,9 +100,9 @@
 			\end{bmatrix}
 			$$
 
-			Afterwards we compute the maximum eigenvalue $\lambda$ and corresponding eigenvector $\mathbf{q}$ of the matrix $T$. This eigenvector corresponds 
-			to the quaternion that gives optimal rotation of one structure with respect to another. The roatation matrix can be computed using the 
-			following expression:
+			We then compute $\lambda$, the maximum eigenvalue of matrix $T$, and its corresponding eigenvector $\mathbf{q}$.
+			This eigenvector corresponds to the quaternion that gives the optimal rotation of one structure with respect to
+			the other. The rotation matrix can be computed using the following expression:
 			$$
 			U = \begin{bmatrix}
 			q^2_0 + q^2_1 - q^2_2 - q^2_3 & 2(q_1 q_2 - q_0 q_3) & 2(q_1 q_3 + q_0 q_2) \\
@@ -112,9 +113,9 @@
 			The corresponding minimum RMSD is computed using the formula:
 			$$\min{RMSD} = \sqrt{\frac{\sum_i{|\mathbf{x}_i|^2 + |\mathbf{y}_i|^2} - 2\lambda}{N_{atoms}}} $$
 
-			The derivative of RMSD with respect to coordinates of the input is computed using the formula:
+			The derivative of RMSD with respect to the input coordinates is computed using the formula:
 			$$
-			\frac{\partial RMSD}{\partial \mathbf{x}_i} = \mathbf{x}_i - U^T \cdot \mathbf{y}_i
+			\frac{\partial RMSD}{\partial \mathbf{x}_i} = \mathbf{x}_i - U^T \mathbf{y}_i
 			$$
 		</div>
 	</div>
