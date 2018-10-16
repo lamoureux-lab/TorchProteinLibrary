@@ -390,8 +390,8 @@ if __name__=='__main__':
 			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
 			and $N_k$ is the number of atoms in the $k$-th batch sample.
 		</div>
-		
 	</div>
+	
 	<script>
 		generate_table("CoordsTranslate", 
 						[
@@ -406,19 +406,18 @@ if __name__=='__main__':
 									
 	</script>
 	
-	
-	
 	<div class="container" id = "CoordsRotate">
 		<div class="container">
 		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsRotate</b></h2></p>
 		</div>
 		<div class="container">
 			Rotates coordinates, namely:
-			$$ \mathbf{r}_i' = \mathbf{R}_k \cdot \mathbf{r}_i $$
+			$$ \mathbf{r}_i' = R_k \mathbf{r}_i $$
 			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
 			and $N_k$ is the number of atoms in the $k$-th batch sample.
 		</div>
 	</div>
+	
 	<script>
 		generate_table("CoordsRotate", 
 						[
@@ -461,7 +460,7 @@ if __name__=='__main__':
 			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
 		</div>
 		<div class="container">
-			Computes random translation, that does not translate protein bounding box out of the volume.
+			Returns a random translation that keeps the protein bounding box within a cube of a given size.
 		</div>
 	</div>
 	<script>
@@ -501,8 +500,8 @@ if __name__=='__main__':
 			2(q_1 q_3 - q_0 q_2) & 2(q_2 q_3 + q_0 q_1) & q^2_0 - q^2_1 - q^2_2 + q^2_3
 			\end{bmatrix}
 			$$
-			The in-depth explanation of this sampling technique can be found in 
-			<p><em>Kirk, David. Graphics Gems III (IBM Version): Ibm Version. Elsevier, 2012.</em></p>
+			The in-depth explanation of this sampling technique can be found in: 
+			<em>Kirk, David. Graphics Gems III (IBM Version). Elsevier, 2012</em> (<a href="https://www.elsevier.com/books/graphics-gems-iii-ibm-version/kirk/978-0-08-050755-2">link</a>).
 		</div>
 	</div>
 	<script>
