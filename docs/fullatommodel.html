@@ -133,13 +133,13 @@
 			$$
 			\frac{\partial\mathbf{r}_{i}}{\partial \theta_j} \mathrel{+\!=} \frac{\partial L}{\partial\mathbf{r}_{i}} \cdot \sum_j F_i \mathbf{r}_j
 			$$
-			<br><br>
 			where matrices $F_i = M_{i-1} R_i M^{-1}_{i}$ are saved during graph traversal.
+			<br><br>
 			
 			The input and output tensors have the following structure:<br><br>
-			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="..." width=100%>
+			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="Figure 3: Structure of input and output tensors" width=80%>
 			<br><br>
-			Each amino acid is described by a set of angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ in the order of increasing the index. If 
+			Each amino acid is described by a list of angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order). If 
 			an amino acid does no require certain angles for its parametrization, they are ignored. 
 			Atom names are encoded in ASCII following the standard PDB nomenclature, with the last symbol 
 			always set to '\0'.
