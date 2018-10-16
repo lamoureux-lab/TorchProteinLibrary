@@ -483,8 +483,9 @@ if __name__=='__main__':
 			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
 		</div>
 		<div class="container">
-			Computes random rotation by uniformly sampling $SO(3)$ group. In particular we draw $u_1, u_2, u_3$ from the 
-			uniform distibution on the interval $(0, 1)$, then compute the following quaternion:
+			Returns a random rotation by uniformly sampling the $SO(3)$ group. Specifically, we draw three numbers
+			$u_1, u_2, u_3$ from the uniform distribution on the interval $(0, 1)$, then compute the following
+			quaternion $\mathbf{q}$:
 			$$\begin{eqnarray}
 			q_0 &=& \sqrt{1-u_1} \sin(2\pi u_2) \\
 			q_1 &=& \sqrt{1-u_1} \cos(2\pi u_2) \\
@@ -492,7 +493,7 @@ if __name__=='__main__':
 			q_3 &=& \sqrt{u_1} \cos(2\pi u_3) \\
 			\end{eqnarray}
 			$$
-			and then using the quaternion $\mathbf{q}$ we compute rotation matrix:
+			The rotation matrix can then be written as:
 			$$
 			R = \begin{bmatrix}
 			q^2_0 + q^2_1 - q^2_2 - q^2_3 & 2(q_1 q_2 - q_0 q_3) & 2(q_1 q_3 + q_0 q_2) \\
@@ -500,8 +501,9 @@ if __name__=='__main__':
 			2(q_1 q_3 - q_0 q_2) & 2(q_2 q_3 + q_0 q_1) & q^2_0 - q^2_1 - q^2_2 + q^2_3
 			\end{bmatrix}
 			$$
-			The in-depth explanation of this sampling technique can be found in: 
-			<em>Kirk, David. Graphics Gems III (IBM Version). Elsevier, 2012</em> (<a href="https://www.elsevier.com/books/graphics-gems-iii-ibm-version/kirk/978-0-08-050755-2">link</a>).
+			More details on this sampling technique can be found in:
+			<em>Kirk, David. Graphics Gems III (IBM Version). Elsevier, 2012</em>
+			(<a href="https://www.elsevier.com/books/graphics-gems-iii-ibm-version/kirk/978-0-08-050755-2">link</a>).
 		</div>
 	</div>
 	<script>
