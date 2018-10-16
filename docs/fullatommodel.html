@@ -100,38 +100,41 @@
 			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
 		</div>
 		<div class="container">
-			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
 			This layer converts amino acid sequences and dihedral angles to atomic coordinates. 
 			It does so by building a graph of transforms, acting on rigid groups of atoms. 
-			For example, Figure 1 shows schematic representation of Threonine amino-acid, 
+			For example, Figure 1 shows schematic representation of threonine, 
 			which has 5 rigid groups in total and is parametrized by 4 transforms. 
-			Each transform is parametrized by one angle 
-			and has the following form: 
+
+			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-center" alt="Figure 1: Representation of threonine" width=30%>
+
+			Each transform is parametrized by one angle and has the following form: 
 			$$ R(\alpha, \beta, d) = R_y (\beta) T_x(d) R_x(\alpha) $$
 			where $R_x(\alpha)$ and $R_y(\beta)$ are the 4x4 rotation matrices around axes $x$ and $y$; $T_x(d)$ is 
 			the 4x4 translation matrix along the axis $x$. 
 			The parametrization shown on Figure 1 can be written as follows:
 			$$ R_1(\phi) = R(\phi, \theta_1, d_1)$$
-			where $\theta_1$ and $d_1$ are fixed parameters of bonds. We do not compute derivatives of these parameters.
+			where $\theta_1$ and $d_1$ are fixed parameters with respect to which we do not compute derivatives.
 			To compute coordinates of a rigid group of atoms, we need to multiply each coordinate in an initial reference frame by this matrix.
 			During the forward pass we construct a graph of cumulative transformations, shown on Figure 2. 
-			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-left" alt="..." width=30%>
+
+			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-center" alt="Figure 2: Transformation graph for threonine" width=30%>
+
 			$$\begin{eqnarray}
 			M_1 &=& R_1(\phi)\\
 			M_2 &=& R_1(\phi) R_2(\chi)\\
 			M_3 &=& R_1(\phi) R_3(\psi)\\
 			M_4 &=& R_1(\phi) R_3(\psi) R_4(\omega)
 			\end{eqnarray}$$
-			or in shorter form to get the cumulative transform of a node $M_{i}$, we take the cumulative transform 
-			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i} (parameters)$. The coordinates of atoms are then 
-			computed by multiplying each rigid group atomic coordinates by its cumulative transform. <br><br>
+			In short, to get the cumulative transform of a node $M_{i}$, we take the cumulative transform 
+			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i}$. The atomic coordinates are then 
+			computed by multiplying the atomic coordinates of each rigid group by its cumulative transform. <br><br>
 
-			To compute gradients we save matrices $F_i = M_{i-1} R_i M^{-1}_{i}$. 
-			The gradients are then computed in reversed depth-first traversal of the graph:
+			The gradient of any function $L$ can be computed using a reversed depth-first traversal of the graph:
 			$$
 			\frac{\partial\mathbf{r}_{i}}{\partial \theta_j} \mathrel{+\!=} \frac{\partial L}{\partial\mathbf{r}_{i}} \cdot \sum_j F_i \mathbf{r}_j
 			$$
 			<br><br>
+			where matrices $F_i = M_{i-1} R_i M^{-1}_{i}$ are saved during graph traversal.
 			
 			The input and output tensors have the following structure:<br><br>
 			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="..." width=100%>
