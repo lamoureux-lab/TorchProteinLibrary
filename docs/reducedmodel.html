@@ -86,10 +86,11 @@
 			<p class="text-light bg-dark"><h2>class ReducedModel.<b>Angles2Backbone</b></h2></p>
 		</div>
 		<div class="container">
-			This layer converts angles to coordinates of backbone atoms.
+			This layer converts the dihedral angles describing the backbone conformation of a protein to the coordinates of the backbone atoms.
 			The position of the $i$-th atom in the chain is obtained by:
 			$$\mathbf{x}_i = B_0 B_1 \cdots B_i \mathbf{x}_0$$
-			where $\mathbf{x}_0$ is the reference frame origin and $B_i$ is the transformation matrix, parametrized by dihedral angles:
+			where $\mathbf{x}_0$ is the position of the atom in the original reference frame
+			and $B_i$ are transformation matrices parametrized by dihedral angles:
 
 			$$B(\alpha, \beta, d) = \begin{bmatrix}
 			\cos(\beta) & \sin(\alpha)\sin(\beta) & \cos(\alpha)\sin(\beta) & d\cos(\beta) \\
@@ -98,31 +99,40 @@
 			0 & 0 & 0 & 1
 			\end{bmatrix}$$
 
-			The parameters of transformation depend on the index as follows:
+			The transformations are defined as follows:
 			<ul class="list-group">
-					<li class="list-group-item"> $N$-$C_{\alpha}$ bond: $i = 3k + 1$, then $ B_i(\alpha, \beta, d) = B_i(\phi_{k}, \pi - 1.9391, 1.460)$</li>
-					<li class="list-group-item"> $C_{\alpha}$-$C$ bond: $i = 3k + 2$, then $ B_i(\alpha, \beta, d) = B_i(\psi_{k}, \pi - 2.061, 1.525)$</li>
-					<li class="list-group-item"> Peptide bond: $i = 3k$, then $ B_i(\alpha, \beta, d) = B_i(\pi, \pi - 2.1186, 1.330)$</li>
+					<li class="list-group-item">
+					  $C$-$N$ peptide bond of residue $j-1$:<br>
+					  Index: $i = 3j$<br>
+					  Transformation: $ B_i = B(\omega_{j-1}, \pi - 2.1186, 1.330)$</li>
+					<li class="list-group-item">
+					  $N$-$C_{\alpha}$ bond of residue $j$:<br>
+					  Index: $i = 3j + 1$<br>
+					  Transformation: $ B_i = B(\phi_{j}, \pi - 1.9391, 1.460)$</li>
+					<li class="list-group-item">
+					  $C_{\alpha}$-$C$ bond of residue $j$:<br>
+					  Index: $i = 3j + 2$<br>
+					  Transformation: $ B_i = B(\psi_{j}, \pi - 2.061, 1.525)$</li>
 			</ul>
-
+			Angle $\omega_{j-1}$ is hard-coded as $\pi$, corresponding to the <em>trans</em> conformation of the peptide bond.<br><br>
 			
 			During the forward pass, we save the products of transformation matrices for each atom:
 			
 			$$A_i = B_0 B_1 \cdots B_i$$
 			
 			Notice that atom $3j$ is always N, atom $3j + 1$ is always CA, and atom $3j+2$ is always C. Thus
-			transformation matrices $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$ correspondingly.
+			transformation matrices $B_{3j+1}$ and $B_{3j+2}$ depend on the angles $\phi_j$ and $\psi_j$, correspondingly.<br><br>
 			
-			During the backward pass, we first compute gradients of each atomic coordinate with respect to each angle:
+			During the backward pass, we first compute the gradient of $\mathbf{x}_i$, the position of atom $i$, with respect to each "$\phi$" and "$\psi$" angle:
 			$$
-			\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 \cdots \frac{\partial B_{3j+1}}{\partial \phi_j} \cdots B_i \mathbf{x}_0
-			$$
-
-			$$
-			\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 \cdots \frac{\partial B_{3j+2}}{\partial \psi_j} \cdots B_i \mathbf{x}_0
+			\frac{\partial \mathbf{x}_i}{\partial \phi_j} = B_0 B_1 \cdots \frac{\partial B_{3j+1}}{\partial \phi_j} \cdots B_i \mathbf{x}_0
 			$$
 
-			We can rewrite these expressions using the matrices $A$, that we saved during the forward pass:
+			$$
+			\frac{\partial \mathbf{x}_i}{\partial \psi_j} = B_0 B_1 \cdots \frac{\partial B_{3j+2}}{\partial \psi_j} \cdots B_i \mathbf{x}_0
+			$$
+
+			We can rewrite these expressions using the matrices $A$ that we saved during the forward pass:
 			$$
 			\frac{\partial \mathbf{x}_i}{\partial \phi_j} = A_{3j}  \frac{\partial B_{3j+1}}{\partial \phi_j} A_{3j+1}^{-1} A_{i} \mathbf{x}_0
 			$$
@@ -131,27 +141,26 @@
 			\frac{\partial \mathbf{x}_i}{\partial \psi_j} = A_{3j+1}  \frac{\partial B_{3j+2}}{\partial \psi_j} A_{3j+2}^{-1} A_{i} \mathbf{x}_0
 			$$
 
-			We also notice that transformation matrices have two properties:
-			<ul class="list-group">
-					<li class="list-group-item"> Product of transformation matrices is a transformation matrix, therefore matrices $A$ are transformation matrices</li>
-					<li class="list-group-item"> Inverse of a transformation matrix can be computed as follows:<br>
-					If 
-					$
-					T = \begin{bmatrix}
-							R & \mathbf{x} \\
-							0 & 1
-					\end{bmatrix} 
-					$,
-					then $T^{-1} = \begin{bmatrix}
-							R^{T} & -R^{T}\mathbf{x} \\
-							0 & 1
-					\end{bmatrix} 
-					$</li>
-			</ul>
-			Therefore we can compute all the derivatives simultaneously on GPU. To compute the derivatives of input of the layer with respect to the output we just have to 
+			Both the $A$ and $B$ matrices have the form:
+			$$
+			T = \begin{bmatrix}
+                                   R & \mathbf{x} \\
+                                   0 & 1
+                            \end{bmatrix}
+			$$
+			and their inverses can be computed as follows:
+			$$
+			T^{-1} = \begin{bmatrix}
+			                R^{T} & -R^{T}\mathbf{x} \\
+			                0 & 1
+			         \end{bmatrix} 
+			$$
+			This allows us to compute all derivatives simultaneously on GPU.
+
+			To compute the derivatives of the layer output $L$ with respect to the input angles, we just have to 
 			calculate the following sums:
-			$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
-			$$\sum_i \frac{\partial L_k}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
+			$$\sum_i \frac{\partial L}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
+			$$\sum_i \frac{\partial L}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
 			
 		</div>
 	</div>
@@ -183,8 +192,8 @@ if __name__=='__main__':
 	N = 20
 	num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_(N)
 	angles = torch.zeros(1, 2, N, dtype=torch.float, device='cuda')
-	angles.data[:,0,:] = -1.047
-	angles.data[:,1,:] = -0.698
+	angles.data[:,0,:] = -1.047 # phi = -60 degrees
+	angles.data[:,1,:] = -0.698 # psi = -40 degrees
 
 	#Converting angles to coordinates
 	coords = a2b(angles, num_aa)
@@ -194,9 +203,8 @@ if __name__=='__main__':
 	N = int(num_atoms.data[0])
 	coords.resize_(1, N, 3)
 	
-	#Plotting backbone with the blue line
+	#Plotting backbone
 	sx, sy, sz = coords[0,:,0].cpu().numpy(), coords[0,:,1].cpu().numpy(), coords[0,:,2].cpu().numpy()
-
 	fig = plt.figure()
 	plt.title("Reduced model")
 	ax = p3.Axes3D(fig)
