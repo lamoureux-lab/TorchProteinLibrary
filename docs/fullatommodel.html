@@ -234,13 +234,11 @@ coords, res_names, atom_names, num_atoms = FullAtomModel.Angles2Coords(angles, s
 		<p class="text-light bg-dark"><h3>Example</h3></p>
 			<pre class="pre-scrollable" id="Emb1">
 				<code class="python" id="ExampleAngles2Coords">
-<!-- <object data="Examples/FullAtomModel/ExampleAngles2Coords.py" type="text/x-python" onload="copyFileContents('Emb1', 'ExampleAngles2Coords');"></object> -->
 import torch
 from TorchProteinLibrary import FullAtomModel
 import numpy as np
 import matplotlib.pylab as plt
 import mpl_toolkits.mplot3d.axes3d as p3
-
 
 if __name__=='__main__':
 	a2c = FullAtomModel.Angles2Coords()
@@ -370,7 +368,9 @@ if __name__=='__main__':
 			Output coordinates are arranged such that atoms of one type are grouped together in a contiguous stretch of memory.
 			NumAtomsOfType stores the number of atoms of particular type and offsets are the number of atoms in the memory, before 
 			particular atom type stretch of coordinates begins. For example, we get the coordinates of the first atom of type 8 in sample $i$ using:
-			$$ r = Coordinates[i, 3(Offsets[8] + 0)] $$
+			$$ r = \mathrm{Coordinates}[i, 3(\mathrm{Offsets}[8] + 0)] $$
+
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
@@ -397,6 +397,12 @@ if __name__=='__main__':
 		</div>
 		<div class="container">
 			Reads PDB and outputs coordinates, residue and atom names and number of atoms. The order of atoms is the same as in the PDB file.
+
+			<pre class="pre-scrollable"><code class="python">
+coords, res_names, atom_names, num_atoms = FullAtomModel.PDB2CoordsUnordered(["f4TQ1_B.pdb"])
+			</code></pre>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
@@ -422,9 +428,7 @@ import numpy as np
 import matplotlib.pylab as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
-
 if __name__=='__main__':
-	
 	#Reading pdb file
 	p2c = FullAtomModel.PDB2CoordsUnordered()
 	coords, res_names, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
@@ -443,7 +447,6 @@ if __name__=='__main__':
 	plt.savefig("ExamplePDB2CoordsUnordered.png")
 	
 				</code></pre>
-			<p class="text-light bg-dark"><h3>Output</h3></p>
 			<img src="Fig/examples/ExamplePDB2CoordsUnordered.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 		</div>
 	
@@ -457,9 +460,14 @@ if __name__=='__main__':
 			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
 			where $i = 0$ to $N_k - 1$ and $k = 0$ to $batch\_size-1$.
 			($N_k$ is the number of atoms in the $k$-th batch sample.)
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
-	
 	<script>
 		generate_table("CoordsTranslate", 
 						[
@@ -483,6 +491,12 @@ if __name__=='__main__':
 			$$ \mathbf{r}_i' = R_k \mathbf{r}_i $$
 			where $i = 0$ to $N_k - 1$ and $k = 0$ to $batch\_size-1$.
 			($N_k$ is the number of atoms in the $k$-th batch sample.)
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	
@@ -507,6 +521,12 @@ if __name__=='__main__':
 		<div class="container">
 			Computes axis-aligned bounding box, non-differentiable. A is the corner with the lowest coordinates and 
 			B is the corner with the highest coordinates.
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
@@ -529,6 +549,12 @@ if __name__=='__main__':
 		</div>
 		<div class="container">
 			Returns a random translation that keeps the protein bounding box within a cube of a given size.
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
@@ -551,7 +577,14 @@ if __name__=='__main__':
 			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
 		</div>
 		<div class="container">
-			Returns a random rotation by uniformly sampling the $SO(3)$ group. Specifically, we draw three numbers
+			Returns a random rotation by uniformly sampling the $SO(3)$ group.
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Implementation</h3>
+			Specifically, we draw three numbers
 			$u_1, u_2, u_3$ from the uniform distribution on the interval $(0, 1)$, then compute the following
 			quaternion $\mathbf{q}$:
 			$$\begin{eqnarray}
@@ -572,6 +605,9 @@ if __name__=='__main__':
 			More details on this sampling technique can be found in:
 			<em>Kirk, David. Graphics Gems III (IBM Version). Elsevier, 2012</em>
 			(<a href="https://www.elsevier.com/books/graphics-gems-iii-ibm-version/kirk/978-0-08-050755-2">link</a>).
+			<br><br>
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
