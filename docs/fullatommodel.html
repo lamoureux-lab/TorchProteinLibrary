@@ -141,45 +141,45 @@
 			Then lets break the sum and look at individual terms:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} \mathbf{r}^0_1  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} \mathbf{r}^0_1  \right)
 			$$
 			where $\mathbf{r}^0_1$ is the vector of atom $r_1$ in the initial reference frame.
 			$$
 			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_1 \mathbf{r}^0_2  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} R_1 \mathbf{r}^0_2  \right)
 			$$
 			$$
 			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_3}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_2 \mathbf{r}^0_3  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_3}} , M_0 \frac{\partial R_0}{\partial \phi_0} R_2 \mathbf{r}^0_3  \right)
 			$$
 			During the forward pass we computed coordinates of atoms in transformed reference frames ($\mathbf{r}_k$), therefore we will be using them instead 
 			of coordinates in the initial reference frame ($\mathbf{r}^0_k$):
 			$$
 			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 \cdot \mathbf{r}^0_1  \right) = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_1  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1  \mathbf{r}^0_1  \right) = 
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_1  \right)
 			$$
 			similar for other derivatives we get:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 R_1 \mathbf{r}^0_2  \right) = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_2 \mathbf{r}^0_2  \right) =
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} \mathbf{r}_2  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 R_1 \mathbf{r}^0_2  \right) = 
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_2 \mathbf{r}^0_2  \right) =
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} \mathbf{r}_2  \right)
 			$$
 			$$
 			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_3}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_3  \right)
+			\left(\frac{\partial L}{\partial \mathbf{r_3}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_3  \right)
 			$$
 			Now, lets return back to the sum:
 			$$
 			\frac{\partial L(\mathbf{r}_{1}, \mathbf{r}_{2}, \mathbf{r}_{3})}{\partial \phi_0} =  
-			\left( \sum^3_{k=1} \frac{\partial L}{\partial \mathbf{r_k}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_k \right)
+			\sum^3_{k=1} \left( \frac{\partial L}{\partial \mathbf{r_k}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_k \right)
 			$$
 			in this formula index $k$ iterates over the children of the node 0. Its easy to see that this expression can be generalized to any 
 			graph without loops. Matrixes $ F_i = M_i \frac{\partial R_i}{\partial \phi_i} M^{-1}_{i+1}$ are computed during the forward pass.
 			The final expression for the derivative will be:
 			$$
-			\frac{\partial L}{\partial \phi_i} = \left( \sum_{k \in children~of~i} \frac{\partial L}{\partial \mathbf{r_k}} \cdot F_i \mathbf{r}_k \right)
+			\frac{\partial L}{\partial \phi_i} = \left( \frac{\partial L}{\partial \mathbf{r_k}} , F_i \sum_{k \in children~of~i} \mathbf{r}_k \right)
 			$$
 			These sums can be easily computed during backward deph-first propagation through the graph.
 			<br><br>
