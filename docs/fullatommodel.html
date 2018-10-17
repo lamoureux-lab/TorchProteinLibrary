@@ -100,24 +100,43 @@
 			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
 		</div>
 		<div class="container">
-			This layer converts amino acid sequences and dihedral angles to atomic coordinates. 
-			It does so by building a graph of transforms, acting on rigid groups of atoms. 
-			For example, Figure 1 shows schematic representation of threonine, 
+			This layer converts amino acid sequences and dihedral angles to atomic coordinates:
+			
+			<pre class="pre-scrollable"><code class="python">
+sequences = ['GGMLGWAHFGY', 'AAMLGWAHFAY']
+angles = ### Some constructor function to prepare the data structure, using variable "sequences" as input
+
+coords, res_names, atom_names, num_atoms = FullAtomModel.Angles2Coords(angles, sequences)
+			</code></pre>
+			
+			Each amino acid is described by a list of 7 dihedral angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order).
+			The angles not needed for a given amino acid are ignored but a list of 7 elements should be provided for all amino acids.
+			<br><br>
+			
+			<h3>Implementation</h3>
+			
+			The layer computes the coordinates by building a graph of transforms, acting on rigid groups of atoms.
+			For example, the following figure shows a schematic representation of threonine, 
 			which has 5 rigid groups in total and is parametrized by 4 transforms. 
-
-			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-center" alt="Figure 1: Representation of threonine" width=30%>
-
-			Each transform is parametrized by one angle and has the following form: 
-			$$ R(\alpha, \beta, d) = R_y (\beta) T_x(d) R_x(\alpha) $$
-			where $R_x(\alpha)$ and $R_y(\beta)$ are the 4x4 rotation matrices around axes $x$ and $y$; $T_x(d)$ is 
-			the 4x4 translation matrix along the axis $x$. 
-			The parametrization shown on Figure 1 can be written as follows:
+			
+			<img src="Fig/Amino-acid.png" class="rounded mx-auto d-block float-center" alt="Representation of threonine" width=40%>
+			
+			Each transform is represented by a dihedral angle $\alpha$ and has the form 
+			$$ R_i(\alpha) = R(\alpha, \beta_i, d_i) = R_y (\beta_i) T_x(d_i) R_x(\alpha) $$
+			where $R_x(\alpha)$ and $R_y(\beta_i)$ are the 4x4 rotation matrices around axes $x$ and $y$,
+			and $T_x(d_i)$ is the 4x4 translation matrix along axis $x$.
+			$\beta_i$ and $d_i$ are fixed parameters for which we do not compute derivatives.
+			For instance, the first transform of the threonine parametrization shown above can be written as
 			$$ R_1(\phi) = R(\phi, \theta_1, d_1)$$
-			where $\theta_1$ and $d_1$ are fixed parameters with respect to which we do not compute derivatives.
-			To compute coordinates of a rigid group of atoms, we need to multiply each coordinate in an initial reference frame by this matrix.
-			During the forward pass we construct a graph of cumulative transformations, shown on Figure 2. 
+			where $\phi$ is the first dihedral angle (variable), $\theta_1$ is the X-N-CA angle (fixed), and $d_1$ is the N-CA bond length (fixed).
+			Atom names are encoded in ASCII following the standard PDB nomenclature, with the last symbol 
+			always set to '\0'.
+			<br><br>
+			
+			To compute the coordinates of a rigid group of atoms, we need to multiply each coordinate in an initial reference frame by the
+			appropriate matrix. During the forward pass we construct a graph of cumulative transformations: 
 
-			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-center" alt="Figure 2: Transformation graph for threonine" width=30%>
+			<img src="Fig/MolecularGraph.png" class="rounded mx-auto d-block float-center" alt="Transformation graph for threonine" width=30%>
 
 			$$\begin{eqnarray}
 			M_1 &=& R_1(\phi)\\
@@ -126,71 +145,73 @@
 			M_4 &=& R_1(\phi) R_3(\psi) R_4(\omega)
 			\end{eqnarray}$$
 			In short, to get the cumulative transform of a node $M_{i}$, we take the cumulative transform 
-			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i}$. The atomic coordinates are then 
-			computed by multiplying the atomic coordinates of each rigid group by its cumulative transform. <br><br>
+			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i}$. The atomic coordinates are
+			obtained by multiplying the reference coordinates of each rigid group by its cumulative transform. <br><br>
 
-			To compute the gradient of a function $L$ that depends on the coordinates of the model, lets consider simple situation,
-			depicted on Figure 3. Here we have three nodes and lets compute the gradient:
-			<img src="Fig/example_graph.png" class="rounded mx-auto d-block float-center" alt="Figure 3: Simple graph example" width=50%>
+			To compute the gradient of a function $L$ that depends on the coordinates of the model, let's consider the simple situation
+			depicted here:
+			<br><br>
+			
+			<img src="Fig/example_graph.png" class="rounded mx-auto d-block float-center" alt="Simple transformation graph example" width=40%>
+			
+			Since the graph has three nodes, $L$ depends on three positions.
+			The derivative with respect to the first dihedral angle is:
 			$$
 			\frac{\partial L(\mathbf{r}_{1}, \mathbf{r}_{2}, \mathbf{r}_{3})}{\partial \phi_0} = 
 			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} + 
 			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} + 
 			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0}
 			$$
-			Then lets break the sum and look at individual terms:
+			The first term of that sum can be written as:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} \mathbf{r}^0_1  \right)
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} \mathbf{r}^0_1
 			$$
-			where $\mathbf{r}^0_1$ is the vector of atom $r_1$ in the initial reference frame.
+			where $\mathbf{r}^0_1$ is the vector of atom 1 in the initial reference frame.
+			The other two terms can be written as:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} R_1 \mathbf{r}^0_2  \right)
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_1 \mathbf{r}^0_2
 			$$
 			$$
 			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_3}} , M_0 \frac{\partial R_0}{\partial \phi_0} R_2 \mathbf{r}^0_3  \right)
+			\frac{\partial L}{\partial \mathbf{r_3}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_2 \mathbf{r}^0_3
 			$$
-			During the forward pass we computed coordinates of atoms in transformed reference frames ($\mathbf{r}_k$), therefore we will be using them instead 
-			of coordinates in the initial reference frame ($\mathbf{r}^0_k$):
+			We can write those expressions using $\mathbf{r}_k$, the transformed atomic coordinates calculated during the forward pass:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1  \mathbf{r}^0_1  \right) = 
-			\left(\frac{\partial L}{\partial \mathbf{r_1}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_1  \right)
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1  \mathbf{r}^0_1 =
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_1
 			$$
-			similar for other derivatives we get:
 			$$
 			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 R_1 \mathbf{r}^0_2  \right) = 
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_2 \mathbf{r}^0_2  \right) =
-			\left(\frac{\partial L}{\partial \mathbf{r_2}} , M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} \mathbf{r}_2  \right)
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 R_1 \mathbf{r}^0_2 = 
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_2 \mathbf{r}^0_2 =
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} \mathbf{r}_2
 			$$
 			$$
 			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
-			\left(\frac{\partial L}{\partial \mathbf{r_3}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_3  \right)
+			\frac{\partial L}{\partial \mathbf{r_3}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_3
 			$$
-			Now, lets return back to the sum:
+			Now, let's return back to the sum:
 			$$
 			\frac{\partial L(\mathbf{r}_{1}, \mathbf{r}_{2}, \mathbf{r}_{3})}{\partial \phi_0} =  
-			\sum^3_{k=1} \left( \frac{\partial L}{\partial \mathbf{r_k}} , M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_k \right)
+			\sum^3_{k=1} \frac{\partial L}{\partial \mathbf{r_k}}\cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_k
 			$$
-			in this formula index $k$ iterates over the children of the node 0. Its easy to see that this expression can be generalized to any 
-			graph without loops. Matrixes $ F_i = M_i \frac{\partial R_i}{\partial \phi_i} M^{-1}_{i+1}$ are computed during the forward pass.
-			The final expression for the derivative will be:
+			In this formula index $k$ iterates over the children of node 0. This expression can be generalized to any 
+			graph without loops. Matrices $ F_i = M_i \frac{\partial R_i}{\partial \phi_i} M^{-1}_{i+1}$ are computed during the forward pass.
+			The final expression for the derivative is:
 			$$
-			\frac{\partial L}{\partial \phi_i} = \left( \frac{\partial L}{\partial \mathbf{r_k}} , F_i \sum_{k \in children~of~i} \mathbf{r}_k \right)
+			\frac{\partial L}{\partial \phi_i} =
+			\frac{\partial L}{\partial \mathbf{r_k}}\cdot F_i \sum_{k \in children(i)} \mathbf{r}_k
 			$$
 			These sums can be easily computed during backward deph-first propagation through the graph.
 			<br><br>
 			
+			<h3>Input/Output</h3>
+			
 			The input and output tensors have the following structure:<br><br>
 			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="Figure 4: Structure of input and output tensors" width=80%>
-			<br><br>
-			Each amino acid is described by a list of angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order). If 
-			an amino acid does no require certain angles for its parametrization, they are ignored. 
-			Atom names are encoded in ASCII following the standard PDB nomenclature, with the last symbol 
-			always set to '\0'.
 			<br><br>
 		</div>
 		
@@ -268,7 +289,6 @@ if __name__=='__main__':
 		<div class="codebox">
 			<script src = "Examples/FullAtomModel/ExampleAngles2Coords.py" type="text/x-python"></script>
 		</div>
-		<p class="text-light bg-dark"><h3>Output</h3></p>
 		<img src="Fig/examples/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 	</div>
 	
