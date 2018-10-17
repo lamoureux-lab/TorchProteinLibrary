@@ -435,8 +435,8 @@ if __name__=='__main__':
 		<div class="container">
 			Translates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
-			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
-			and $N_k$ is the number of atoms in the $k$-th batch sample.
+			where $i = 0$ to $N_k - 1$ and $k = 0$ to $batch\_size-1$.
+			($N_k$ is the number of atoms in the $k$-th batch sample.)
 		</div>
 	</div>
 	
@@ -461,8 +461,8 @@ if __name__=='__main__':
 		<div class="container">
 			Rotates coordinates, namely:
 			$$ \mathbf{r}_i' = R_k \mathbf{r}_i $$
-			where $i\in{0,\cdots,N_k}$ and $k\in{0,\cdots, batch\_size}$
-			and $N_k$ is the number of atoms in the $k$-th batch sample.
+			where $i = 0$ to $N_k - 1$ and $k = 0$ to $batch\_size-1$.
+			($N_k$ is the number of atoms in the $k$-th batch sample.)
 		</div>
 	</div>
 	
