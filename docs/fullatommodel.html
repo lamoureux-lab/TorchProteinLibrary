@@ -129,15 +129,63 @@
 			$M_{parent(i)}$ and multiply it by the transform of the current node $R_{i}$. The atomic coordinates are then 
 			computed by multiplying the atomic coordinates of each rigid group by its cumulative transform. <br><br>
 
-			The gradient of any function $L$ can be computed using a reversed depth-first traversal of the graph:
+			To compute the gradient of a function $L$ that depends on the coordinates of the model, lets consider simple situation,
+			depicted on Figure 3. Here we have three nodes and lets compute the gradient:
+			<img src="Fig/example_graph.png" class="rounded mx-auto d-block float-center" alt="Figure 3: Simple graph example" width=50%>
 			$$
-			\frac{\partial\mathbf{r}_{i}}{\partial \theta_j} \mathrel{+\!=} \frac{\partial L}{\partial\mathbf{r}_{i}} \cdot \sum_j F_i \mathbf{r}_j
+			\frac{\partial L(\mathbf{r}_{1}, \mathbf{r}_{2}, \mathbf{r}_{3})}{\partial \phi_0} = 
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} + 
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} + 
+			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0}
 			$$
-			where matrices $F_i = M_{i-1} R_i M^{-1}_{i}$ are saved during graph traversal.
+			Then lets break the sum and look at individual terms:
+			$$
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} \mathbf{r}^0_1  \right)
+			$$
+			where $\mathbf{r}^0_1$ is the vector of atom $r_1$ in the initial reference frame.
+			$$
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_1 \mathbf{r}^0_2  \right)
+			$$
+			$$
+			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_3}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} R_2 \mathbf{r}^0_3  \right)
+			$$
+			During the forward pass we computed coordinates of atoms in transformed reference frames ($\mathbf{r}_k$), therefore we will be using them instead 
+			of coordinates in the initial reference frame ($\mathbf{r}^0_k$):
+			$$
+			\frac{\partial L}{\partial \mathbf{r_1}}\cdot \frac{\partial \mathbf{r_1}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 \cdot \mathbf{r}^0_1  \right) = 
+			\left(\frac{\partial L}{\partial \mathbf{r_1}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_1  \right)
+			$$
+			similar for other derivatives we get:
+			$$
+			\frac{\partial L}{\partial \mathbf{r_2}}\cdot \frac{\partial \mathbf{r_2}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_1 R_1 \mathbf{r}^0_2  \right) = 
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} M_2 \mathbf{r}^0_2  \right) =
+			\left(\frac{\partial L}{\partial \mathbf{r_2}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M_1^{-1} \mathbf{r}_2  \right)
+			$$
+			$$
+			\frac{\partial L}{\partial \mathbf{r_3}}\cdot \frac{\partial \mathbf{r_3}}{\partial \phi_0} = 
+			\left(\frac{\partial L}{\partial \mathbf{r_3}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_3  \right)
+			$$
+			Now, lets return back to the sum:
+			$$
+			\frac{\partial L(\mathbf{r}_{1}, \mathbf{r}_{2}, \mathbf{r}_{3})}{\partial \phi_0} =  
+			\left( \sum^3_{k=1} \frac{\partial L}{\partial \mathbf{r_k}} \cdot M_0 \frac{\partial R_0}{\partial \phi_0} M^{-1}_1 \mathbf{r}_k \right)
+			$$
+			in this formula index $k$ iterates over the children of the node 0. Its easy to see that this expression can be generalized to any 
+			graph without loops. Matrixes $ F_i = M_i \frac{\partial R_i}{\partial \phi_i} M^{-1}_{i+1}$ are computed during the forward pass.
+			The final expression for the derivative will be:
+			$$
+			\frac{\partial L}{\partial \phi_i} = \left( \sum_{k \in children~of~i} \frac{\partial L}{\partial \mathbf{r_k}} \cdot F_i \mathbf{r}_k \right)
+			$$
+			These sums can be easily computed during backward deph-first propagation through the graph.
 			<br><br>
 			
 			The input and output tensors have the following structure:<br><br>
-			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="Figure 3: Structure of input and output tensors" width=80%>
+			<img src="Fig/Tensors.png" class="rounded mx-auto d-block float-center" alt="Figure 4: Structure of input and output tensors" width=80%>
 			<br><br>
 			Each amino acid is described by a list of angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order). If 
 			an amino acid does no require certain angles for its parametrization, they are ignored. 
