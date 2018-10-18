@@ -1,10 +1,10 @@
-# TorchProteinLibrary
-This library contains C++ and CUDA procedures for working with protein structures in a differentiable way. 
-They are accompanied by a PyTorch interface.
+# TorchProteinLibrary version 0.1
+This library pytorch layers for working with protein structures in a differentiable way. We are working on this project and it's bound to change:
+there will be interface changes to the current layers, addition of the new ones and code optimizations.
 
 # Requirements
  - GCC > 4.9
- - CUDA >= 9.0
+ - CUDA >= 8.0
  - PyTorch >= 0.4.1
  - Python >= 3.5
  - Biopython
@@ -21,15 +21,15 @@ then run the following command:
 *python setup.py install*
 
 # Contents
+The library is structured in the following way:
+
 ## FullAtomModel
 This module deals with full-atom representation of a protein.
 Layers:
 - **Angles2Coords**: computes the coordinates of protein atoms, given dihedral angles
 - **Coords2TypedCoords**: rearranges coordinates according to predefined atom types 
 - **CoordsTransform**: implementations of translation, rotation, centering in a box, random rotation matrix, random translation
-- **PDB2CoordsBiopython**: load PDB atomic coordinates in the same order as in the pdb file using biopython
-- **PDB2CoordsOrdered**: load PDB atomic coordinates in the same order as in the output of **Angles2Coords** layer
-- **PDB2CoordsUnordered**: load PDB atomic coordinates in the same order as in the pdb file
+- **PDB2Coords**: loading of PDB atomic coordinates
 
 ## ReducedModel
 The coarse-grained representation of a protein.
@@ -48,7 +48,7 @@ Deals with volumetric representation of a protein.
 
 Additional useful function in C++ extension **_Volume**:
 
-**_Volume._Volume2Xplor**: saves volume to XPLOR format
+**_Volume.Volume2Xplor**: saves volume to XPLOR format
 
 
 # General design decisions
