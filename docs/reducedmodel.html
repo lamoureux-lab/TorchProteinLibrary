@@ -81,10 +81,11 @@
 			This layer converts the dihedral angles describing the backbone conformation of a protein to the coordinates of the backbone atoms.
 			
 			<pre class="pre-scrollable"><code class="python">
-N = 20
-angles = ### Some constructor function...
-num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_(N)
-coords = ReducedModel.Angles2Backbone(angles, num_aa)
+from TorchProteinLibrary import ReducedModel
+a2b = ReducedModel.Angles2Backbone()
+angles = torch.randn(1, 2, 3, dtype=torch.float, device='cuda')
+num_aa = torch.tensor([3], dtype=torch.int, device='cuda')
+coords = a2b(angles, num_aa)
 			</code></pre>
 			
 			<h3>Implementation</h3>

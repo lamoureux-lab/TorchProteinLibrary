@@ -81,7 +81,12 @@
 			Computes the least RMSD between two sets of coordinates. 
 			
 			<pre class="pre-scrollable"><code class="python">
-### Example just to show how to call the function
+from TorchProteinLibrary import RMSD
+rmsd = RMSD.Coords2RMSD().cuda()
+src = torch.randn(1, 4*3, dtype=torch.double, device = 'cuda')
+ref = torch.randn(1, 4*3, dtype=torch.double, device = 'cuda')
+num_atoms = torch.tensor([4], dtype=torch.int, device='cuda')
+L = rmsd(src, ref, num_atoms)
 			</code></pre>
 			
 			<h3>Implementation</h3>

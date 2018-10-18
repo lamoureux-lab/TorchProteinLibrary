@@ -113,7 +113,7 @@ function createHeader(container, type, module, name, params=""){
 
     var header_obj = document.createElement("div");
     header_obj.className = "p-3 mb-2 bg-dark text-white";
-    var text_obj = document.createElement("p");
+    var text_obj = document.createElement("P");
     text_obj.className = "h2";
     
     var type_obj = document.createElement("EM");
@@ -134,14 +134,10 @@ function createHeader(container, type, module, name, params=""){
     header_obj.appendChild(class_obj);
 
     if(params.length>0){
-        // var class_obj = document.createElement('B');
         var params_text = document.createTextNode(params);
-        header_obj.appendChild(params_text);
-        
+        header_obj.appendChild(params_text);    
     }
     
-    
-
     text_obj.appendChild(header_obj);
     obj_container.appendChild(text_obj);
     obj.appendChild(obj_container);
