@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-	<head>
+  <head>
 	<!-- Required meta tags -->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -77,9 +77,6 @@
 		<p class="lead text-muted">This module contains implementation of angles to coordinates conversion for reduced protein models.</p>
 		</div>
 	</section>
-
-	
-
 	
 	<div class="container" id="Angles2Backbone">
 		<div class="container">
@@ -87,6 +84,16 @@
 		</div>
 		<div class="container">
 			This layer converts the dihedral angles describing the backbone conformation of a protein to the coordinates of the backbone atoms.
+			
+			<pre class="pre-scrollable"><code class="python">
+N = 20
+angles = ### Some constructor function...
+num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_(N)
+coords = ReducedModel.Angles2Backbone(angles, num_aa)
+			</code></pre>
+			
+			<h3>Implementation</h3>
+			
 			The position of the $i$-th atom in the chain is obtained by:
 			$$\mathbf{x}_i = B_0 B_1 \cdots B_i \mathbf{x}_0$$
 			where $\mathbf{x}_0$ is the position of the atom in the original reference frame
@@ -162,6 +169,7 @@
 			$$\sum_i \frac{\partial L}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \phi_j}$$ and 
 			$$\sum_i \frac{\partial L}{\partial \mathbf{x}_i}\cdot \frac{\partial \mathbf{x}_i}{\partial \psi_j}$$
 			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
@@ -215,9 +223,7 @@ if __name__=='__main__':
 	ax.set_zlim(-30, 0)
 	# plt.show()
 	plt.savefig("ExampleAngles2Backbone.png")
-	
 			</code></pre>
-		<p class="text-light bg-dark"><h3>Output</h3></p>
 		<img src="Fig/examples/ExampleAngles2Backbone.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 	</div>
 		
