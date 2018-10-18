@@ -72,7 +72,7 @@ function generate_table(container,
 
     if(parameters.length>0){
         var tblHParams = document.createElement("thead");
-        tblHParams.className = "thead-dark";
+        tblHParams.className = "thead-light";
         var header_outputs = generate_row_header(["Parameters", "", "", ""]);
         tblHParams.appendChild(header_outputs);
         tbl.appendChild(tblHParams);
