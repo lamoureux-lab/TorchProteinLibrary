@@ -36,7 +36,7 @@ function generate_table(container,
     var container = document.getElementById(container);
     
     var tbl = document.createElement("table");
-    tbl.className = "table";
+    tbl.className = "table table-sm";
 
     var tblThead = document.createElement("thead");
     tblThead.className = "thead-light";
@@ -45,7 +45,7 @@ function generate_table(container,
     tbl.appendChild(tblThead);
 
     var tblHInputs = document.createElement("thead");
-    tblHInputs.className = "thead-dark";
+    tblHInputs.className = "thead-light";
     var header_inputs = generate_row_header(["Inputs", "", "", ""]);
     tblHInputs.appendChild(header_inputs);
     tbl.appendChild(tblHInputs);
@@ -58,7 +58,7 @@ function generate_table(container,
     tbl.appendChild(tblInBody);
     
     var tblHOutputs = document.createElement("thead");
-    tblHOutputs.className = "thead-dark";
+    tblHOutputs.className = "thead-light";
     var header_outputs = generate_row_header(["Outputs", "", "", ""]);
     tblHOutputs.appendChild(header_outputs);
     tbl.appendChild(tblHOutputs);
@@ -106,3 +106,43 @@ function copyFileContents(src, dst){
 
 }
 
+function createHeader(container, type, module, name, params=""){
+    var obj = document.getElementById(container);
+    var obj_container = document.createElement("div");
+    obj_container.className = "container";
+
+    var header_obj = document.createElement("div");
+    header_obj.className = "p-3 mb-2 bg-dark text-white";
+    var text_obj = document.createElement("p");
+    text_obj.className = "h2";
+    
+    var type_obj = document.createElement("EM");
+    var type_text = document.createTextNode(type+' ');
+    type_obj.appendChild(type_text);
+    
+    var module_obj = document.createElement('SMALL');
+    module_obj.className = "text-muted";
+    var module_text = document.createTextNode(module+'.');
+    module_obj.appendChild(module_text);
+    
+    var class_obj = document.createElement('B');
+    var class_text = document.createTextNode(name);
+    class_obj.appendChild(class_text);
+
+    header_obj.appendChild(type_obj);
+    header_obj.appendChild(module_obj);
+    header_obj.appendChild(class_obj);
+
+    if(params.length>0){
+        // var class_obj = document.createElement('B');
+        var params_text = document.createTextNode(params);
+        header_obj.appendChild(params_text);
+        
+    }
+    
+    
+
+    text_obj.appendChild(header_obj);
+    obj_container.appendChild(text_obj);
+    obj.appendChild(obj_container);
+}

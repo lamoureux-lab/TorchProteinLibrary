@@ -58,10 +58,7 @@
 					<li><a class="nav-link active" href="reducedmodel.html"><b>ReducedModel</b></a></li>
 					<li><a class="nav-link active" href="#"><b>Volume</b></a></li>
 					<ul class="nav navbar-nav">
-						<li><a class="nav-link active" href="#TypedCoords2Volume">TypedCoords2Volume</a>
-						<ul class="nav navbar-nav">
-							<li><a class="nav-link active" href="#ExampleTypedCoords2Volume">Example</a></li>
-						</ul></li>
+						<li><a class="nav-link active" href="#TypedCoords2Volume">TypedCoords2Volume</a></li>
 						<li><a class="nav-link active" href="#SelectVolume">SelectVolume</a></li>
 						<li><a class="nav-link active" href="#VolumeConvolution">VolumeConvolution</a></li>
 					</ul>
@@ -81,9 +78,7 @@
   
 	
 	<div class="container" id="TypedCoords2Volume">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class Volume.<b>TypedCoords2Volume</b>(box_size=120)</h2></p>
-		</div>
+		<script>createHeader("TypedCoords2Volume", "class", "Volume", "TypedCoords2Volume", "(box_size=120)" );</script>
 		<div class="container">
 			Computes 3D atomic densities of each atom type. Let's denote the position of $j$-th atom of the type $i$ as $\mathbf{x}_{ij}$. 
 			Then the volumetric density of atom type $i$ will read:
@@ -161,9 +156,7 @@ if __name__=='__main__':
 	
 	
 	<div class="container" id="SelectVolume">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class Volume.<b>SelectVolume</b>(box_size_bins=120, box_size_ang=120)</h2></p>
-		</div>
+		<script>createHeader("SelectVolume", "class", "Volume", "SelectVolume", "(box_size_bins=120, box_size_ang=120)" );</script>
 		<div class="container">
 			Computes feature columns from set of volumes using coordinates, scaled according to proportion of initial volume size (box_size_bins) 
 			and current volume size (box_size_ang). 
@@ -190,9 +183,7 @@ if __name__=='__main__':
 	</script>
 	
 	<div class="container" id="VolumeConvolution">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class Volume.<b>VolumeConvolution</b>(num_features)</h2></p>
-		</div>
+		<script>createHeader("VolumeConvolution", "class", "Volume", "VolumeConvolution", "(num_features)" );</script>
 		<div class="container">
 			Computes parametric weighted correlation between two sets of volumes of the same size. Let's denote 
 			feature $i$ volume as $V_i$. The correlation between two sets of volumes is:

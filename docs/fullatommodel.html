@@ -62,15 +62,9 @@
 			<ul class="nav navbar-nav">
 				<li><a class="nav-link active" href="#"><b>FullAtomModel</b></a></li>
 				<ul class="nav navbar-nav">
-					<li><a class="nav-link active" href="#Angles2Coords">Angles2Coords</a>
-					<ul class="nav navbar-nav">
-						<li><a class="nav-link active" href="#ExampleAngles2Coords">Example</a></li>
-					</ul></li>
+					<li><a class="nav-link active" href="#Angles2Coords">Angles2Coords</a></li>
 					<li><a class="nav-link active" href="#Coords2TypedCoords">Coords2TypedCoords</a></li>
-					<li><a class="nav-link active" href="#PDB2CoordsUnordered">PDB2CoordsUnordered</a>
-					<ul class="nav navbar-nav">
-							<li><a class="nav-link active" href="#ExamplePDB2CoordsUnordered">Example</a>
-					</ul></li>
+					<li><a class="nav-link active" href="#PDB2CoordsUnordered">PDB2CoordsUnordered</a></li>
 					<li><a class="nav-link active" href="#CoordsTranslate">CoordsTranslate</a></li>
 					<li><a class="nav-link active" href="#CoordsRotate">CoordsRotate</a></li>
 					<li><a class="nav-link active" href="#getBBox">getBBox</a></li>
@@ -96,9 +90,7 @@
 	</section>
 	
 	<div class="container" id="Angles2Coords">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Angles2Coords</b></h2></p>
-		</div>
+		<script>createHeader("Angles2Coords", "class", "FullAtomModel", "Angles2Coords");</script>
 		<div class="container">
 			This layer converts amino acid sequences and dihedral angles to atomic coordinates. 
 			It does so by building a graph of transforms, acting on rigid groups of atoms. 
@@ -273,9 +265,7 @@ if __name__=='__main__':
 	</div>
 	
 	<div class="container" id = "Coords2TypedCoords">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>Coords2TypedCoords</b></h2></p>
-		</div>
+		<script>createHeader("Coords2TypedCoords", "class", "FullAtomModel", "Coords2TypedCoords" );</script>
 		<div class="container">
 			This layer assigns atom types and rearranges coordinates according to types.
 			Currently we use 11 atom types defined as following:
@@ -372,9 +362,7 @@ if __name__=='__main__':
 	
 
 	<div class="container" id = "PDB2CoordsUnordered">
-		<div class="container">
-		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>PDB2CoordsUnordered</b></h2></p>
-		</div>
+		<script>createHeader("PDB2CoordsUnordered", "class", "FullAtomModel", "PDB2CoordsUnordered" );</script>
 		<div class="container">
 			Reads PDB and outputs coordinates, residue and atom names and number of atoms. The order of atoms is the same as in the PDB file.
 		</div>
@@ -429,9 +417,7 @@ if __name__=='__main__':
 	
 	
 	<div class="container" id = "CoordsTranslate">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsTranslate</b></h2></p>
-		</div>
+		<script>createHeader("CoordsTranslate", "class", "FullAtomModel", "CoordsTranslate" );</script>
 		<div class="container">
 			Translates coordinates, namely:
 			$$ \mathbf{r}_i' = \mathbf{r}_i + \mathbf{T}_k $$
@@ -455,9 +441,7 @@ if __name__=='__main__':
 	</script>
 	
 	<div class="container" id = "CoordsRotate">
-		<div class="container">
-		<p class="text-light bg-dark"><h2>class FullAtomModel.<b>CoordsRotate</b></h2></p>
-		</div>
+		<script>createHeader("CoordsRotate", "class", "FullAtomModel", "CoordsRotate" );</script>
 		<div class="container">
 			Rotates coordinates, namely:
 			$$ \mathbf{r}_i' = R_k \mathbf{r}_i $$
@@ -481,9 +465,7 @@ if __name__=='__main__':
 	</script>
 	
 	<div class="container" id ="getBBox">
-		<div class="container">
-		<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getBBox</b>(Coordinates, NumAtoms)</h2></p>
-		</div>
+		<script>createHeader("getBBox", "function", "FullAtomModel", "getBBox", "(Coordinates, NumAtoms)" );</script>
 		<div class="container">
 			Computes axis-aligned bounding box, non-differentiable. A is the corner with the lowest coordinates and 
 			B is the corner with the highest coordinates.
@@ -504,9 +486,7 @@ if __name__=='__main__':
 	</script>
 	
 	<div class="container" id = "getRandomTranslation">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomTranslation</b>(A, B, VolumeSize)</h2></p>
-		</div>
+		<script>createHeader("getBBox", "function", "FullAtomModel", "getRandomTranslation", "(A, B, VolumeSize)" );</script>
 		<div class="container">
 			Returns a random translation that keeps the protein bounding box within a cube of a given size.
 		</div>
@@ -527,9 +507,7 @@ if __name__=='__main__':
 	
 	
 	<div class="container" id = "getRandomRotation">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>function FullAtomModel.<b>getRandomRotation</b>(BatchSize)</h2></p>
-		</div>
+		<script>createHeader("getRandomRotation", "function", "FullAtomModel", "getRandomRotation", "(batch_size)" );</script>
 		<div class="container">
 			Returns a random rotation by uniformly sampling the $SO(3)$ group. Specifically, we draw three numbers
 			$u_1, u_2, u_3$ from the uniform distribution on the interval $(0, 1)$, then compute the following
