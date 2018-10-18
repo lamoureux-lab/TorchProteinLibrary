@@ -8,16 +8,20 @@
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
 	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="js/scripts.js"></script>
+	
 	<script type="text/x-mathjax-config">
 		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 	</script>
 	<script type="text/javascript"
 		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 	</script>
-	<script src="js/scripts.js"></script>
+	<link rel="stylesheet" href="css/default.css">
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<title>TorchProteinLibrary documentation</title>
 	<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.css">
 	<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.0/dist/bootstrap-toc.min.js"></script>
-	<title>TorchProteinLibrary documentation</title>
   </head>
 
   <body data-spy="scroll" data-target="#toc">
@@ -70,24 +74,28 @@
 		<p class="lead text-muted">This module contains implementation of least-RMSD loss function.</p>
 		</div>
 	</section>
-
-	
-	
 	
 	<div class="container" id="Coords2RMSD">
 		<script>createHeader("Coords2RMSD", "class", "RMSD", "Coords2RMSD" );</script>
 		<div class="container">
 			Computes the least RMSD between two sets of coordinates. 
+			
+			<pre class="pre-scrollable"><code class="python">
+### Example just to show how to call the function
+			</code></pre>
+			
+			<h3>Implementation</h3>
+			
 			This layer implements the method from: 
 			<em>Evangelos A. Coutsias, Chaok Seok, and Ken A. Dill. "Using quaternions to calculate RMSD". 
 			Journal of computational chemistry 25:15 (2004) 1849-1857</em>
 			(<a href="http://dx.doi.org/10.1002/jcc.20110">link</a>).
 			<br><br>
-
+			
 			First we move both target and input structures (positions $\mathbf{x}_i$ and $\mathbf{y}_i$) to their centers of mass, 
 			then we compute the correlation matrix $R$:
 			$$ R = \sum_i^{N_{atoms}} \mathbf{x}_i \mathbf{y}^T_i $$
-
+			
 			Using this matrix we compute $T$:
 			$$
 			T = \begin{bmatrix}
@@ -97,7 +105,7 @@
 			R_{12} - R_{21} & R_{13} + R_{31} & R_{23} + R_{32} & -R_{11} - R_{22} + R_{33} \\
 			\end{bmatrix}
 			$$
-
+			
 			We then compute $\lambda$, the maximum eigenvalue of matrix $T$, and its corresponding eigenvector $\mathbf{q}$.
 			This eigenvector corresponds to the quaternion that gives the optimal rotation of one structure with respect to
 			the other. The rotation matrix can be computed using the following expression:
@@ -115,6 +123,8 @@
 			$$
 			\frac{\partial RMSD}{\partial \mathbf{x}_i} = \mathbf{x}_i - U^T \mathbf{y}_i
 			$$
+			
+			<h3>Input/Output</h3>
 		</div>
 	</div>
 	<script>
