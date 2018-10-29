@@ -14,7 +14,7 @@
 		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 	</script>
 	<script type="text/javascript"
-		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 	</script>
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
@@ -58,10 +58,7 @@
 				<li><a class="nav-link active" href="rmsd.html"><b>RMSD</b></a></li>
 				<li><a class="nav-link active" href="#"><b>ReducedModel</b></a></li>
 				<ul class="nav navbar-nav">
-					<li><a class="nav-link active" href="#Angles2Backbone">Angles2Backbone</a>
-					<ul class="nav navbar-nav">
-						<li><a class="nav-link active" href="#ExampleAngles2Backbone">Example</a></li>
-					</ul></li>
+					<li><a class="nav-link active" href="#Angles2Backbone">Angles2Backbone</a></li>
 				</ul>
 				<li><a class="nav-link active" href="volume.html"><b>Volume</b></a></li>
 				<li><a class="nav-link active" href="examples.html"><b>Examples</b></a></li>
@@ -79,17 +76,16 @@
 	</section>
 	
 	<div class="container" id="Angles2Backbone">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class ReducedModel.<b>Angles2Backbone</b></h2></p>
-		</div>
+		<script>createHeader("Angles2Backbone", "class", "ReducedModel", "Angles2Backbone" );</script>
 		<div class="container">
 			This layer converts the dihedral angles describing the backbone conformation of a protein to the coordinates of the backbone atoms.
 			
 			<pre class="pre-scrollable"><code class="python">
-N = 20
-angles = ### Some constructor function...
-num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_(N)
-coords = ReducedModel.Angles2Backbone(angles, num_aa)
+from TorchProteinLibrary import ReducedModel
+a2b = ReducedModel.Angles2Backbone()
+angles = torch.randn(1, 2, 3, dtype=torch.float, device='cuda')
+num_aa = torch.tensor([3], dtype=torch.int, device='cuda')
+coords = a2b(angles, num_aa)
 			</code></pre>
 			
 			<h3>Implementation</h3>

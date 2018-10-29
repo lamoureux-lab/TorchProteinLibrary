@@ -14,7 +14,7 @@
 		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 	</script>
 	<script type="text/javascript"
-		src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 	</script>
 	<link rel="stylesheet" href="css/default.css">
 	<script src="js/highlight.pack.js"></script>
@@ -76,14 +76,17 @@
 	</section>
 	
 	<div class="container" id="Coords2RMSD">
-		<div class="container">
-			<p class="text-light bg-dark"><h2>class RMSD.<b>Coords2RMSD</b></h2></p>
-		</div>
+		<script>createHeader("Coords2RMSD", "class", "RMSD", "Coords2RMSD" );</script>
 		<div class="container">
 			Computes the least RMSD between two sets of coordinates. 
 			
 			<pre class="pre-scrollable"><code class="python">
-### Example just to show how to call the function
+from TorchProteinLibrary import RMSD
+rmsd = RMSD.Coords2RMSD().cuda()
+src = torch.randn(1, 4*3, dtype=torch.double, device = 'cuda')
+ref = torch.randn(1, 4*3, dtype=torch.double, device = 'cuda')
+num_atoms = torch.tensor([4], dtype=torch.int, device='cuda')
+L = rmsd(src, ref, num_atoms)
 			</code></pre>
 			
 			<h3>Implementation</h3>
