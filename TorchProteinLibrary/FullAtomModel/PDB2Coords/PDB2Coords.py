@@ -51,23 +51,19 @@ class PDB2CoordsOrdered:
 					
 	def __call__(self, filenames):
 		
-		self.filenamesTensor = convertStringList(filenames)
-		self.num_atoms = []
-		self.sequences = pdb2sequence(filenames)
-		self.seqTensor = convertStringList(self.sequences)
-		for seq in self.sequences:
-			self.num_atoms.append(FullAtomModel.getSeqNumAtoms(seq))
-		
-		max_num_atoms = max(self.num_atoms)
-		batch_size = len(self.num_atoms)
+		filenamesTensor = convertStringList(filenames)
+		max_num_atoms = 1
+		batch_size = len(self.filenames)
 
+		num_atoms = torch.zeros(batch_size, dtype=torch.int)
 		output_coords_cpu = torch.zeros(batch_size, max_num_atoms*3, dtype=torch.double)
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
+		mask = torch.zeros(batch_size, max_num_atoms, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsOrdered(self.filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu)
+		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, sequences, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms, mask)
 	
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, self.num_atoms
+		return output_coords_cpu, mask, output_resnames_cpu, output_atomnames_cpu, num_atoms
 
 class PDB2CoordsUnordered:
 					

@@ -55,7 +55,7 @@ cPDBLoader::~cPDBLoader() {
 		
 }
 
-void cPDBLoader::reorder(double *coords, bool add_terminal){
+void cPDBLoader::reorder(){
     int global_ind=0;
     int local_ind;
     std::string lastO("O");
@@ -77,6 +77,7 @@ void cPDBLoader::reorder(double *coords, bool add_terminal){
     // std::cout<<"end loading"<<std::endl;
 
     // reordering atoms according to cConformation output
+    /*
     for(int i=0; i<res_r.size(); i++){
         for(int j=0; j<res_r[i].size(); j++){
             local_ind = getAtomIndex(res_res_names[i], res_atom_names[i][j]);
@@ -103,7 +104,8 @@ void cPDBLoader::reorder(double *coords, bool add_terminal){
             throw std::string("cPDBLoader::reorder: Missing atoms");
         }
         global_ind += getAtomIndex(res_res_names[i], lastO) + 1;
-    }       
+    } 
+    */      
 }
 
 cVector3 cPDBLoader::getCenterMass(){
@@ -186,6 +188,7 @@ void cPDBLoader::computeBoundingBox(){
 //     float dz = THRandom_uniform(gen,-dz_max,dz_max);
 //     this->translate(cVector3(dx,dy,dz));
 // }
+/*
 void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
     std::vector<int> atom_types;
     int num_atoms[11];
@@ -221,3 +224,4 @@ void cPDBLoader::reorder(double *coords, int *num_atoms_of_type, int *offsets){
     }
     
 }
+*/
