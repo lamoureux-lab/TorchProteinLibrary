@@ -2,7 +2,10 @@ import sys
 import os
 import torch
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import seaborn as sea
+
 from matplotlib import pylab as plt
 import pandas as pd
 from tqdm import tqdm
@@ -12,7 +15,8 @@ from TorchProteinLibrary.FullAtomModel import Angles2Coords
 from TorchProteinLibrary.ReducedModel import Angles2Backbone
 
 def measure_trace(length=700):
-	x0 = torch.randn(1, 2, length, dtype=torch.float, device='cuda')
+	x0 = torch.randn(1, 3, length, dtype=torch.float, device='cuda')
+	x0.data[:,2,:].fill_(-3.1318)
 	length = torch.zeros(1, dtype=torch.int, device='cuda').fill_(length)
 	a2c = Angles2Backbone()
 	proteins = a2c(x0, length)
@@ -23,7 +27,8 @@ def measure_trace(length=700):
 	sequence = ''.join(['A' for i in range(length)])
 	
 	x1 = torch.zeros(1, 7, length, dtype=torch.double)
-	x1.data[:,0:2,:].copy_(x0.data)
+	x1.data[:,0:2,:].copy_(x0.data[:,0:2,:])
+
 	
 	proteins_fa, res_names, atom_names, num_atoms = a2cfa(x1,[sequence])
 	proteins_fa = proteins_fa.data.cpu().resize_(1,num_atoms.data[0],3).numpy()
@@ -66,9 +71,9 @@ if __name__=='__main__':
 	if not os.path.exists("TestFig"):
 		os.mkdir("TestFig")
 	
-	# measure_statistics(length=700, num_measurements=10, output_filename='ErrorStat.pkl')
+	measure_statistics(length=700, num_measurements=3, output_filename='ErrorStatOmega.pkl')
 	
-	data = pd.read_pickle('ErrorStat.pkl')
+	data = pd.read_pickle('ErrorStatOmega.pkl')
 	sea.set_style("whitegrid")
 	sea.set_context("paper", font_scale=1.5, rc={"lines.linewidth": 1.5})
 	g1 = sea.relplot(x="Index", y="Error", kind="line", height=6, aspect=1.3, markers=True, data=data)

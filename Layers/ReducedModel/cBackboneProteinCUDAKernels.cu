@@ -9,11 +9,11 @@ __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, 
     int num_atoms = 3*length[batch_idx];
 
 	REAL *d_atoms = atoms + batch_idx*(atoms_stride)*3;
-	REAL *d_phi = angles + 2*batch_idx*angles_stride;
-	REAL *d_psi = angles + (2*batch_idx+1)*angles_stride;
+	REAL *d_phi = angles + 3*batch_idx*angles_stride;
+	REAL *d_psi = angles + (3*batch_idx+1)*angles_stride;
+	REAL *d_omega = angles + (3*batch_idx+2)*angles_stride;
 	REAL *d_A = A + batch_idx*atoms_stride*16;
-	
-    
+	    
 	REAL B[16];
 	int angle_idx = 0;
 
@@ -28,7 +28,7 @@ __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, 
         }else if (i%3 == 2){
             getRotationMatrixDihedral(B, d_psi[angle_idx], N_CA_C, R_CA_C);
         }else{
-            getRotationMatrixDihedral(B, OMEGACIS, CA_C_N, R_C_N);
+            getRotationMatrixDihedral(B, d_omega[angle_idx], CA_C_N, R_C_N);
         }
         
         mat44Mul(d_A+16*(i-1), B, d_A+16*(i));
@@ -59,8 +59,8 @@ __global__ void computeGradientsOptimizedBackbonePhi( REAL *angles, REAL *dR_dan
 	__syncthreads();
 
 	if(angle_k_idx>=angles_stride)return;
-	REAL *d_phi = angles + 2*batch_idx*angles_stride;
-	REAL *dR_dPhi = dR_dangle + 2*batch_idx * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
+	REAL *d_phi = angles + 3*batch_idx*angles_stride;
+	REAL *dR_dPhi = dR_dangle + 3*batch_idx * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
 	REAL tmp1[16], tmp2[16], tmp3[16];
     
 	//dA_i / dphi_k
@@ -104,8 +104,8 @@ __global__ void computeGradientsOptimizedBackbonePsi( REAL *angles, REAL *dR_dan
 	__syncthreads();
 
 	if(angle_k_idx>=angles_stride)return;
-	REAL *d_psi = angles + (2*batch_idx+1)*angles_stride;
-	REAL *dR_dPsi = dR_dangle + (2*batch_idx+1) * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
+	REAL *d_psi = angles + (3*batch_idx+1)*angles_stride;
+	REAL *dR_dPsi = dR_dangle + (3*batch_idx+1) * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
 	REAL tmp1[16], tmp2[16], tmp3[16];
     
 	//dA_i / dpsi_k
@@ -125,6 +125,49 @@ __global__ void computeGradientsOptimizedBackbonePsi( REAL *angles, REAL *dR_dan
 }
 
 
+__global__ void computeGradientsOptimizedBackboneOmega(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int angles_stride){
+	
+	uint batch_size = blockDim.x;
+	uint batch_idx = blockIdx.x;
+	uint atom_i_idx = blockIdx.y;
+	uint local_angle_k_idx = threadIdx.x;
+    uint angle_k_idx = blockIdx.z*WARP_SIZE + local_angle_k_idx;
+			
+	int num_angles = length[batch_idx];
+	int num_atoms = 3*num_angles;
+	int atoms_stride = 3*angles_stride;
+	
+	REAL *d_A = A + batch_idx * atoms_stride * 16;
+	REAL *d_A_warp = d_A + 3*blockIdx.z*WARP_SIZE*16;
+	__shared__ REAL s_A [WARP_SIZE*3*16];
+	for(int i=local_angle_k_idx; i<WARP_SIZE*3*16; i+=WARP_SIZE){
+		if( (3*blockIdx.z*WARP_SIZE*16 + i)< (num_atoms*16) )
+			s_A[i] = d_A_warp[i];	
+	}
+	__syncthreads();
+
+	if(angle_k_idx>=angles_stride)return;
+	REAL *d_omega = angles + (3*batch_idx+2)*angles_stride;
+	REAL *dR_dOmega = dR_dangle + (3*batch_idx+2) * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
+	REAL tmp1[16], tmp2[16], tmp3[16];
+    
+	//dA_i / dpsi_k
+    if( (3*angle_k_idx) > atom_i_idx){
+        setVec3(dR_dOmega, 0, 0, 0);
+    }else{
+        getRotationMatrixDihedralDPsi(tmp2, d_omega[angle_k_idx], CA_C_N, R_C_N);
+        mat44Mul(s_A + (3*local_angle_k_idx-1)*16, tmp2, tmp1);
+        
+		invertMat44(tmp3, s_A + (3*local_angle_k_idx)*16);
+		mat44Mul(tmp3, d_A + atom_i_idx*16, tmp2);
+		
+        mat44Mul(tmp1, tmp2, tmp3);
+        mat44Zero3Mul(tmp3, dR_dOmega);
+	}
+	
+}
+
+
 __global__ void backwardFromCoordinatesBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int angles_stride){
 	int batch_idx = blockIdx.x;
 	int batch_size = blockDim.x;
@@ -133,17 +176,20 @@ __global__ void backwardFromCoordinatesBackbone(REAL *angles, REAL *dr, REAL *dR
 	int num_atoms = 3*num_angles;
 	int atoms_stride = 3*angles_stride;
 	
-	REAL *d_phi = angles + 2*batch_idx*angles_stride + angle_idx;
-	REAL *d_psi = angles + (2*batch_idx+1)*angles_stride + angle_idx;
+	REAL *d_phi = angles + 3*batch_idx*angles_stride + angle_idx;
+	REAL *d_psi = angles + (3*batch_idx+1)*angles_stride + angle_idx;
+	REAL *d_omega = angles + (3*batch_idx+2)*angles_stride + angle_idx;
 	
-	REAL *dR_dPhi = dR_dangle + 2*batch_idx * (atoms_stride*angles_stride*3);
-	REAL *dR_dPsi = dR_dangle + (2*batch_idx+1) * (atoms_stride*angles_stride*3);
+	REAL *dR_dPhi = dR_dangle + 3*batch_idx * (atoms_stride*angles_stride*3);
+	REAL *dR_dPsi = dR_dangle + (3*batch_idx+1) * (atoms_stride*angles_stride*3);
+	REAL *dR_dOmega = dR_dangle + (3*batch_idx+2) * (atoms_stride*angles_stride*3);
 
 	REAL *d_dr = dr + batch_idx*atoms_stride*3;
 	REAL mag;
 	for(int j=3*angle_idx+2; j<num_atoms; j++){
 		(*d_phi) += vec3Mul(d_dr+3*j, dR_dPhi + j*angles_stride*3 + angle_idx*3);		
 		(*d_psi) += vec3Mul(d_dr+3*j, dR_dPsi + j*angles_stride*3 + angle_idx*3);
+		(*d_omega) += vec3Mul(d_dr+3*j, dR_dOmega + j*angles_stride*3 + angle_idx*3);
 	}
 		
 }
@@ -156,6 +202,7 @@ void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int 
 	dim3 batch_angles_dim_special(batch_size, 3*angles_stride, angles_stride/WARP_SIZE + 1);
 	computeGradientsOptimizedBackbonePhi<<<batch_angles_dim_special, WARP_SIZE>>>(angles, dR_dangle, A, length, angles_stride);
 	computeGradientsOptimizedBackbonePsi<<<batch_angles_dim_special, WARP_SIZE>>>(angles, dR_dangle, A, length, angles_stride);
+	computeGradientsOptimizedBackboneOmega<<<batch_angles_dim_special, WARP_SIZE>>>(angles, dR_dangle, A, length, angles_stride);
 }
 
 void cpu_backwardFromCoordsBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int batch_size, int angles_stride){

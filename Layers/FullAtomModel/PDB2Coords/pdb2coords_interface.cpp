@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-
+/*
 void PDB2CoordsOrdered(at::Tensor filenames, at::Tensor coords, at::Tensor res_names, at::Tensor atom_names, at::Tensor num_atoms, at::Tensor mask){
     bool add_terminal = true;
     if( filenames.dtype() != at::kByte || res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
@@ -66,7 +66,7 @@ void PDB2CoordsOrdered(at::Tensor filenames, at::Tensor coords, at::Tensor res_n
         }
     }
 }
-
+*/
 void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res_names, at::Tensor atom_names, at::Tensor num_atoms){
     if( filenames.dtype() != at::kByte || res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
         || coords.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
