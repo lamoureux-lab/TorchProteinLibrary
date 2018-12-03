@@ -40,12 +40,12 @@ def test_gradient():
 			grads[a].append(derr_dangles.item())
 	
 	fig = plt.figure()
-	plt.plot(grads[0],'--r', label = 'num phi')
-	# plt.plot(grads[1],'-r', label = 'num psi')
-	plt.plot(grads[2],'-r', label = 'num omega')
-	plt.plot(back_grad_x0[0,0,:].numpy(),'--bo', label = 'an phi')
-	# plt.plot(back_grad_x0[0,1,:].numpy(),'-bo', label = 'an psi')
-	plt.plot(back_grad_x0[0,2,:].numpy(),'-bo', label = 'an omega')
+	plt.plot(grads[0],'-r', label = 'num phi')
+	plt.plot(grads[1],'-g', label = 'num psi')
+	plt.plot(grads[2],'-b', label = 'num omega')
+	plt.plot(back_grad_x0[0,0,:].numpy(),'--ro', label = 'an phi')
+	plt.plot(back_grad_x0[0,1,:].numpy(),'--go', label = 'an psi')
+	plt.plot(back_grad_x0[0,2,:].numpy(),'--bo', label = 'an omega')
 	
 	plt.legend()
 	plt.savefig('TestFig/angles2backbone_gradients.png')

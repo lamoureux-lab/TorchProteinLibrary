@@ -147,6 +147,7 @@ __global__ void computeGradientsOptimizedBackboneOmega(REAL *angles, REAL *dR_da
 	__syncthreads();
 
 	if(angle_k_idx>=angles_stride)return;
+	if(angle_k_idx==0)return;
 	REAL *d_omega = angles + (3*batch_idx+2)*angles_stride;
 	REAL *dR_dOmega = dR_dangle + (3*batch_idx+2) * (atoms_stride*angles_stride*3) + atom_i_idx*angles_stride*3 + angle_k_idx*3;
 	REAL tmp1[16], tmp2[16], tmp3[16];
@@ -186,7 +187,7 @@ __global__ void backwardFromCoordinatesBackbone(REAL *angles, REAL *dr, REAL *dR
 
 	REAL *d_dr = dr + batch_idx*atoms_stride*3;
 	REAL mag;
-	for(int j=3*angle_idx+2; j<num_atoms; j++){
+	for(int j=3*angle_idx; j<num_atoms; j++){
 		(*d_phi) += vec3Mul(d_dr+3*j, dR_dPhi + j*angles_stride*3 + angle_idx*3);		
 		(*d_psi) += vec3Mul(d_dr+3*j, dR_dPsi + j*angles_stride*3 + angle_idx*3);
 		(*d_omega) += vec3Mul(d_dr+3*j, dR_dOmega + j*angles_stride*3 + angle_idx*3);

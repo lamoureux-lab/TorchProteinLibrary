@@ -66,8 +66,7 @@ def measure_statistics(length=700, num_measurements=10, output_filename='ErrorSt
 	data.to_pickle(output_filename)
 
 if __name__=='__main__':
-	
-	
+		
 	if not os.path.exists("TestFig"):
 		os.mkdir("TestFig")
 	
