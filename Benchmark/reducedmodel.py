@@ -13,7 +13,7 @@ import pickle as pkl
 class Angles2BackboneBenchmark(ModuleBenchmark):
 	def __init__(self, device='gpu', num_sequences=32, seq_length=350):
 		super().__init__(device)
-		self.angles = torch.randn(num_sequences, 2, seq_length, dtype=torch.float, device='cuda', requires_grad=True)
+		self.angles = torch.randn(num_sequences, 3, seq_length, dtype=torch.float, device='cuda', requires_grad=True)
 		self.length = torch.zeros(num_sequences, dtype=torch.int, device='cuda').fill_(seq_length)
 		self.module = ReducedModel.Angles2Backbone()
 				
@@ -53,7 +53,7 @@ def test_length( interval=(60, 20, 300), num_measurements=1, output_filename='le
 
 if __name__=='__main__':
 
-	test_length(interval=(60, 20, 700), output_filename='Data/ReducedModelTime.pkl', num_measurements=10)
+	test_length(interval=(300, 50, 700), output_filename='Data/ReducedModelTime.pkl', num_measurements=3)
 
 	data = pd.read_pickle('Data/ReducedModelTime.pkl')
 	sea.set_style("whitegrid")
