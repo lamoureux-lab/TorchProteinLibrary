@@ -48,6 +48,7 @@ namespace ProtUtil{
     void computeBoundingBox(at::Tensor &input_coords, int num_atoms, cVector3 &b0, cVector3 &b1);
 
     cMatrix33 getRandomRotation();
+    cMatrix33 getRotation(double u1, double u2, double u3);
     cVector3 getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3 &b1);
     
     cMatrix33 tensor2Matrix33(at::Tensor T);

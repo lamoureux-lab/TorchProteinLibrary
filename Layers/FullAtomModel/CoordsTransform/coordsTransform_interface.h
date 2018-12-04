@@ -21,4 +21,5 @@ void getBBox(   at::Tensor input_coords,
                 at::Tensor num_atoms);
 
 void getRandomRotation( at::Tensor R);
+void getRotation( at::Tensor R, at::Tensor u );
 void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size);

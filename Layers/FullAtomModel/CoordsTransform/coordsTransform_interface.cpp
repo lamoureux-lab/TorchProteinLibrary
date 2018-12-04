@@ -120,6 +120,24 @@ void getRandomRotation( at::Tensor R ){
         ProtUtil::matrix2Tensor(rnd_R, single_R);                
     }
 }
+void getRotation( at::Tensor R, at::Tensor u ){
+    if( R.dtype() != at::kDouble || u.dtype() != at::kDouble ){
+        throw("Incorrect tensor types");
+    }
+    if(R.ndimension() != 3 || u.ndimension() !=2 ){
+        throw("Incorrect input ndim");
+    }
+
+    int batch_size = R.size(0);
+    auto param = u.accessor<double,2>();
+
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        at::Tensor single_R = R[i];
+        cMatrix33 R = ProtUtil::getRotation(param[i][0], param[i][1], param[i][2]);
+        ProtUtil::matrix2Tensor(R, single_R);
+    }
+}
 void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size){
     if( T.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble){
         throw("Incorrect tensor types");

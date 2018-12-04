@@ -133,25 +133,30 @@ cMatrix33 ProtUtil::getRandomRotation(){
     double u1 = uni_rnd.accessor<double,1>()[0];
     double u2 = uni_rnd.accessor<double,1>()[1];
     double u3 = uni_rnd.accessor<double,1>()[2];
+        
+    return ProtUtil::getRotation(u1, u2, u3);
+}
+
+cMatrix33 ProtUtil::getRotation(double u1, double u2, double u3){
     double q[4];
     q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
     q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
     q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
     q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
-    cMatrix33 random_rotation;
-    random_rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
-    random_rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
-    random_rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
+    cMatrix33 rotation;
+    rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+    rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
+    rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
 
-    random_rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
-    random_rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
-    random_rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
+    rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
+    rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+    rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
 
-    random_rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
-    random_rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
-    random_rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
+    rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
+    rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
+    rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
     
-    return random_rotation;
+    return rotation;
 }
 
 cVector3 ProtUtil::getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3 &b1){

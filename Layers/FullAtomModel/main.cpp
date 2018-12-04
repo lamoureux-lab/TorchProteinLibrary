@@ -18,5 +18,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("CoordsRotate_backward", &CoordsRotate_backward, "Backward of rotate coordinates");
 	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
 	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
+	m.def("getRotation", &getRotation, "Get rotation from parameters");
 	m.def("getRandomTranslation", &getRandomTranslation, "Get random translation");
 }

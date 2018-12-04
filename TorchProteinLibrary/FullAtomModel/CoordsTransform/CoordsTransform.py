@@ -37,6 +37,12 @@ def getRandomRotation(batch_size):
 	_FullAtomModel.getRandomRotation(R)
 	return R
 
+def getRotation(u):
+	batch_size = u.size(0)
+	R = torch.zeros(batch_size, 3, 3, dtype=torch.double)
+	_FullAtomModel.getRotation(R, u)
+	return R
+
 class CoordsTranslateFunction(Function):
 	"""
 	coordinates translation
