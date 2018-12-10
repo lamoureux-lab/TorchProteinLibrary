@@ -92,11 +92,11 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
         
         std::string filename = StringUtil::tensor2String(single_filename);
         cPDBLoader pdb(filename);
-        for(int i=0; i<pdb.r.size(); i++){
-            cVector3 r_target(single_coords.data<double>() + 3*i);
-            r_target = pdb.r[i];
-            StringUtil::string2Tensor(pdb.res_names[i], single_res_names[i]);
-            StringUtil::string2Tensor(pdb.atom_names[i], single_atom_names[i]);
+        for(int j=0; j<pdb.r.size(); j++){
+            cVector3 r_target(single_coords.data<double>() + 3*j);
+            r_target = pdb.r[j];
+            StringUtil::string2Tensor(pdb.res_names[j], single_res_names[j]);
+            StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[j]);
         }
     }
 }
