@@ -7,7 +7,8 @@ import torch
 from Bio.PDB import *
 from Bio.PDB.Polypeptide import three_to_one
 import numpy as np
-
+import os 
+import sys
 import _FullAtomModel
 
 def get_sequence(structure):
@@ -43,9 +44,12 @@ def convertStringList(stringList):
 	
 	return torch.from_numpy(ar)
 
-def convertString(string):
+def string2tensor(string):
 	'''Converts a string to 0-terminated byte tensor'''  
 	return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
+
+def tensor2string(tensor):
+	return tensor.numpy().tostring().split(b'\x00')[0].decode("utf-8", "strict")
 
 class PDB2CoordsOrdered:
 					
@@ -74,11 +78,43 @@ class PDB2CoordsUnordered:
 		num_atoms = torch.zeros(batch_size, dtype=torch.int)
 		output_coords_cpu = torch.zeros(batch_size, 1, dtype=torch.double)
 		output_resnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+		output_resnums_cpu = torch.zeros(batch_size, 1, dtype=torch.int)
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms)
+		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
 	
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
+		return output_coords_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
+
+def writePDB(filename, coords, resnames, resnums, atomnames, num_atoms, chain_name='A', rewrite=True):
+	batch_size = coords.size(0)
+	last_model_num = 0
+	
+	if os.path.exists(filename):
+		if rewrite:
+			os.remove(filename)
+		else:	
+			with open(filename, 'r') as fin:
+				for line in fin:
+					if line.find('MODEL') != -1:
+						sline = line.split()
+						model_num = int(sline[1])
+						if last_model_num<model_num:
+							last_model_num = model_num
+	
+
+	with open(filename, 'a') as fout:
+		for i in range(batch_size):
+			fout.write("MODEL %d\n"%(i+last_model_num))
+			for j in range(num_atoms[i].item()):
+				atom_name = tensor2string(atomnames[i,j,:])
+				res_name = tensor2string(resnames[i,j,:])
+				res_num = resnums[i,j].item()
+				x = coords[i, 3*j].item()
+				y = coords[i, 3*j+1].item()
+				z = coords[i, 3*j+2].item()
+				fout.write("ATOM  %5d %4s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j, atom_name, res_name, chain_name, res_num, x, y, z))
+			fout.write("ENDMDL\n")
+	
 
 class PDB2CoordsBiopython:
 	def __init__(self):
@@ -115,12 +151,10 @@ class PDB2CoordsBiopython:
 				output_coords_cpu.data[n, 3*atom_idx : 3*atom_idx+3] = torch.from_numpy(vec).to(dtype=torch.double)
 				residue = atom.get_parent()
 				atom_name = convertString(atom.get_name())
-				print(atom_idx, atom_name, max_num_atoms)
 				res_name = convertString(residue.get_resname())
 				output_atomnames_cpu.data[n, atom_idx, :atom_name.size(0)].copy_(atom_name.data)
 				output_resnames_cpu.data[n, atom_idx, :res_name.size(0)].copy_(res_name.data)
 				atom_idx += 1
-		print(output_atomnames_cpu)
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, torch.tensor(num_atoms, dtype=torch.int, device='cpu')
 
 

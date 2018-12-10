@@ -69,9 +69,9 @@ class VolumeConvolutionF(Module):
 		return VolumeConvolutionFunction.apply(input_volume1, input_volume2)
 
 class VolumeConvolution(Module):
-	def __init__(self, num_features):
+	def __init__(self):
 		super(VolumeConvolution, self).__init__()
-		self.W = torch.nn.Parameter(torch.zeros(1, num_features, 1, 1, 1, dtype=torch.float, device='cuda').normal_())
+		# self.W = torch.nn.Parameter(torch.zeros(1, num_features, 1, 1, 1, dtype=torch.float, device='cuda').normal_())
 		self.convolve = VolumeConvolutionF()
 		
 	def forward(self, input_volume1, input_volume2):
@@ -87,6 +87,6 @@ class VolumeConvolution(Module):
 		output = self.convolve(volume1, volume2)
 
 		output = output.resize(batch_size, num_features, 2*volume_size, 2*volume_size, 2*volume_size).contiguous()
-		output = output*self.W
+		# output = output*self.W
 		
-		return output.sum(dim=1)
+		return output
