@@ -20,6 +20,11 @@ from TorchProteinLibrary.Volume import TypedCoords2Volume
 import _Volume
 
 if __name__=='__main__':
+	box_size = 60
+	resolution = 2.0
+
+	box_size = 120
+	resolution = 1.0
 
 	sequence = ['GGAGRRRGGWG']
 	angles = torch.zeros(len(sequence), 7, len(sequence[0]), dtype=torch.double)
@@ -27,9 +32,9 @@ if __name__=='__main__':
 	angles[0,1,:] = -0.698
 	angles[0,2:,:] = 110.4*np.pi/180.0
 	a2c = Angles2Coords()
-	c2cc = Coords2CenteredCoords()
+	c2cc = Coords2CenteredCoords(rotate=False, translate=False, box_size=box_size, resolution=resolution)
 	c2tc = Coords2TypedCoords()
-	tc2v = TypedCoords2Volume()
+	tc2v = TypedCoords2Volume(box_size=box_size, resolution=resolution)
 	
 	protein, res_names, atom_names, num_atoms = a2c(angles, sequence)
 	protein = c2cc(protein, num_atoms)
@@ -47,6 +52,6 @@ if __name__=='__main__':
 	print(volume.size())
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
-	_Volume.Volume2Xplor(volume.squeeze(), "TestFig/total_vtest.xplor")
+	_Volume.Volume2Xplor(volume.squeeze(), "TestFig/total_vtest_%d_%.1f.xplor"%(box_size, resolution), resolution)
 
 	

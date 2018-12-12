@@ -11,8 +11,9 @@ import os
 class TypedCoords2VolumeFunction(Function):
 	
 	@staticmethod
-	def forward(ctx, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, box_size=120):
+	def forward(ctx, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, box_size=120, resolution=1.0):
 		ctx.save_for_backward(input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu)
+		ctx.resolution = resolution
 		num_atom_types = 11
 		if len(input_coords_gpu.size())==2:
 			batch_size = input_coords_gpu.size(0)
@@ -20,7 +21,7 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_gpu.size()) 
 
-		_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_of_type_gpu, offsets_gpu)
+		_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution)
 
 		if math.isnan(volume_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: forward Nan'))	
@@ -40,20 +41,21 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', grad_volume_gpu.size()) 
 		
-		_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu)
+		_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution)
 		
 		if math.isnan(grad_coords_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: backward Nan'))		
 		
-		return grad_coords_gpu, None, None, None
+		return grad_coords_gpu, None, None, None, None
 
 class TypedCoords2Volume(Module):
 	"""
 	Coordinated arranged in atom types function -> Volume
 	"""
-	def __init__(self, box_size=120):
+	def __init__(self, box_size=120, resolution=1.0):
 		super(TypedCoords2Volume, self).__init__()
 		self.box_size = box_size
+		self.resolution = resolution
 						
 	def forward(self, input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu):
-		return TypedCoords2VolumeFunction.apply(input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu, self.box_size)
+		return TypedCoords2VolumeFunction.apply(input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu, self.box_size, self.resolution)

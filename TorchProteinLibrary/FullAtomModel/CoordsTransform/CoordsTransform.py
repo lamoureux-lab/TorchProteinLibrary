@@ -139,11 +139,13 @@ class CoordsRotate(Module):
 		return CoordsRotateFunction.apply(input_coords_cpu, R, num_atoms)
 
 class Coords2CenteredCoords(Module):
-	def __init__(self, rotate=True, translate=True, box_size=120):
+	def __init__(self, rotate=True, translate=True, box_size=120, resolution=1.0):
 		super(Coords2CenteredCoords, self).__init__()
 		self.rotate = rotate
 		self.translate = translate
 		self.box_size = box_size
+		self.box_length = box_size * resolution
+		self.resolution = resolution
 		self.rot = CoordsRotate()
 		self.tra = CoordsTranslate()
 
@@ -154,7 +156,7 @@ class Coords2CenteredCoords(Module):
 		coords = self.tra(input_coords, -protein_center, num_atoms)
 
 		box_center = torch.zeros(batch_size, 3, dtype=torch.double)
-		box_center.fill_(self.box_size/2.0)
+		box_center.fill_(self.box_length/2.0)
 		
 		if self.rotate:	
 			rR = getRandomRotation(batch_size)
@@ -164,7 +166,7 @@ class Coords2CenteredCoords(Module):
 
 		if self.translate:
 			a,b = getBBox(coords, num_atoms)
-			rT = getRandomTranslation(a, b, self.box_size)
+			rT = getRandomTranslation(a, b, self.box_length)
 			coords = self.tra(coords, rT, num_atoms)
 
 		return coords

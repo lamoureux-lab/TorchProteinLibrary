@@ -28,19 +28,6 @@ __global__ void conjMul(cufftComplex *c_volume1, cufftComplex *c_volume2, cufftC
 
 }
 
-__global__ void mulInPlace(REAL *d_volume1, REAL *d_volume2, int batch_size, int volume_size){
-	uint batch_idx = blockIdx.x;
-    uint warp_idx = blockIdx.y;
-    uint thread_idx = threadIdx.x;
-    uint vol = volume_size*volume_size*volume_size;
-    uint memory_idx = batch_idx*vol + warp_idx*WARP_SIZE + thread_idx;
-
-    if( (warp_idx*WARP_SIZE + thread_idx) >= vol) //out of volume
-        return;
-
-    d_volume1[memory_idx] *= d_volume2[memory_idx];
-}
-
 void cpu_VolumeConv(REAL *d_volume1,  REAL *d_volume2,  REAL *d_output, int batch_size, int volume_size){
     cufftHandle plan_fwd, plan_bwd;
     cufftComplex *c_volume1, *c_volume2, *c_output;
@@ -60,10 +47,11 @@ void cpu_VolumeConv(REAL *d_volume1,  REAL *d_volume2,  REAL *d_output, int batc
                     onembed, 1, batch_volume_complex,
                     CUFFT_R2C, batch_size);
 
-    cufftPlanMany(  &plan_bwd, 3, dimensions_complex, 
+    cufftPlanMany(  &plan_bwd, 3, dimensions_real, 
                     onembed, 1, batch_volume_complex, 
                     inembed, 1, batch_volume_real,
                     CUFFT_C2R, batch_size);
+
     cufftExecR2C(plan_fwd, d_volume1, c_volume1);
     cufftExecR2C(plan_fwd, d_volume2, c_volume2);
 
