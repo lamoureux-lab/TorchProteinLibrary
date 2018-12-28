@@ -9,11 +9,11 @@ void Coords2RMSD_CPU_forward(   at::Tensor src, at::Tensor dst, at::Tensor rmsd,
                             at::Tensor U_ce_src, at::Tensor UT_ce_dst,
                             at::Tensor num_atoms
                         ){
-    if( src.dtype() != at::kDouble || dst.dtype() != at::kDouble || rmsd.dtype() != at::kDouble
-    || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
-    || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
-        throw("Incorrect tensor types");
-    }
+    // if( src.dtype() != at::kDouble || dst.dtype() != at::kDouble || rmsd.dtype() != at::kDouble
+    // || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
+    // || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
+    //     throw("Incorrect tensor types");
+    // }
     if( (src.type().is_cuda()) || (dst.type().is_cuda()) || (rmsd.type().is_cuda())
         || (ce_src.type().is_cuda()) || (ce_dst.type().is_cuda()) || (U_ce_src.type().is_cuda()) 
         || (UT_ce_dst.type().is_cuda()) || (num_atoms.type().is_cuda()) ){
@@ -45,12 +45,12 @@ void Coords2RMSD_CPU_backward(  at::Tensor grad_atoms, at::Tensor grad_output,
                             at::Tensor U_ce_src, at::Tensor UT_ce_dst,
                             at::Tensor num_atoms
                         ){
-    if( grad_atoms.dtype() != at::kDouble || grad_output.dtype() != at::kDouble
-    || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
-    || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
-        std::cout<<"Incorrect tensor types"<<std::endl;
-        throw("Incorrect tensor types");
-    }
+    // if( grad_atoms.dtype() != at::kDouble || grad_output.dtype() != at::kDouble
+    // || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
+    // || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
+    //     std::cout<<"Incorrect tensor types"<<std::endl;
+    //     throw("Incorrect tensor types");
+    // }
     if( (grad_atoms.type().is_cuda()) || (grad_output.type().is_cuda())
         || (ce_src.type().is_cuda()) || (ce_dst.type().is_cuda()) || (U_ce_src.type().is_cuda()) 
         || (UT_ce_dst.type().is_cuda()) || (num_atoms.type().is_cuda()) ){

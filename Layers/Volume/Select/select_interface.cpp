@@ -10,10 +10,10 @@ void SelectVolume_forward(  at::Tensor volume,
                             at::Tensor features,
                             float res
                         ){
-    if( volume.dtype() != at::kFloat || coords.dtype() != at::kFloat || num_atoms.dtype() != at::kInt 
-    || features.dtype() != at::kFloat){
-        throw("Incorrect tensor types");
-    }
+    // if( volume.dtype() != at::kFloat || coords.dtype() != at::kFloat || num_atoms.dtype() != at::kInt 
+    // || features.dtype() != at::kFloat){
+    //     throw("Incorrect tensor types");
+    // }
     if( (!volume.type().is_cuda()) || (!coords.type().is_cuda()) || (!num_atoms.type().is_cuda()) 
     || (!features.type().is_cuda())){
         throw("Incorrect device");
@@ -34,7 +34,7 @@ void SelectVolume_forward(  at::Tensor volume,
         at::Tensor single_coords = coords[i];
         at::Tensor single_features = features[i];
 
-        int single_num_atoms = at::Scalar(num_atoms[i]).toInt();
+        int single_num_atoms = num_atoms[i].item().toInt();
         gpu_selectFromTensor(   single_features.data<float>(), num_features,
                                 single_volume.data<float>(), spatial_dim,
                                 single_coords.data<float>(), single_num_atoms, max_num_atoms, res);

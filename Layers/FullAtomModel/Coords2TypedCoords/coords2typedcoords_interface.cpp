@@ -16,12 +16,12 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
                                 ){
     const uint num_atom_types = 11;
 
-    if( res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
-        || input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble
-        || input_num_atoms.dtype() != at::kInt || output_num_atoms_of_type.dtype() != at::kInt
-        || output_offsets.dtype() != at::kInt || output_atom_indexes.dtype() != at::kInt){
-            throw("Incorrect tensor types");
-    }
+    // if( res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
+    //     || input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble
+    //     || input_num_atoms.dtype() != at::kInt || output_num_atoms_of_type.dtype() != at::kInt
+    //     || output_offsets.dtype() != at::kInt || output_atom_indexes.dtype() != at::kInt){
+    //         throw("Incorrect tensor types");
+    // }
     if(input_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -93,11 +93,11 @@ void Coords2TypedCoords_backward(   at::Tensor grad_typed_coords,
                                     at::Tensor atom_indexes
                         ){
     const uint num_atom_types=11;
-    if( grad_typed_coords.dtype() != at::kDouble || grad_flat_coords.dtype() != at::kDouble
-        || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt
-        || atom_indexes.dtype() != at::kInt){
-            throw("Incorrect tensor types");
-    }
+    // if( grad_typed_coords.dtype() != at::kDouble || grad_flat_coords.dtype() != at::kDouble
+    //     || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt
+    //     || atom_indexes.dtype() != at::kInt){
+    //         throw("Incorrect tensor types");
+    // }
     if(grad_typed_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }

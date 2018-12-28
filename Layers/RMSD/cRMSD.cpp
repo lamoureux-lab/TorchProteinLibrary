@@ -15,6 +15,7 @@ cRMSD::cRMSD(uint num_atoms){
     U_ce_src = new double [3*num_atoms];
     UT_ce_dst = new double [3*num_atoms];
     external = false;
+
 }
 
 cRMSD::cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, const uint num_atoms){
@@ -71,7 +72,8 @@ double cRMSD::compute( double *src, double *dst ){
     }
 
     //Converting R to the T matrix
-    at::Tensor Tmat = at::CPU(at::kDouble).zeros({4,4});
+    // at::Tensor Tmat = at::CPU(at::kDouble).zeros({4,4});
+    at::Tensor Tmat = torch::zeros({4,4}, torch::TensorOptions().dtype(torch::kDouble));
     double *T = Tmat.data<double>();
     T[0] = R.m[0][0]+R.m[1][1]+R.m[2][2];T[1] = R.m[1][2]-R.m[2][1];T[2] = R.m[2][0]-R.m[0][2];T[3] = R.m[0][1]-R.m[1][0];
     T[4] = R.m[1][2]-R.m[2][1];T[5] = R.m[0][0]-R.m[1][1]-R.m[2][2];T[6] = R.m[0][1]+R.m[1][0];T[7] = R.m[0][2]+R.m[2][0];
@@ -84,14 +86,17 @@ double cRMSD::compute( double *src, double *dst ){
     
     //getting maximum eigenvalue and eigenvector
     double max_eig_val = std::numeric_limits<double>::min();
-    at::Tensor max_eig_vec = at::CPU(at::kDouble).zeros({4});
+    // at::Tensor max_eig_vec = at::CPU(at::kDouble).zeros({4});
+    at::Tensor max_eig_vec = torch::zeros({4}, torch::TensorOptions().dtype(torch::kDouble));
     auto q = max_eig_vec.accessor<double, 1>();
 
     // at::Tensor eig_vals = std::get<0>(result);
     // at::Tensor eig_vecs = std::get<1>(result);
-    at::Tensor eig_vals = at::CPU(at::kDouble).zeros({4,2});
+    // at::Tensor eig_vals = at::CPU(at::kDouble).zeros({4,2});
+    at::Tensor eig_vals = torch::zeros({4,2}, torch::TensorOptions().dtype(torch::kDouble));
     eig_vals.copy_(std::get<0>(result));
-    at::Tensor eig_vecs = at::CPU(at::kDouble).zeros({4,4}); 
+    // at::Tensor eig_vecs = at::CPU(at::kDouble).zeros({4,4}); 
+    at::Tensor eig_vecs = torch::zeros({4,4}, torch::TensorOptions().dtype(torch::kDouble));
     eig_vecs.copy_(std::get<1>(result));
     auto eig_val = eig_vals.accessor<double, 2>();
     for(int i=0; i<4; i++){    

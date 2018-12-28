@@ -11,10 +11,10 @@ void CoordsTranslate_forward(   at::Tensor input_coords,
                                 at::Tensor num_atoms
                                 ){
 
-    if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || T.dtype() != at::kDouble 
-    || num_atoms.dtype() != at::kInt){
-        throw("Incorrect tensor types");
-    }
+    // if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || T.dtype() != at::kDouble 
+    // || num_atoms.dtype() != at::kInt){
+    //     throw("Incorrect tensor types");
+    // }
     if(input_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -34,10 +34,10 @@ void CoordsRotate_forward(  at::Tensor input_coords,
                             at::Tensor R,
                             at::Tensor num_atoms
                             ){
-    if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
-    || num_atoms.dtype() != at::kInt){
-        throw("Incorrect tensor types");
-    }
+    // if( input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
+    // || num_atoms.dtype() != at::kInt){
+    //     throw("Incorrect tensor types");
+    // }
     if(input_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -58,10 +58,10 @@ void CoordsRotate_backward( at::Tensor grad_output_coords,
                             at::Tensor grad_input_coords,
                             at::Tensor R,
                             at::Tensor num_atoms){
-    if( grad_output_coords.dtype() != at::kDouble || grad_input_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
-    || num_atoms.dtype() != at::kInt){
-        throw("Incorrect tensor types");
-    }
+    // if( grad_output_coords.dtype() != at::kDouble || grad_input_coords.dtype() != at::kDouble || R.dtype() != at::kDouble 
+    // || num_atoms.dtype() != at::kInt){
+    //     throw("Incorrect tensor types");
+    // }
     if(grad_output_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -83,10 +83,10 @@ void CoordsRotate_backward( at::Tensor grad_output_coords,
 void getBBox(   at::Tensor input_coords,
                 at::Tensor a, at::Tensor b,
                 at::Tensor num_atoms){
-    if( input_coords.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble 
-    || num_atoms.dtype() != at::kInt){
-        throw("Incorrect tensor types");
-    }
+    // if( input_coords.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble 
+    // || num_atoms.dtype() != at::kInt){
+    //     throw("Incorrect tensor types");
+    // }
     if(input_coords.ndimension() != 2){
         throw("Incorrect input ndim");
     }
@@ -105,9 +105,9 @@ void getBBox(   at::Tensor input_coords,
     }
 }
 void getRandomRotation( at::Tensor R ){
-    if( R.dtype() != at::kDouble ){
-        throw("Incorrect tensor types");
-    }
+    // if( R.dtype() != at::kDouble ){
+    //     throw("Incorrect tensor types");
+    // }
     if(R.ndimension() != 3){
         throw("Incorrect input ndim");
     }
@@ -121,9 +121,9 @@ void getRandomRotation( at::Tensor R ){
     }
 }
 void getRotation( at::Tensor R, at::Tensor u ){
-    if( R.dtype() != at::kDouble || u.dtype() != at::kDouble ){
-        throw("Incorrect tensor types");
-    }
+    // if( R.dtype() != at::kDouble || u.dtype() != at::kDouble ){
+    //     throw("Incorrect tensor types");
+    // }
     if(R.ndimension() != 3 || u.ndimension() !=2 ){
         throw("Incorrect input ndim");
     }
@@ -139,9 +139,9 @@ void getRotation( at::Tensor R, at::Tensor u ){
     }
 }
 void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size){
-    if( T.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble){
-        throw("Incorrect tensor types");
-    }
+    // if( T.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble){
+    //     throw("Incorrect tensor types");
+    // }
     if(T.ndimension() != 2){
         throw("Incorrect input ndim");
     }

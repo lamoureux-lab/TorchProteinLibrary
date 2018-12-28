@@ -3,10 +3,10 @@
 #include <string>
 
 void Volume2Xplor( at::Tensor volume, const char *filename, float resolution){
-    if( (volume.type().is_cuda()) || volume.dtype() != at::kFloat ){
-        throw("Incorrect tensor types");
-        std::cout<<"Incorrect tensor types"<<std::endl;
-    }
+    // if( (volume.type().is_cuda()) || volume.dtype() != at::kFloat ){
+    //     throw("Incorrect tensor types");
+    //     std::cout<<"Incorrect tensor types"<<std::endl;
+    // }
     if(volume.ndimension() != 3){
         std::cout<<"Incorrect input ndim"<<std::endl;
         throw("Incorrect input ndim");

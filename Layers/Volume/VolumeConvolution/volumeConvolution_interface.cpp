@@ -6,9 +6,9 @@
 void VolumeConvolution_forward( at::Tensor volume1, 
                                 at::Tensor volume2, 
                                 at::Tensor output){
-    if( volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat || output.dtype() != at::kFloat){
-        throw("Incorrect tensor types");
-    }
+    // if( volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat || output.dtype() != at::kFloat){
+    //     throw("Incorrect tensor types");
+    // }
     if( (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) || (!output.type().is_cuda()) ){
         throw("Incorrect device");
     }
@@ -26,10 +26,10 @@ void VolumeConvolution_backward(    at::Tensor gradOutput,
                                     at::Tensor gradVolume2,
                                     at::Tensor volume1, 
                                     at::Tensor volume2){
-    if( gradOutput.dtype() != at::kFloat || gradVolume1.dtype() != at::kFloat || gradVolume2.dtype() != at::kFloat
-        || volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat){
-        throw("Incorrect tensor types");
-    }
+    // if( gradOutput.dtype() != at::kFloat || gradVolume1.dtype() != at::kFloat || gradVolume2.dtype() != at::kFloat
+    //     || volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat){
+    //     throw("Incorrect tensor types");
+    // }
     if( (!gradOutput.type().is_cuda()) || (!gradVolume1.type().is_cuda()) || (!gradVolume2.type().is_cuda())
         || (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) ){
         throw("Incorrect device");

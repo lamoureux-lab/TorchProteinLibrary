@@ -7,10 +7,10 @@ int Angles2Backbone_forward(at::Tensor input_angles,
                             at::Tensor angles_length, 
                             at::Tensor A
                         ){
-    if( input_angles.dtype() != at::kFloat || output_coords.dtype() != at::kFloat || angles_length.dtype() != at::kInt 
-    || A.dtype() != at::kFloat){
-        throw("Incorrect tensor types");
-    }
+    // if( input_angles.dtype() != at::kFloat || output_coords.dtype() != at::kFloat || angles_length.dtype() != at::kInt 
+    // || A.dtype() != at::kFloat){
+    //     throw("Incorrect tensor types");
+    // }
     if( (!input_angles.type().is_cuda()) || (!output_coords.type().is_cuda()) || (!angles_length.type().is_cuda()) 
     || (!A.type().is_cuda()) ){
         throw("Incorrect device");
@@ -33,10 +33,10 @@ int Angles2Backbone_backward(   at::Tensor gradInput,
                                 at::Tensor A,   
                                 at::Tensor dr_dangle
                             ){
-    if( gradInput.dtype() != at::kFloat || gradOutput.dtype() != at::kFloat || input_angles.dtype() != at::kFloat 
-    || A.dtype() != at::kFloat || dr_dangle.dtype() != at::kFloat || angles_length.dtype() != at::kInt ){
-        throw("Incorrect tensor types");
-    }
+    // if( gradInput.dtype() != at::kFloat || gradOutput.dtype() != at::kFloat || input_angles.dtype() != at::kFloat 
+    // || A.dtype() != at::kFloat || dr_dangle.dtype() != at::kFloat || angles_length.dtype() != at::kInt ){
+    //     throw("Incorrect tensor types");
+    // }
     if( (!gradInput.type().is_cuda()) || (!gradOutput.type().is_cuda()) || (!input_angles.type().is_cuda()) 
     || (!A.type().is_cuda()) || (!angles_length.type().is_cuda()) || (!dr_dangle.type().is_cuda())){
         throw("Incorrect device");

@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 #include <cVector3.h>
 #include <cMatrix33.h>
 #include <cConformation.h>
