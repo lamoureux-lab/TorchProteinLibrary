@@ -77,18 +77,19 @@ class PDB2CoordsUnordered:
 		batch_size = len(filenames)
 		num_atoms = torch.zeros(batch_size, dtype=torch.int)
 		output_coords_cpu = torch.zeros(batch_size, 1, dtype=torch.double)
+		output_chainnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 		output_resnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 		output_resnums_cpu = torch.zeros(batch_size, 1, dtype=torch.int)
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
+		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
 	
-		return output_coords_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
+		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 
-def writePDB(filename, coords, resnames, resnums, atomnames, num_atoms, chain_name='A', rewrite=True):
+def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_atoms, add_model=True, rewrite=True):
 	batch_size = coords.size(0)
 	last_model_num = 0
-	
+		
 	if os.path.exists(filename):
 		if rewrite:
 			os.remove(filename)
@@ -100,20 +101,27 @@ def writePDB(filename, coords, resnames, resnums, atomnames, num_atoms, chain_na
 						model_num = int(sline[1])
 						if last_model_num<model_num:
 							last_model_num = model_num
-	
 
 	with open(filename, 'a') as fout:
 		for i in range(batch_size):
-			fout.write("MODEL %d\n"%(i+last_model_num))
+			if add_model:
+				fout.write("MODEL %d\n"%(i+last_model_num))
+			
 			for j in range(num_atoms[i].item()):
+				chain_name = tensor2string(chainnames[i,j,:])
+				if len(chain_name) == 0:
+					chain_name = "A"
+				# print(chain_name)
 				atom_name = tensor2string(atomnames[i,j,:])
 				res_name = tensor2string(resnames[i,j,:])
 				res_num = resnums[i,j].item()
 				x = coords[i, 3*j].item()
 				y = coords[i, 3*j+1].item()
 				z = coords[i, 3*j+2].item()
-				fout.write("ATOM  %5d %4s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j, atom_name, res_name, chain_name, res_num, x, y, z))
-			fout.write("ENDMDL\n")
+				fout.write("ATOM  %5d %4s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j, atom_name, res_name, chain_name[0], res_num, x, y, z))
+			
+			if add_model:
+				fout.write("ENDMDL\n")
 	
 
 class PDB2CoordsBiopython:

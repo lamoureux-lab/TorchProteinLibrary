@@ -67,7 +67,7 @@ void PDB2CoordsOrdered(at::Tensor filenames, at::Tensor coords, at::Tensor res_n
     }
 }
 */
-void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res_names, at::Tensor res_nums, at::Tensor atom_names, at::Tensor num_atoms){
+void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor chain_names, at::Tensor res_names, at::Tensor res_nums, at::Tensor atom_names, at::Tensor num_atoms){
     
     // if( filenames.dtype() != at::kByte || res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
     //     || coords.dtype() != at::kDouble || num_atoms.dtype() != at::kInt || res_nums.dtype() != at::kInt){
@@ -97,6 +97,7 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
     int64_t size_names[] = {batch_size, max_num_atoms, 4};
     
     coords.resize_(at::IntList(size_coords, 2));
+    chain_names.resize_(at::IntList(size_names, 3));
     res_names.resize_(at::IntList(size_names, 3));
     res_nums.resize_(at::IntList(size_nums, 2));
     atom_names.resize_(at::IntList(size_names, 3));
@@ -106,6 +107,7 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
     for(int i=0; i<batch_size; i++){
         at::Tensor single_coords = coords[i];
         at::Tensor single_filename = filenames[i];
+        at::Tensor single_chain_names = chain_names[i];
         at::Tensor single_res_names = res_names[i];
         at::Tensor single_res_nums = res_nums[i];
         at::Tensor single_atom_names = atom_names[i];
@@ -115,6 +117,7 @@ void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor res
         for(int j=0; j<pdb.r.size(); j++){
             cVector3 r_target(single_coords.data<double>() + 3*j);
             r_target = pdb.r[j];
+            StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[j]);
             StringUtil::string2Tensor(pdb.res_names[j], single_res_names[j]);
             StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[j]);
             single_res_nums.data<int>()[j] = pdb.res_nums[j];

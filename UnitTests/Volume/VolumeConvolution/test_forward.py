@@ -102,6 +102,7 @@ if __name__=='__main__':
 	
 	border_overlap = vc(inp1_border, inp2)
 	bulk_overlap = vc(inp1, inp2)
+	print(bulk_overlap.size(), torch.max(bulk_overlap), torch.min(bulk_overlap))
 	out = border_overlap - 0.5*bulk_overlap
 	_Volume.Volume2Xplor(out.squeeze().cpu(), "out.xplor", 1.0)
 

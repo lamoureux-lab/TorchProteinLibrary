@@ -85,7 +85,7 @@ class VolumeConvolution(Module):
 		volume1 = input_volume1.resize(batch_size*num_features, 2*volume_size, 2*volume_size, 2*volume_size).contiguous()
 		volume2 = input_volume2.resize(batch_size*num_features, 2*volume_size, 2*volume_size, 2*volume_size).contiguous()
 		output = self.convolve(volume1, volume2)
-
+		
 		output = output.resize(batch_size, num_features, 2*volume_size, 2*volume_size, 2*volume_size).contiguous()
 		# output = output*self.W
 		

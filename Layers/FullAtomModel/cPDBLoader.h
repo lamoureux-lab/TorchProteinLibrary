@@ -13,6 +13,7 @@ public:
 	std::vector<cVector3> r;
     std::vector<std::string> atom_names;
     std::vector<std::string> res_names;
+    std::vector<std::string> chain_names;
     std::vector<int> res_nums;
 
     //ordering accoring to residues

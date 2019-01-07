@@ -24,7 +24,7 @@ cPDBLoader::cPDBLoader(){
 }
 cPDBLoader::cPDBLoader(std::string filename) {
     std::ifstream pfile(filename);
-	std::string line, header, xStr, yStr, zStr, atom_name, res_name;
+	std::string line, header, xStr, yStr, zStr, atom_name, res_name, chain_name;
     int res_num;
 	// reading raw file
 	while ( getline (pfile,line) ){
@@ -38,8 +38,10 @@ cPDBLoader::cPDBLoader(std::string filename) {
                 yStr = line.substr(38,8);
                 zStr = line.substr(46,8);
                 res_name = trim(line.substr(17,3));
+                chain_name = trim(line.substr(21, 1));
                 res_num = std::stoi(line.substr(22,4));
                 r.push_back(cVector3(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                chain_names.push_back(chain_name);
                 res_names.push_back(res_name);
                 res_nums.push_back(res_num);
                 atom_names.push_back(atom_name);

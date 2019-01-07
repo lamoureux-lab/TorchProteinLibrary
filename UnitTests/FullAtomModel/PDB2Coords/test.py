@@ -12,12 +12,12 @@ if __name__=='__main__':
 
     # p2c = FullAtomModel.PDB2Coords.PDB2CoordsBiopython()
     p2c = FullAtomModel.PDB2CoordsUnordered()
-    coords, res, anames, num_atoms = p2c(["f4TQ1_B.pdb"])
+    coords, chain_names, resnames, resnums, anames, num_atoms = p2c(["f4TQ1_B.pdb"])
     print (coords.size())
-    print (res.size())
+    print (chain_names.size())
+    print (resnames.size())
     print (anames.size())
     print (num_atoms)
-
     coords = coords.numpy()
     coords = coords.reshape(int(coords.shape[1]/3), 3)
     fig = plt.figure()
