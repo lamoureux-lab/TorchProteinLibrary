@@ -89,6 +89,7 @@ class PDB2CoordsUnordered:
 def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_atoms, add_model=True, rewrite=True):
 	batch_size = coords.size(0)
 	last_model_num = 0
+	last_atom_num = 0
 		
 	if os.path.exists(filename):
 		if rewrite:
@@ -101,6 +102,10 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 						model_num = int(sline[1])
 						if last_model_num<model_num:
 							last_model_num = model_num
+					if line.find('ATOM') != -1:
+						atom_num = int(line[6:11])
+						if last_atom_num<atom_num:
+							last_atom_num = atom_num
 
 	with open(filename, 'a') as fout:
 		for i in range(batch_size):
@@ -118,7 +123,7 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 				x = coords[i, 3*j].item()
 				y = coords[i, 3*j+1].item()
 				z = coords[i, 3*j+2].item()
-				fout.write("ATOM  %5d %4s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j, atom_name, res_name, chain_name[0], res_num, x, y, z))
+				fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z))
 			
 			if add_model:
 				fout.write("ENDMDL\n")
