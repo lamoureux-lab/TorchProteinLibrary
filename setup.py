@@ -20,6 +20,7 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Volume.TypedCoords2Volume',
 				'TorchProteinLibrary.Volume.Select',
 				'TorchProteinLibrary.Volume.VolumeConvolution',
+				'TorchProteinLibrary.Volume.VolumeRotation',
 				#RMSD
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
@@ -36,6 +37,7 @@ if __name__=='__main__':
 					'Layers/FullAtomModel/cRigidGroup.cpp',
 					'Layers/FullAtomModel/nUtil.cpp',
 					'Layers/FullAtomModel/cPDBLoader.cpp',
+					'Layers/FullAtomModel/cSO3Sampler.cpp',
 					'Layers/FullAtomModel/Angles2Coords/angles2coords_interface.cpp',
 					'Layers/FullAtomModel/PDB2Coords/pdb2coords_interface.cpp',
 					'Layers/FullAtomModel/Coords2TypedCoords/coords2typedcoords_interface.cpp',
@@ -44,14 +46,17 @@ if __name__=='__main__':
 					include_dirs = ['Layers/FullAtomModel', 'Math'],
 					libraries = ['gomp'],
 					extra_compile_args=['-fopenmp'])
+
 	Volume = CUDAExtension('_Volume',
 					sources = [
 					'Layers/Volume/TypedCoords2Volume/typedcoords2volume_interface.cpp',
 					'Layers/Volume/Volume2Xplor/volume2xplor_interface.cpp',
 					'Layers/Volume/Select/select_interface.cpp',
 					'Layers/Volume/VolumeConvolution/volumeConvolution_interface.cpp',
+					'Layers/Volume/VolumeRotation/volumeRotation_interface.cpp',
 					'Layers/Volume/Kernels.cu',
 					'Layers/Volume/VolumeConv.cu',
+					'Layers/Volume/RotateGrid.cu',
 					'Layers/Volume/main.cpp'],
 					include_dirs = ['Layers/Volume'],
 					libraries = ['gomp', 'cufft'],

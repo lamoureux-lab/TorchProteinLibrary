@@ -20,4 +20,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
 	m.def("getRotation", &getRotation, "Get rotation from parameters");
 	m.def("getRandomTranslation", &getRandomTranslation, "Get random translation");
+	m.def("getSO3Samples", &getSO3Samples, "Get samples that cover SO3 group uniformly");
 }

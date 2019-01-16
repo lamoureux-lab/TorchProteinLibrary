@@ -43,6 +43,11 @@ def getRotation(u):
 	_FullAtomModel.getRotation(R, u)
 	return R
 
+def getSO3Samples(dAngle):
+	R = torch.zeros(1, 3, 3, dtype=torch.double, device='cpu')
+	_FullAtomModel.getSO3Samples(dAngle, R)
+	return R
+
 class CoordsTranslateFunction(Function):
 	"""
 	coordinates translation

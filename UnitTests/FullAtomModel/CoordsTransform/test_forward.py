@@ -2,7 +2,7 @@ import sys
 import os
 import torch
 import numpy as np
-from TorchProteinLibrary.FullAtomModel.CoordsTransform import CoordsTranslate, getRandomTranslation, getBBox, CoordsRotate, getRandomRotation, getRotation
+from TorchProteinLibrary.FullAtomModel.CoordsTransform import CoordsTranslate, getRandomTranslation, getBBox, CoordsRotate, getRandomRotation, getRotation, getSO3Samples
 from TorchProteinLibrary.FullAtomModel import Angles2Coords, Coords2TypedCoords
 
 import matplotlib as mpl
@@ -62,6 +62,20 @@ def test_rotation(angle_inc = 0.1):
 	rotated = rotate(coords, R, num_atoms)
 	return rotated
 
+def test_SO3Sampling(angle_inc = 0.1):
+	R = getSO3Samples(angle_inc)
+	print(R.size())
+	rotate = CoordsRotate()
+	
+	num_atoms = torch.ones(R.size(0), dtype=torch.int)
+	coords = torch.zeros(R.size(0), 3, dtype=torch.double)
+	coords[:,0]=1.0
+	coords[:,1]=0.0
+	coords[:,2]=0.0
+
+	rotated = rotate(coords, R, num_atoms)
+	return rotated
+
 def plot_coords(coords, filename, plot_name='Rotation test'):
 	if not os.path.exists("TestFig"):
 		os.mkdir("TestFig")
@@ -77,6 +91,7 @@ def plot_coords(coords, filename, plot_name='Rotation test'):
 	ax.set_ylim(min_xyz,max_xyz)
 	ax.set_zlim(min_xyz,max_xyz)
 	ax.legend()
+	plt.show()
 	plt.savefig('TestFig/%s'%filename)
 
 
@@ -92,10 +107,13 @@ if __name__=='__main__':
 	
 	# test_translation(protein, num_atoms)
 	
-	rotated = test_random_rotation(1000)
-	plot_coords(rotated, "random_rotation.png")
+	# rotated = test_random_rotation(1000)
+	# plot_coords(rotated, "random_rotation.png")
 	
-	rotated = test_rotation()
-	plot_coords(rotated, "uniform_rotation.png")
+	# rotated = test_rotation()
+	# plot_coords(rotated, "uniform_rotation.png")
+
+	rotated = test_SO3Sampling(15.0)
+	plot_coords(rotated, "SO3_sample_rotation.png")
 		
 	

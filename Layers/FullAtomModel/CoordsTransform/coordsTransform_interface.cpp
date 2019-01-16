@@ -1,8 +1,10 @@
 #include "cConformation.h"
+#include "cSO3Sampler.h"
 #include <iostream>
 #include <string>
 #include "nUtil.h"
 #include "coordsTransform_interface.h"
+
 
 
 void CoordsTranslate_forward(   at::Tensor input_coords, 
@@ -158,5 +160,19 @@ void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_
         cVector3 _T(single_T.data<double>());
         
         _T = ProtUtil::getRandomTranslation(volume_size, _a, _b);
+    }
+}
+
+void getSO3Samples( float dAngle, torch::Tensor R ){
+    cSO3Sampler samples(dAngle);
+
+    int num_samples = samples.U.size();
+    int64_t new_size[] = {num_samples, 3, 3};
+    R.resize_(at::IntList(new_size, 3));
+    
+    #pragma omp parallel for
+    for(int i=0; i<num_samples; i++){
+        at::Tensor single_R = R[i];
+        ProtUtil::matrix2Tensor(samples.U[i], single_R);
     }
 }
