@@ -6,7 +6,8 @@ void gpu_computeCoords2Volume(	double *coords,
 								float *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res);
+								float res,
+								int mode);
 
 void gpu_computeVolume2Coords(	double *coords,
 								double* grad,
@@ -15,7 +16,8 @@ void gpu_computeVolume2Coords(	double *coords,
 								float *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res);
+								float res,
+								int mode);
 
 void gpu_selectFromTensor(	float *features, int num_features, 
 							float* volume, int spatial_dim, 

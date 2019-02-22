@@ -2,7 +2,7 @@
 
 
 __global__ void projectToTensor(double* coords, int* num_atoms_of_type, int* offsets, float *volume, 
-                                int spatial_dim, float res){
+                                int spatial_dim, float res, int mode){
 /*
 Input:
         coords: coordinates in a flat array:
@@ -26,25 +26,31 @@ Output:
 		int x_i = floor(x/res);
 		int y_i = floor(y/res);
 		int z_i = floor(z/res);
-		
-		for(int i=x_i-d; i<=(x_i+d);i++){
-			for(int j=y_i-d; j<=(y_i+d);j++){
-				for(int k=z_i-d; k<=(z_i+d);k++){
-					if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
-						int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;							
-						float r2 = (x - i*res)*(x - i*res)+\
-						(y - j*res)*(y - j*res)+\
-						(z - k*res)*(z - k*res);
-						type_volume[idx]+=exp(-r2/2.0);
+		if(mode==1){
+			for(int i=x_i-d; i<=(x_i+d);i++){
+				for(int j=y_i-d; j<=(y_i+d);j++){
+					for(int k=z_i-d; k<=(z_i+d);k++){
+						if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
+							int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;							
+							float r2 = (x - i*res)*(x - i*res)+\
+							(y - j*res)*(y - j*res)+\
+							(z - k*res)*(z - k*res);
+							type_volume[idx]+=exp(-r2/2.0);
+						}
 					}
 				}
+			}
+		}else if(mode==2){
+			if( (x_i>=0 && x_i<spatial_dim) && (y_i>=0 && y_i<spatial_dim) && (z_i>=0 && z_i<spatial_dim) ){
+				int idx = z_i + y_i*spatial_dim + x_i*spatial_dim*spatial_dim;
+				type_volume[idx]+=1.0;
 			}
 		}
 	}
 }
 
 __global__ void projectFromTensor(double* coords, double* grad, int* num_atoms_of_type, int* offsets, float *volume,
-                                  int spatial_dim, float res){
+                                  int spatial_dim, float res, int mode){
 /*
 Input:
 	coords: coordinates in a flat array:
@@ -73,19 +79,27 @@ Output:
 		int x_i = floor(x/res);
 		int y_i = floor(y/res);
 		int z_i = floor(z/res);
-		for(int i=x_i-d; i<=(x_i+d);i++){
-			for(int j=y_i-d; j<=(y_i+d);j++){
-				for(int k=z_i-d; k<=(z_i+d);k++){
-					if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
-						int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
-						float r2 = (x - i*res)*(x - i*res)+\
-						(y - j*res)*(y - j*res)+\
-						(z - k*res)*(z - k*res);
-						grad_coords[atom_idx] -= (x - i*res)*type_volume[idx]*exp(-r2/2.0);
-						grad_coords[atom_idx + 1] -= (y-j*res)*type_volume[idx]*exp(-r2/2.0);
-						grad_coords[atom_idx + 2] -= (z-k*res)*type_volume[idx]*exp(-r2/2.0);
+		if(mode==1){
+			for(int i=x_i-d; i<=(x_i+d);i++){
+				for(int j=y_i-d; j<=(y_i+d);j++){
+					for(int k=z_i-d; k<=(z_i+d);k++){
+						if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
+							int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
+							float r2 = (x - i*res)*(x - i*res)+\
+							(y - j*res)*(y - j*res)+\
+							(z - k*res)*(z - k*res);
+							grad_coords[atom_idx] -= (x - i*res)*type_volume[idx]*exp(-r2/2.0);
+							grad_coords[atom_idx + 1] -= (y-j*res)*type_volume[idx]*exp(-r2/2.0);
+							grad_coords[atom_idx + 2] -= (z-k*res)*type_volume[idx]*exp(-r2/2.0);
+						}
 					}
 				}
+			}
+		}else if(mode==2){ //IMPLEMENT REAL GRADIENT: - d/dr dL/drho (r=r0)
+			if( (x_i>=0 && x_i<spatial_dim) && (y_i>=0 && y_i<spatial_dim) && (z_i>=0 && z_i<spatial_dim) ){
+				grad_coords[atom_idx] = 0.0;
+				grad_coords[atom_idx + 1] = 0.0;
+				grad_coords[atom_idx + 2] = 0.0;
 			}
 		}
 	}
@@ -128,10 +142,11 @@ void gpu_computeCoords2Volume(	double *coords,
 								float *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res){
+								float res,
+								int mode){
 
 	projectToTensor<<<1, num_atom_types>>>(	coords, num_atoms_of_type, offsets,
-											volume, spatial_dim, res);
+											volume, spatial_dim, res, mode);
 
 }
 
@@ -142,10 +157,11 @@ void gpu_computeVolume2Coords(	double *coords,
 								float *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res){
+								float res,
+								int mode){
 
 	projectFromTensor<<<1, num_atom_types>>>(	coords, grad, num_atoms_of_type, offsets,
-												volume, spatial_dim, res);
+												volume, spatial_dim, res, mode);
 
 }
 

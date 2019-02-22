@@ -11,9 +11,10 @@ import os
 class TypedCoords2VolumeFunction(Function):
 	
 	@staticmethod
-	def forward(ctx, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, box_size=120, resolution=1.0):
+	def forward(ctx, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, box_size=120, resolution=1.0, mode='gauss'):
 		ctx.save_for_backward(input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu)
 		ctx.resolution = resolution
+		ctx.mode = mode
 		num_atom_types = 11
 		if len(input_coords_gpu.size())==2:
 			batch_size = input_coords_gpu.size(0)
@@ -21,7 +22,12 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_gpu.size()) 
 
-		_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution)
+		if ctx.mode=='gauss':
+			_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution, 1)
+		elif ctx.mode=='delta':
+			_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution, 2)
+		else:
+			raise(Exception('Unknown mode: '+ctx.mode))
 
 		if math.isnan(volume_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: forward Nan'))	
@@ -41,21 +47,27 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', grad_volume_gpu.size()) 
 		
-		_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution)
+		if ctx.mode=='gauss':
+			_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution, 1)
+		elif ctx.mode=='delta':
+			_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_of_type_gpu, offsets_gpu, ctx.resolution, 2)
+		else:
+			raise(Exception('Unknown mode: '+ctx.mode))
 		
 		if math.isnan(grad_coords_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: backward Nan'))		
 		
-		return grad_coords_gpu, None, None, None, None
+		return grad_coords_gpu, None, None, None, None, None
 
 class TypedCoords2Volume(Module):
 	"""
 	Coordinated arranged in atom types function -> Volume
 	"""
-	def __init__(self, box_size=120, resolution=1.0):
+	def __init__(self, box_size=120, resolution=1.0, mode='gauss'):
 		super(TypedCoords2Volume, self).__init__()
 		self.box_size = box_size
 		self.resolution = resolution
+		self.mode = mode
 						
 	def forward(self, input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu):
-		return TypedCoords2VolumeFunction.apply(input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu, self.box_size, self.resolution)
+		return TypedCoords2VolumeFunction.apply(input_coords_cpu, num_atoms_of_type_cpu, offsets_cpu, self.box_size, self.resolution, self.mode)

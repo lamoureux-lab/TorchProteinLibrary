@@ -7,7 +7,8 @@ void TypedCoords2Volume_forward(    at::Tensor input_coords,
                                     at::Tensor volume,
                                     at::Tensor num_atoms_of_type,
                                     at::Tensor offsets,
-                                    float resolution){
+                                    float resolution,
+                                    int mode){
     int num_atom_types=11;
     // if( (!input_coords.type().is_cuda()) || (!volume.type().is_cuda()) || (!num_atoms_of_type.type().is_cuda()) 
     //     || (!offsets.type().is_cuda())
@@ -21,6 +22,10 @@ void TypedCoords2Volume_forward(    at::Tensor input_coords,
         std::cout<<"Incorrect input ndim"<<std::endl;
         throw("Incorrect input ndim");
     }
+    if(mode!=1 && mode!=2){
+        std::cout<<"Incorrect mode"<<std::endl;
+        throw("Incorrect mode");
+    }
     int batch_size = input_coords.size(0);
 
     #pragma omp parallel for
@@ -33,7 +38,7 @@ void TypedCoords2Volume_forward(    at::Tensor input_coords,
         gpu_computeCoords2Volume(   single_input_coords.data<double>(), 
                                     single_num_atoms_of_type.data<int>(), 
                                     single_offsets.data<int>(), 
-                                    single_volume.data<float>(), single_volume.size(1), num_atom_types, resolution);
+                                    single_volume.data<float>(), single_volume.size(1), num_atom_types, resolution, mode);
     }
     
 }
@@ -42,7 +47,8 @@ void TypedCoords2Volume_backward(   at::Tensor grad_volume,
                                     at::Tensor coords,
                                     at::Tensor num_atoms_of_type,
                                     at::Tensor offsets,
-                                    float resolution){
+                                    float resolution,
+                                    int mode){
     int num_atom_types=11;
     // if( (!grad_coords.type().is_cuda()) || (!grad_volume.type().is_cuda()) || (!num_atoms_of_type.type().is_cuda()) 
     //     || (!offsets.type().is_cuda()) || (!coords.type().is_cuda())
@@ -52,6 +58,10 @@ void TypedCoords2Volume_backward(   at::Tensor grad_volume,
     // }
     if(grad_coords.ndimension() != 2){
         throw("Incorrect input ndim");
+    }
+    if(mode!=1 && mode!=2){
+        std::cout<<"Incorrect mode"<<std::endl;
+        throw("Incorrect mode");
     }
     int batch_size = grad_coords.size(0);
     #pragma omp parallel for
@@ -68,7 +78,7 @@ void TypedCoords2Volume_backward(   at::Tensor grad_volume,
                                     single_num_atoms_of_type.data<int>(),
                                     single_offsets.data<int>(), 
                                     single_grad_volume.data<float>(), 
-                                    single_grad_volume.size(1), num_atom_types, resolution);
+                                    single_grad_volume.size(1), num_atom_types, resolution, mode);
     }
     
 }

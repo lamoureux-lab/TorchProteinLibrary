@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 
+//This code adapted from https://github.com/mlund/situs.git
+
 class cSO3Sampler{
     public:
         cSO3Sampler(double dAngle);

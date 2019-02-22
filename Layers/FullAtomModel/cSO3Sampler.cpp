@@ -1,5 +1,7 @@
 #include "cSO3Sampler.h"
 
+//This code adapted from https://github.com/mlund/situs.git
+
 #define ROT_CONV (M_PI/180.0)
 void cSO3Sampler::remap_eulers (double *psi_out, double *theta_out, double *phi_out,
 					 double psi_in, double theta_in, double phi_in,
