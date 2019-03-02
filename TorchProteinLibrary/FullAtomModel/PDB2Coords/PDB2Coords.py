@@ -86,7 +86,7 @@ class PDB2CoordsUnordered:
 	
 		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 
-def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_atoms, add_model=True, rewrite=True):
+def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_atoms, bfactors=None, add_model=True, rewrite=True):
 	batch_size = coords.size(0)
 	last_model_num = 0
 	last_atom_num = 0
@@ -123,7 +123,11 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 				x = coords[i, 3*j].item()
 				y = coords[i, 3*j+1].item()
 				z = coords[i, 3*j+2].item()
-				fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z))
+				if bfactors is None:
+					fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z))
+				else:
+					bfactor = bfactors[i, j]
+					fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor))
 			
 			if add_model:
 				fout.write("ENDMDL\n")

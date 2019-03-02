@@ -272,11 +272,11 @@ __global__ void backwardFromCoordinatesBackbone(REAL *angles, REAL *dr, REAL *dR
 		
 }
 
-void cpu_computeCoordinatesBackbone(REAL *angles, REAL *atoms, REAL *A, int *length, int batch_size, int angles_stride){
+void gpu_computeCoordinatesBackbone(REAL *angles, REAL *atoms, REAL *A, int *length, int batch_size, int angles_stride){
 	computeCoordinatesBackbone<<<1, batch_size>>>(angles, atoms, A, length, angles_stride);
 }
 
-void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int batch_size, int angles_stride){
+void gpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int *length, int batch_size, int angles_stride){
 	dim3 batch_angles_dim_special(batch_size, 3*angles_stride, angles_stride/WARP_SIZE + 1);
 	
 	// computeGradientsOptimizedBackbonePhi<<<batch_angles_dim_special, WARP_SIZE>>>(angles, dR_dangle, A, length, angles_stride);
@@ -286,7 +286,7 @@ void cpu_computeDerivativesBackbone(REAL *angles, REAL *dR_dangle, REAL *A, int 
 
 }
 
-void cpu_backwardFromCoordsBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int batch_size, int angles_stride){
+void gpu_backwardFromCoordsBackbone(REAL *angles, REAL *dr, REAL *dR_dangle, int *length, int batch_size, int angles_stride){
 	backwardFromCoordinatesBackbone<<<batch_size, angles_stride>>>(angles, dr, dR_dangle, length, angles_stride);
 }
 

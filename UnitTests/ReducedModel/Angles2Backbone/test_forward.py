@@ -28,7 +28,6 @@ def measure_trace(length=700):
 	
 	x1 = torch.zeros(1, 7, length, dtype=torch.double)
 	x1.data[:,0:2,:].copy_(x0.data[:,0:2,:])
-
 	
 	proteins_fa, res_names, atom_names, num_atoms = a2cfa(x1,[sequence])
 	proteins_fa = proteins_fa.data.cpu().resize_(1,num_atoms.data[0],3).numpy()

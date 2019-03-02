@@ -66,10 +66,14 @@ if __name__=='__main__':
 
 	ReducedModel = CUDAExtension('_ReducedModel',
 					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Layers/ReducedModel/cBackboneProteinCPUKernels.cpp',
 					'Layers/ReducedModel/Angles2Backbone/angles2backbone_interface.cpp',
 					'Layers/ReducedModel/cBackboneProteinCUDAKernels.cu',
 					'Layers/ReducedModel/main.cpp'],
-					include_dirs = ['Layers/ReducedModel'],
+					include_dirs = ['Layers/ReducedModel', 'Math'],
 					libraries = ['gomp'],
 					extra_compile_args={'cxx': ['-fopenmp'],
                                         'nvcc': ['-Xcompiler', '-fopenmp']}

@@ -51,11 +51,9 @@ void Angles2Coords_forward(     at::Tensor sequences,
         if( single_atom_names.sizes()[0]<seq.length() ){
             throw("incorrect atom names tensor length");
         }
-        
         at::Tensor dummy_grad = at::CPU(at::kDouble).zeros_like(single_angles);
         cConformation conf( seq, single_angles.data<double>(), dummy_grad.data<double>(),
                             length, single_coords.data<double>());
-        
         //Output atom names and residue names
         for(int j=0; j<conf.groups.size(); j++){
             for(int k=0; k<conf.groups[j]->atomNames.size(); k++){

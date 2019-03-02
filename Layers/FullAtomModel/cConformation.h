@@ -13,11 +13,6 @@ class cTransform{
         double *grad_alpha;
         double d;
         
-        cMatrix44 getRx(double angle);
-        cMatrix44 getDRx(double angle);
-        cMatrix44 getRy(double angle);
-        cMatrix44 getRz(double angle);
-        cMatrix44 getT(double dist, char axis);
     public:
         cMatrix44 mat, dmat;
         cTransform(double *param_alpha, double *param_beta, double d, double *grad_alpha){

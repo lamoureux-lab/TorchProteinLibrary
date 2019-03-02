@@ -4,64 +4,19 @@
 using namespace StringUtil;
 using namespace ProtUtil;
 
-cMatrix44 cTransform::getT(double dist, char axis){
-    int ax_ind;
-    switch(axis){
-        case 'x':
-            ax_ind=0;
-            break;
-        case 'y':
-            ax_ind=1;
-            break;
-        case 'z':
-            ax_ind=2;
-            break;
-        default:
-            throw(std::string("cTransform::getT Axis selection error"));
-            break;
-    };
-    cMatrix44 m;
-    m.ones();
-    m.m[ax_ind][3]=dist;
-    return m;
-}
-cMatrix44 cTransform::getRz(double angle){
-    cMatrix44 m;
-    m.m[0][0]=cos(angle); 	m.m[0][1]=-sin(angle);	m.m[0][2]=0;	m.m[0][3]=0;
-	m.m[1][0]=sin(angle);	m.m[1][1]=cos(angle);	m.m[1][2]=0;	m.m[1][3]=0;
-	m.m[2][0]=0;            m.m[2][1]=0;	        m.m[2][2]=1;    m.m[2][3]=0;
-	m.m[3][0]=0;			m.m[3][1]=0;			m.m[3][2]=0;	m.m[3][3]=1;
-    return m;
-}
-cMatrix44 cTransform::getRy(double angle){
-    cMatrix44 m;
-    m.m[0][0]=cos(angle); 	m.m[0][1]=0;	m.m[0][2]=sin(angle);	m.m[0][3]=0;
-	m.m[1][0]=0;	        m.m[1][1]=1;	m.m[1][2]=0;	        m.m[1][3]=0;
-	m.m[2][0]=-sin(angle);  m.m[2][1]=0;    m.m[2][2]=cos(angle);   m.m[2][3]=0;
-	m.m[3][0]=0;			m.m[3][1]=0;	m.m[3][2]=0;	        m.m[3][3]=1;
-    return m;
-}
-cMatrix44 cTransform::getRx(double angle){
-    cMatrix44 m;
-    m.m[0][0]=1;    m.m[0][1]=0;	        m.m[0][2]=0;            m.m[0][3]=0;
-	m.m[1][0]=0;	m.m[1][1]=cos(angle);	m.m[1][2]=-sin(angle);  m.m[1][3]=0;
-	m.m[2][0]=0;    m.m[2][1]=sin(angle);   m.m[2][2]=cos(angle);   m.m[2][3]=0;
-	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=1;
-    return m;
-}
-cMatrix44 cTransform::getDRx(double angle){
-    cMatrix44 m;
-    m.m[0][0]=0;    m.m[0][1]=0;	        m.m[0][2]=0;            m.m[0][3]=0;
-	m.m[1][0]=0;	m.m[1][1]=-sin(angle);	m.m[1][2]=-cos(angle);  m.m[1][3]=0;
-	m.m[2][0]=0;    m.m[2][1]=cos(angle);   m.m[2][2]=-sin(angle);  m.m[2][3]=0;
-	m.m[3][0]=0;	m.m[3][1]=0;	        m.m[3][2]=0;            m.m[3][3]=0;
-    return m;
-}
 void cTransform::updateMatrix(){
-    mat = getRy(*beta)*getT(d, 'x')*getRx(*alpha);
+    cMatrix44 Ry, T, Rx;
+    Ry.setRy(*beta);
+    T.setT(d, 'x');
+    Rx.setRx(*alpha);
+    mat = Ry*T*Rx;
 }
 void cTransform::updateDMatrix(){
-    dmat = getRy(*beta)*getT(d, 'x')*getDRx(*alpha);
+    cMatrix44 Ry, T, DRx;
+    Ry.setRy(*beta);
+    T.setT(d, 'x');
+    DRx.setDRx(*alpha);
+    dmat = Ry*T*DRx;
 }
 void cTransform::print(){
     mat.print();
@@ -201,7 +156,7 @@ void cConformation::update(cNode *node){
         node->F = (node->parent->M) * (node->T->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
     }else{
-        node->M.ones();
+        node->M.setIdentity();
         node->F = (node->T->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
     }
