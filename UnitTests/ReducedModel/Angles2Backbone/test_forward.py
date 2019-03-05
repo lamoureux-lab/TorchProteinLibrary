@@ -14,10 +14,10 @@ import pickle as pkl
 from TorchProteinLibrary.FullAtomModel import Angles2Coords
 from TorchProteinLibrary.ReducedModel import Angles2Backbone
 
-def measure_trace(length=700):
-	x0 = torch.randn(1, 3, length, dtype=torch.float, device='cuda')
+def measure_trace(length=700, device='cuda'):
+	x0 = torch.randn(1, 3, length, dtype=torch.float, device=device)
 	x0.data[:,2,:].fill_(-3.1318)
-	length = torch.zeros(1, dtype=torch.int, device='cuda').fill_(length)
+	length = torch.zeros(1, dtype=torch.int, device=device).fill_(length)
 	a2c = Angles2Backbone()
 	proteins = a2c(x0, length)
 	proteins = proteins.data.cpu().resize_(1,3*length,3).numpy()
@@ -51,11 +51,11 @@ def measure_trace(length=700):
 
 	return error, index
 
-def measure_statistics(length=700, num_measurements=10, output_filename='ErrorStat.pkl'):
+def measure_statistics(length=700, num_measurements=10, output_filename='ErrorStat.pkl', device='cuda'):
 	errors = []
 	indexes = []
 	for i in range(num_measurements):
-		error, index = measure_trace(length)
+		error, index = measure_trace(length, device=device)
 		errors += error
 		indexes += index
 	
@@ -69,7 +69,7 @@ if __name__=='__main__':
 	if not os.path.exists("TestFig"):
 		os.mkdir("TestFig")
 	
-	measure_statistics(length=700, num_measurements=3, output_filename='ErrorStatOmega.pkl')
+	measure_statistics(length=700, num_measurements=3, output_filename='ErrorStatOmega.pkl', device='cpu')
 	
 	data = pd.read_pickle('ErrorStatOmega.pkl')
 	sea.set_style("whitegrid")

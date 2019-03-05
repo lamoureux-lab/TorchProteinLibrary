@@ -3,6 +3,17 @@
 *.png
 *.pdb
 *.xplor
+*.tex
+*.svg
+*.code-workspace
+*.egg-info
+*.pkl
+*.js
+*.bib
+*.pdf
+*.sty
+*.gif
+*.txt
 
 #Python 
 *.pyc

@@ -86,7 +86,9 @@ int Angles2BackboneCPU_forward(at::Tensor input_angles,
                                     input_angles.size(0),
                                     input_angles.size(2));
 }
-int Angles2BackboneCPU_backward(   at::Tensor gradInput,
+
+
+int Angles2BackboneCPU_backward(at::Tensor gradInput,
                                 at::Tensor gradOutput,
                                 at::Tensor input_angles, 
                                 at::Tensor angles_length, 
@@ -104,6 +106,7 @@ int Angles2BackboneCPU_backward(   at::Tensor gradInput,
     if(gradOutput.ndimension() != 2){
         throw("Incorrect input ndim");
     }
+    
     cpu_computeDerivativesBackbone( input_angles.data<double>(),
                                     dr_dangle.data<double>(),
                                     A.data<double>(),

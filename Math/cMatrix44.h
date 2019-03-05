@@ -8,10 +8,11 @@
 class cMatrix44 {
 private:
     bool external;
-    double	*m;
+    double	*m = NULL;
 public:
 
     cMatrix44();
+    cMatrix44(const cMatrix44& other);
     ~cMatrix44();
     cMatrix44(double *mat);
     cMatrix44(double mat[4][4]);

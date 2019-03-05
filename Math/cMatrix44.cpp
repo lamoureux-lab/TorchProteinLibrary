@@ -4,21 +4,29 @@
 
 cMatrix44::cMatrix44(){
 	external = false;
-    m = new double[16];
-	// for(int i=0;i<4;i++)for(int j=0;j<4;j++)(*this)(i,j)=0.0;
+    this->m = new double[16];
+}
+cMatrix44::cMatrix44(const cMatrix44& other){
+	this->external = other.external;
+	if(other.external){
+		this->m = other.m;
+	}else{
+		this->m = new double[16];
+		for(int i=0;i<4;i++)for(int j=0;j<4;j++)(*this)(i,j)=other(i,j);
+	}
 }
 cMatrix44::cMatrix44(double mat[4][4]){
 	external = false;
-    m = new double[16];
+    this->m = new double[16];
 	for(int i=0;i<4;i++)for(int j=0;j<4;j++)(*this)(i,j)=mat[i][j];
 }
 cMatrix44::cMatrix44(double *mat){
 	external = true;
-	m = mat;
+	this->m = mat;
 }
 cMatrix44::cMatrix44(const cMatrix33 &rot, const cVector3 &shift){
 	external = false;
-    m = new double[16];
+    this->m = new double[16];
 	for(int i=0;i<3;i++){
 		(*this)(3,i)=shift[i];
 		for(int j=0;j<3;j++)

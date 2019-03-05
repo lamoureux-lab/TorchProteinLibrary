@@ -39,7 +39,7 @@ class Angles2BackboneGPUFunction(Function):
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
 			
-		_ReducedModel.Angles2BackboneGPU_backward(gradInput_gpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
+		_ReducedModel.Angles2BackboneGPU_backward(gradInput_gpu, gradOutput, input_angles, angles_length, ctx.A, dr_dangle)
 		
 		if math.isnan(torch.sum(gradInput_gpu)):
 			raise(Exception('Angles2BackboneFunction: backward Nan'))		
@@ -62,16 +62,19 @@ class Angles2BackboneCPUFunction(Function):
 			raise Exception('Angles2BackboneFunction: ', 'Incorrect input size:', input.size()) 
 
 		_ReducedModel.Angles2BackboneCPU_forward( input, output_coords_cpu, angles_length, ctx.A)
-													
-		if math.isnan(output_coords_gpu.sum()):
-			raise(Exception('Angles2BackboneFunction: forward Nan'))
+
+		if math.isnan(ctx.A.sum()):
+			raise(Exception('Angles2BackboneFunction: ctx.A forward Nan'))
+
+		if math.isnan(output_coords_cpu.sum()):
+			raise(Exception('Angles2BackboneFunction: output_coords_cpu forward Nan'))
 
 		ctx.save_for_backward(input, angles_length)
 		return output_coords_cpu
 			
 	@staticmethod
-	def backward(ctx, gradOutput):
-		gradOutput = gradOutput.contiguous()
+	def backward(ctx, gradOutput_cpu):
+		gradOutput_cpu = gradOutput_cpu.contiguous()
 		input_angles, angles_length = ctx.saved_tensors
 		if len(input_angles.size()) == 3:
 			batch_size = input_angles.size(0)
@@ -79,11 +82,14 @@ class Angles2BackboneCPUFunction(Function):
 			dr_dangle = torch.zeros(batch_size, 3, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.double, device='cpu')
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
-			
-		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradOutput.data, input_angles, angles_length, ctx.A, dr_dangle)
 		
+		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradOutput_cpu, input_angles, angles_length, ctx.A, dr_dangle)
+		
+		if math.isnan(torch.sum(dr_dangle)):
+			raise(Exception('Angles2BackboneFunction: dr_dangle backward Nan'))		
+
 		if math.isnan(torch.sum(gradInput_cpu)):
-			raise(Exception('Angles2BackboneFunction: backward Nan'))		
+			raise(Exception('Angles2BackboneFunction: gradInput_cpu backward Nan'))		
 		
 		return gradInput_cpu, None, None
 
