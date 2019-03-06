@@ -16,7 +16,7 @@ import torch.optim as optim
 from TorchProteinLibrary.ReducedModel import Angles2Backbone as Angles2Coords
 
 def test_gradient(device = 'cuda'):
-	L=30
+	L=65
 	x0 = torch.zeros(1, 3, L, dtype=torch.float, device=device).normal_().requires_grad_()
 	x1 = torch.zeros(1, 3, L, dtype=torch.float, device=device).normal_()
 	length = torch.zeros(1, dtype=torch.int, device=device).fill_(L)
@@ -53,7 +53,7 @@ def test_gradient(device = 'cuda'):
 	plt.savefig('TestFig/angles2backbone_gradients.png')
 
 def test_gradient_batch(device='cuda'):
-	L=10
+	L=65
 	batch_size = 10
 	x0 = torch.zeros(batch_size, 3, L, dtype=torch.float, device=device).normal_().requires_grad_()
 	x1 = torch.zeros(batch_size, 3, L, dtype=torch.float, device=device).normal_()

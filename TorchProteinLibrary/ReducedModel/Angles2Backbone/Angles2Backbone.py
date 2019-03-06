@@ -63,8 +63,8 @@ class Angles2BackboneCPUFunction(Function):
 
 		_ReducedModel.Angles2BackboneCPU_forward( input, output_coords_cpu, angles_length, ctx.A)
 
-		if math.isnan(ctx.A.sum()):
-			raise(Exception('Angles2BackboneFunction: ctx.A forward Nan'))
+		# if math.isnan(ctx.A.sum()):
+		# 	raise(Exception('Angles2BackboneFunction: ctx.A forward Nan'))
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('Angles2BackboneFunction: output_coords_cpu forward Nan'))
@@ -85,8 +85,8 @@ class Angles2BackboneCPUFunction(Function):
 		
 		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradOutput_cpu, input_angles, angles_length, ctx.A, dr_dangle)
 		
-		if math.isnan(torch.sum(dr_dangle)):
-			raise(Exception('Angles2BackboneFunction: dr_dangle backward Nan'))		
+		# if math.isnan(torch.sum(dr_dangle)):
+		# 	raise(Exception('Angles2BackboneFunction: dr_dangle backward Nan'))		
 
 		if math.isnan(torch.sum(gradInput_cpu)):
 			raise(Exception('Angles2BackboneFunction: gradInput_cpu backward Nan'))		

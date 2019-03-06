@@ -126,23 +126,16 @@ void cpu_backwardFromCoordsBackbone(    double *gradInput,
         int num_angles = length[batch_idx];
         for(int angle_idx=0; angle_idx<num_angles; angle_idx++){
             int num_atoms = 3*num_angles;
+            for(int angle_k=0; angle_k<3; angle_k++){
     
-            double *d_phi = gradInput + 3*batch_idx*angles_stride + angle_idx;
-            double *d_psi = gradInput + (3*batch_idx+1)*angles_stride + angle_idx;
-            double *d_omega = gradInput + (3*batch_idx+2)*angles_stride + angle_idx;
-            
-            double *dR_dPhi = dR_dangle + 3*batch_idx * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
-            double *dR_dPsi = dR_dangle + (3*batch_idx+1) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
-            double *dR_dOmega = dR_dangle + (3*batch_idx+2) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
+                double *d_angle = gradInput + (3*batch_idx+angle_k) * angles_stride + angle_idx;
+                double *dR_dAngle = dR_dangle + (3*batch_idx+angle_k) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
 
-            for(int atom_idx=3*angle_idx; atom_idx<num_atoms; atom_idx++){
-                cVector3 dr(gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx);
-                cVector3 dr_dphi(dR_dPhi + atom_idx*3);
-                cVector3 dr_dpsi(dR_dPsi  + atom_idx*3);
-                cVector3 dr_domega(dR_dOmega + atom_idx*3);
-                (*d_phi) += dr | dr_dphi;
-                (*d_psi) += dr | dr_dpsi;
-                (*d_omega) += dr | dr_domega;
+                for(int atom_idx=3*angle_idx; atom_idx<num_atoms; atom_idx++){
+                    cVector3 dr(gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx);
+                    cVector3 dr_dangle(dR_dAngle + atom_idx*3);
+                    (*d_angle) += dr | dr_dangle;
+                }
             }
         }
     }

@@ -13,7 +13,7 @@ if __name__=='__main__':
 	#Setting conformation to alpha-helix
 	N = 20
 	num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_(N)
-	angles = torch.zeros(1, 2, N, dtype=torch.float, device='cuda')
+	angles = torch.zeros(1, 3, N, dtype=torch.float, device='cuda')
 	angles.data[:,0,:] = -1.047 # phi = -60 degrees
 	angles.data[:,1,:] = -0.698 # psi = -40 degrees
 
