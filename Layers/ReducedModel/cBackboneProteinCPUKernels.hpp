@@ -1,10 +1,10 @@
 
 void cpu_computeCoordinatesBackbone(    double *angles, 
-                                    double *dr, 
-                                    double *dR_dangle, 
-                                    int *length, 
-                                    int batch_size, 
-                                    int angles_stride);
+										double *dr, 
+										double *dR_dangle, 
+										int *length, 
+										int batch_size, 
+										int angles_stride);
 
 void cpu_computeDerivativesBackbone(    double *angles,  
                                         double *dR_dangle,   
