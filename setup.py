@@ -21,6 +21,7 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Volume.Select',
 				'TorchProteinLibrary.Volume.VolumeConvolution',
 				'TorchProteinLibrary.Volume.VolumeRotation',
+				'TorchProteinLibrary.Volume.VolumeRMSD',
 				#RMSD
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
@@ -49,16 +50,21 @@ if __name__=='__main__':
 
 	Volume = CUDAExtension('_Volume',
 					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
 					'Layers/Volume/TypedCoords2Volume/typedcoords2volume_interface.cpp',
 					'Layers/Volume/Volume2Xplor/volume2xplor_interface.cpp',
 					'Layers/Volume/Select/select_interface.cpp',
 					'Layers/Volume/VolumeConvolution/volumeConvolution_interface.cpp',
 					'Layers/Volume/VolumeRotation/volumeRotation_interface.cpp',
+					'Layers/Volume/VolumeRMSD/volumeRMSD_interface.cpp',
 					'Layers/Volume/Kernels.cu',
 					'Layers/Volume/VolumeConv.cu',
 					'Layers/Volume/RotateGrid.cu',
+					'Layers/Volume/VolumeRMSD.cu',
 					'Layers/Volume/main.cpp'],
-					include_dirs = ['Layers/Volume'],
+					include_dirs = ['Layers/Volume', 'Math'],
 					libraries = ['gomp', 'cufft'],
 					extra_compile_args={'cxx': ['-fopenmp'],
                                         'nvcc': ['-Xcompiler', '-fopenmp']}
