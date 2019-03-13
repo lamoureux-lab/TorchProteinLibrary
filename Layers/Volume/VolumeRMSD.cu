@@ -17,11 +17,11 @@ __global__ void fillVolume( REAL *d_volume,
 
 		REAL T1_x = x*resolution, T1_y = y*resolution, T1_z = z*resolution;
 		if (x >= half_size)
-		T1_x = -(half_size - x) * resolution;
+			T1_x = -(float(volume_size) - float(x)) * resolution;
 		if (y >= half_size)
-				T1_y = -(half_size - y) * resolution;
+			T1_y = -(float(volume_size) - float(y)) * resolution;
 		if (z >= half_size)
-			T1_z = -(half_size - z) * resolution;
+			T1_z = -(float(volume_size) - float(z)) * resolution;
 
 		vol[z] = sqrt((T0_x - T1_x)*(T0_x - T1_x) + (T0_y - T1_y)*(T0_y - T1_y) + (T0_z - T1_z)*(T0_z - T1_z) + \
 								(T0_x - T1_x)*D_x + (T0_y - T1_y)*D_y + (T0_z - T1_z)*D_z + add);

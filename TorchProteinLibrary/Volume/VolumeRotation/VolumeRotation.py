@@ -33,10 +33,10 @@ class VolumeRotationFunction(Function):
 		num_features = grad_output_volume.size(1)
 		size = grad_output_volume.size(2)
 
-		grid = torch.zeros(batch_size, size, size, size, 3)
+		grid = torch.zeros(batch_size, size, size, size, 3, dtype=torch.float, device='cuda')
 		_Volume.VolumeGenGrid(ctx.U, grid)
 		
-		return F.grid_sample(grad_output_volume, grid, mode=ctx.mode, padding_mode=ctx.padding_mode)
+		return F.grid_sample(grad_output_volume, grid, mode=ctx.mode, padding_mode=ctx.padding_mode), None, None, None
 		
 
 class VolumeRotation(torch.nn.Module):

@@ -29,9 +29,9 @@ if __name__=='__main__':
 	
 	box_size = 80
 	resolution = 1.25
-	ix = 10
-	iy = 90
-	iz = 10
+	ix = 0
+	iy = 159
+	iz = 0
 
 	sequence = ['GGAGRRRGGWG']
 	angles = torch.zeros(len(sequence), 7, len(sequence[0]), dtype=torch.double)
@@ -48,7 +48,7 @@ if __name__=='__main__':
 	R0[0,1,1]=1.0
 	R0[0,2,2]=1.0
 	T0 = torch.zeros(1,3, dtype=torch.double, device='cpu')
-		
+	R1 = R0
 	#Generating protein
 	protein, res_names, atom_names, num_atoms = a2c(angles, sequence)
 		
@@ -60,11 +60,11 @@ if __name__=='__main__':
 	T1[0,1] = iy * resolution
 	T1[0,2] = iz * resolution
 	if ix>=box_size:
-		T1[0,0] = -(box_size - ix)*resolution
+		T1[0,0] = -(2*box_size - ix)*resolution
 	if iy>=box_size:
-		T1[0,1] = -(box_size - iy)*resolution
+		T1[0,1] = -(2*box_size - iy)*resolution
 	if iz>=box_size:
-		T1[0,2] = -(box_size - iz)*resolution
+		T1[0,2] = -(2*box_size - iz)*resolution
 	
 	rotated_coords = rotate(protein, R1, num_atoms)
 	trans_rotated_coords = translate(rotated_coords, T1, num_atoms)
