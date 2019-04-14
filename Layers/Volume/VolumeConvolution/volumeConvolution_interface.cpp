@@ -19,7 +19,8 @@ void VolumeConvolution_forward( at::Tensor volume1,
                     volume2.data<float>(), 
                     output.data<float>(), 
                     volume1.size(0),
-                    volume1.size(1));
+                    volume1.size(1),
+                    true);
 }
 void VolumeConvolution_backward(    at::Tensor gradOutput,
                                     at::Tensor gradVolume1,
@@ -37,18 +38,21 @@ void VolumeConvolution_backward(    at::Tensor gradOutput,
     if(gradOutput.ndimension()!=4){
         throw("incorrect input dimension");
     }
-        
+    // std::cout<<"backward start"<<std::endl;
     cpu_VolumeConv(	gradOutput.data<float>(), 
                     volume2.data<float>(), 
                     gradVolume1.data<float>(), 
-                        volume1.size(0),
-                        volume1.size(1));
-    
-    cpu_VolumeConv(	gradOutput.data<float>(), 
-                    volume1.data<float>(), 
+                    volume1.size(0),
+                    volume1.size(1),
+                    false);
+    // std::cout<<"backward step1"<<std::endl;
+    cpu_VolumeConv(	volume1.data<float>(), 
+                    gradOutput.data<float>(),
                     gradVolume2.data<float>(), 
                     volume1.size(0),
-                    volume1.size(1));
+                    volume1.size(1),
+                    true);
+    // std::cout<<"backward end"<<std::endl;
     
 }
 

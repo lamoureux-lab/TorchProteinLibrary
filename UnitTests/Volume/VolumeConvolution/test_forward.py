@@ -107,6 +107,7 @@ if __name__=='__main__':
 	_Volume.Volume2Xplor(out.squeeze().cpu(), "out.xplor", 1.0)
 
 	score, r = get_argmax(out[0,0,:,:,:])
+	print(r)
 	r = list(r)
 	if r[0]>=v_size:
 		r[0] = -(2*v_size - r[0])

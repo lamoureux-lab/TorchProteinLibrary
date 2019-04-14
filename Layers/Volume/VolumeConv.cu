@@ -1,5 +1,64 @@
 #include "VolumeConv.h"
 #include <cufft.h>
+#include <stdio.h>
+
+#define gpuFFTErrchk(err) { __cufftSafeCall(err, __FILE__, __LINE__); }
+#define gpuErrchk(err) { gpuAssert(err, __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
+static const char *_cudaGetErrorEnum(cufftResult error)
+{
+    switch (error)
+    {
+        case CUFFT_SUCCESS:
+            return "CUFFT_SUCCESS";
+
+        case CUFFT_INVALID_PLAN:
+            return "CUFFT_INVALID_PLAN";
+
+        case CUFFT_ALLOC_FAILED:
+            return "CUFFT_ALLOC_FAILED";
+
+        case CUFFT_INVALID_TYPE:
+            return "CUFFT_INVALID_TYPE";
+
+        case CUFFT_INVALID_VALUE:
+            return "CUFFT_INVALID_VALUE";
+
+        case CUFFT_INTERNAL_ERROR:
+            return "CUFFT_INTERNAL_ERROR";
+
+        case CUFFT_EXEC_FAILED:
+            return "CUFFT_EXEC_FAILED";
+
+        case CUFFT_SETUP_FAILED:
+            return "CUFFT_SETUP_FAILED";
+
+        case CUFFT_INVALID_SIZE:
+            return "CUFFT_INVALID_SIZE";
+
+        case CUFFT_UNALIGNED_DATA:
+            return "CUFFT_UNALIGNED_DATA";
+    }
+
+    return "<unknown>";
+}
+
+inline void __cufftSafeCall(cufftResult err, const char *file, const int line)
+{
+    if( CUFFT_SUCCESS != err) {
+        fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n",__FILE__, __LINE__,err, \
+                                    _cudaGetErrorEnum(err)); \
+        cudaDeviceReset(); exit(1); \
+    }
+}
 
 #define WARP_SIZE 32
 
@@ -28,44 +87,51 @@ __global__ void conjMul(cufftComplex *c_volume1, cufftComplex *c_volume2, cufftC
 
 }
 
-void cpu_VolumeConv(REAL *d_volume1,  REAL *d_volume2,  REAL *d_output, int batch_size, int volume_size){
+void cpu_VolumeConv(REAL *d_volume1,  REAL *d_volume2,  REAL *d_output, int batch_size, int volume_size, bool conjugate){
     cufftHandle plan_fwd, plan_bwd;
     cufftComplex *c_volume1, *c_volume2, *c_output;
     int reduced_volume_size = (volume_size/2 + 1);
-    cudaMalloc((void**)&c_volume1, sizeof(cufftComplex)*batch_size*volume_size*volume_size*reduced_volume_size);
-    cudaMalloc((void**)&c_volume2, sizeof(cufftComplex)*batch_size*volume_size*volume_size*reduced_volume_size);
-    cudaMalloc((void**)&c_output, sizeof(cufftComplex)*batch_size*volume_size*volume_size*volume_size);
-
+    
+    gpuErrchk(cudaMalloc((void**)&c_volume1, sizeof(cufftComplex)*batch_size*volume_size*volume_size*reduced_volume_size));
+    gpuErrchk(cudaMalloc((void**)&c_volume2, sizeof(cufftComplex)*batch_size*volume_size*volume_size*reduced_volume_size));
+    gpuErrchk(cudaMalloc((void**)&c_output, sizeof(cufftComplex)*batch_size*volume_size*volume_size*volume_size));
+    // printf("Finished malloc\n");
     int dimensions_real[] = {volume_size, volume_size, volume_size};
     int dimensions_complex[] = {volume_size, volume_size, reduced_volume_size};
     int batch_volume_real = volume_size*volume_size*volume_size;
     int batch_volume_complex = volume_size*volume_size*reduced_volume_size;
     int inembed[] = {volume_size, volume_size, volume_size};
     int onembed[] = {volume_size, volume_size, reduced_volume_size};
-    cufftPlanMany(&plan_fwd, 3, dimensions_real, 
+    // printf("Started plan\n");
+    gpuFFTErrchk(cufftPlanMany(&plan_fwd, 3, dimensions_real, 
                     inembed, 1, batch_volume_real, 
                     onembed, 1, batch_volume_complex,
-                    CUFFT_R2C, batch_size);
+                    CUFFT_R2C, batch_size));
 
-    cufftPlanMany(  &plan_bwd, 3, dimensions_real, 
+    gpuFFTErrchk(cufftPlanMany(  &plan_bwd, 3, dimensions_real, 
                     onembed, 1, batch_volume_complex, 
                     inembed, 1, batch_volume_real,
-                    CUFFT_C2R, batch_size);
-
-    cufftExecR2C(plan_fwd, d_volume1, c_volume1);
-    cufftExecR2C(plan_fwd, d_volume2, c_volume2);
+                    CUFFT_C2R, batch_size));
+    // printf("Started fft\n");
+    gpuFFTErrchk(cufftExecR2C(plan_fwd, d_volume1, c_volume1));
+    gpuFFTErrchk(cufftExecR2C(plan_fwd, d_volume2, c_volume2));
+    // printf("Finished fft\n");
 
     dim3 dim_special(batch_size, batch_volume_complex/WARP_SIZE + 1);
-	conjMul<<<dim_special, WARP_SIZE>>>(c_volume1, c_volume2, c_output, batch_size, volume_size, true);
+	conjMul<<<dim_special, WARP_SIZE>>>(c_volume1, c_volume2, c_output, batch_size, volume_size, conjugate);
+    gpuErrchk( cudaPeekAtLastError() );
+    gpuErrchk( cudaDeviceSynchronize() );
 
-    cufftExecC2R(plan_bwd, c_output, d_output);
+    // printf("Finished mul\n");
+    gpuFFTErrchk(cufftExecC2R(plan_bwd, c_output, d_output));
+    // printf("Finished invfft\n");
     
-    cufftDestroy(plan_fwd);
-    cufftDestroy(plan_bwd);
-    cudaFree(c_volume1);
-    cudaFree(c_volume2);
-    cudaFree(c_output);
-
+    gpuFFTErrchk(cufftDestroy(plan_fwd));
+    gpuFFTErrchk(cufftDestroy(plan_bwd));
+    gpuErrchk(cudaFree(c_volume1));
+    gpuErrchk(cudaFree(c_volume2));
+    gpuErrchk(cudaFree(c_output));
+    // printf("Finished free\n");
 }
 
 
