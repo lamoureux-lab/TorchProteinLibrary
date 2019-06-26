@@ -161,7 +161,7 @@ cMatrix33 ProtUtil::getRotation(double u1, double u2, double u3){
     return rotation;
 }
 
-cVector3 ProtUtil::getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3 &b1){
+cVector3 ProtUtil::getRandomTranslation(float spatial_dim, cVector3 &b0, cVector3 &b1){
     float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
     float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
     float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;

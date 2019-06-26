@@ -22,6 +22,6 @@ void getBBox(   at::Tensor input_coords,
 
 void getRandomRotation( at::Tensor R);
 void getRotation( at::Tensor R, at::Tensor u );
-void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size);
+void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, float volume_size);
 
 void getSO3Samples( float dAngle, torch::Tensor R );

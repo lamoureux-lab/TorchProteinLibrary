@@ -49,7 +49,7 @@ namespace ProtUtil{
 
     cMatrix33 getRandomRotation();
     cMatrix33 getRotation(double u1, double u2, double u3);
-    cVector3 getRandomTranslation(uint spatial_dim, cVector3 &b0, cVector3 &b1);
+    cVector3 getRandomTranslation(float spatial_dim, cVector3 &b0, cVector3 &b1);
     
     cMatrix33 tensor2Matrix33(at::Tensor T);
     void matrix2Tensor(cMatrix33 &mat, at::Tensor &T);

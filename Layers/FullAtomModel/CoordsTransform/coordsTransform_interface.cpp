@@ -140,7 +140,7 @@ void getRotation( at::Tensor R, at::Tensor u ){
         ProtUtil::matrix2Tensor(R, single_R);
     }
 }
-void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, int volume_size){
+void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, float volume_size){
     // if( T.dtype() != at::kDouble || a.dtype() != at::kDouble || b.dtype() != at::kDouble){
     //     throw("Incorrect tensor types");
     // }
