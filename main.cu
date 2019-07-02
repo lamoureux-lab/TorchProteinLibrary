@@ -115,15 +115,15 @@
                   A[id][id+1]=device_eps[p*size*size+q*size+(r+1)]*A[id][id+1];
                   A[id][id-1]=device_eps[p*size*size+q*size+(r-1)]*A[id][id-1];
                   A[id][id+size]=device_eps[p*size*size+(q+1)*size+(r)]*A[id][id+size];
-                  A[id][id-size]=device_eps[p*size*size+(q-1)*size+(r)]*A[id][id-size];
-                  A[id][id+2*size]=device_eps[(p+1)*size*size+q*size+(r)]*A[id][id+2*size];
-                  A[id][id-2*size]=device_eps[(p-1)*size*size+q*size+(r)]*A[id][id-2*size];
+                  A[id][id-size]=device_eps[p*size*size+(q-1)*size+(r+1)]*A[id][id-size];
+                  A[id][id+2*size]=device_eps[(p+1)*size*size+q*size+(r+1)]*A[id][id+2*size];
+                  A[id][id-2*size]=device_eps[(p+1)*size*size+q*size+(r+1)]*A[id][id-2*size];
                  }
            }  
       }                       
                   
       cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-      cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);//this is not correct,has to be improved.
+      cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
       
       cusp::default_monitor<float> monitor(b, 100, 1e-6);
       // setup preconditioner
@@ -133,7 +133,8 @@
     
                   
                   
-        
+     // solve the linear system A * x = b with the Conjugate Gradient method
+    cusp::krylov::cg(A, x, b);           
 
     //The final potential should be in device_phi
     //Checking the result
