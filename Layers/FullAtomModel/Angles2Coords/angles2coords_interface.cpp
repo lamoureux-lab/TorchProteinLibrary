@@ -51,7 +51,8 @@ void Angles2Coords_forward(     at::Tensor sequences,
         if( single_atom_names.sizes()[0]<seq.length() ){
             throw("incorrect atom names tensor length");
         }
-        at::Tensor dummy_grad = at::CPU(at::kDouble).zeros_like(single_angles);
+        // at::Tensor dummy_grad = at::CPU(at::kDouble).zeros_like(single_angles);
+        at::Tensor dummy_grad = torch::zeros({single_angles.size(0), single_angles.size(1)}, torch::TensorOptions().dtype(torch::kDouble));
         cConformation conf( seq, single_angles.data<double>(), dummy_grad.data<double>(),
                             length, single_coords.data<double>());
         //Output atom names and residue names
