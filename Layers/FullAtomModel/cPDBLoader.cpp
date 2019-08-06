@@ -40,7 +40,7 @@ cPDBLoader::cPDBLoader(std::string filename) {
                 res_name = trim(line.substr(17,3));
                 chain_name = trim(line.substr(21, 1));
                 res_num = std::stoi(line.substr(22,4));
-                r.push_back(cVector3(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
                 chain_names.push_back(chain_name);
                 res_names.push_back(res_name);
                 res_nums.push_back(res_num);
@@ -110,8 +110,8 @@ void cPDBLoader::reorder(){
     */      
 }
 
-cVector3 cPDBLoader::getCenterMass(){
-    cVector3 c(0., 0., 0.);
+cVector3<double> cPDBLoader::getCenterMass(){
+    cVector3<double> c(0., 0., 0.);
     for(int i=0; i<r.size(); i++){
         c += r[i];
     }
@@ -119,19 +119,19 @@ cVector3 cPDBLoader::getCenterMass(){
     return c;
 }
 
-void cPDBLoader::translate(cVector3 dr){
+void cPDBLoader::translate(cVector3<double> dr){
     for(int i=0; i<r.size(); i++){
         r[i] += dr;
     }
 }
 
 void cPDBLoader::computeBoundingBox(){
-	b0[0]=std::numeric_limits<float>::infinity(); 
-	b0[1]=std::numeric_limits<float>::infinity(); 
-	b0[2]=std::numeric_limits<float>::infinity();
-	b1[0]=-1*std::numeric_limits<float>::infinity(); 
-	b1[1]=-1*std::numeric_limits<float>::infinity(); 
-	b1[2]=-1*std::numeric_limits<float>::infinity();
+	b0[0]=std::numeric_limits<double>::infinity(); 
+	b0[1]=std::numeric_limits<double>::infinity(); 
+	b0[2]=std::numeric_limits<double>::infinity();
+	b1[0]=-1*std::numeric_limits<double>::infinity(); 
+	b1[1]=-1*std::numeric_limits<double>::infinity(); 
+	b1[2]=-1*std::numeric_limits<double>::infinity();
 	for(int i=0;i<r.size();i++){
 		if(r[i][0]<b0[0]){
 			b0[0]=r[i][0];
@@ -156,10 +156,10 @@ void cPDBLoader::computeBoundingBox(){
 }
 
 // void cPDBLoader::randRot(THGenerator *gen){
-//     float u1 = THRandom_uniform(gen,0,1.0);
-//     float u2 = THRandom_uniform(gen,0,1.0);
-//     float u3 = THRandom_uniform(gen,0,1.0);
-//     float q[4];
+//     double u1 = THRandom_uniform(gen,0,1.0);
+//     double u2 = THRandom_uniform(gen,0,1.0);
+//     double u3 = THRandom_uniform(gen,0,1.0);
+//     double q[4];
 //     q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
 //     q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
 //     q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
@@ -182,12 +182,12 @@ void cPDBLoader::computeBoundingBox(){
 //     }
 // }
 // void cPDBLoader::randTrans(THGenerator *gen, int spatial_dim){
-//     float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
-//     float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
-//     float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
-//     float dx = THRandom_uniform(gen,-dx_max,dx_max);
-//     float dy = THRandom_uniform(gen,-dy_max,dy_max);
-//     float dz = THRandom_uniform(gen,-dz_max,dz_max);
+//     double dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
+//     double dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
+//     double dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
+//     double dx = THRandom_uniform(gen,-dx_max,dx_max);
+//     double dy = THRandom_uniform(gen,-dy_max,dy_max);
+//     double dz = THRandom_uniform(gen,-dz_max,dz_max);
 //     this->translate(cVector3(dx,dy,dz));
 // }
 /*

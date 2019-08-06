@@ -10,7 +10,7 @@ class cPDBLoader {
 public:
 	
 	//ordering accoring to PDB lines
-	std::vector<cVector3> r;
+	std::vector<cVector3<double>> r;
     std::vector<std::string> atom_names;
     std::vector<std::string> res_names;
     std::vector<std::string> chain_names;
@@ -18,10 +18,10 @@ public:
 
     //ordering accoring to residues
     std::vector<std::string> res_res_names;
-    std::vector<std::vector<cVector3> > res_r;
+    std::vector<std::vector<cVector3<double>> > res_r;
     std::vector<std::vector<std::string> > res_atom_names;
 
-	cVector3 b0, b1;
+	cVector3<double> b0, b1;
 public:
     cPDBLoader();
 	cPDBLoader(std::string filename);
@@ -33,8 +33,8 @@ public:
     //order according to atom types
     // void reorder(double *coords, int *num_atoms_of_type, int *offsets);
 
-    cVector3 getCenterMass();
-    void translate(cVector3 dr);
+    cVector3<double> getCenterMass();
+    void translate(cVector3<double> dr);
     // void randRot(THGenerator *gen);
     // void randTrans(THGenerator *gen, int spatial_dim);
     

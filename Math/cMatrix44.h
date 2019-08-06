@@ -5,40 +5,41 @@
 
 #include <math.h>
 
+template <typename T>
 class cMatrix44 {
 private:
     bool external;
-    double	*m = NULL;
+    T	*m = NULL;
 public:
 
     cMatrix44();
-    cMatrix44(const cMatrix44& other);
+    cMatrix44(const cMatrix44<T>& other);
     ~cMatrix44();
-    cMatrix44(double *mat);
-    cMatrix44(double mat[4][4]);
-    cMatrix44(const cMatrix33 &rot, const cVector3 &shift);
+    cMatrix44(T *mat);
+    cMatrix44(T mat[4][4]);
+    cMatrix44(const cMatrix33<T> &rot, const cVector3<T> &shift);
     
-    void setDihedral(const double phi, const double psi, const double R);
-    void setDihedralDphi(const double phi, const double psi, const double R);
+    void setDihedral(const T phi, const T psi, const T R);
+    void setDihedralDphi(const T phi, const T psi, const T R);
     
-    void setRx(const double angle);
-    void setRy(const double angle);
-    void setRz(const double angle);
-    void setDRx(const double angle);
-    void setT(const double R, const char axis);
+    void setRx(const T angle);
+    void setRy(const T angle);
+    void setRz(const T angle);
+    void setDRx(const T angle);
+    void setT(const T R, const char axis);
     void setIdentity();
     
-    cMatrix44			operator*(const cMatrix44 &mat) const;
-    cVector3			operator*(const cVector3 &vec) const;
-    void				operator*=(double d);
+    cMatrix44<T>		operator*(const cMatrix44<T> &mat) const;
+    cVector3<T>			operator*(const cVector3<T> &vec) const;
+    void				operator*=(T d);
     
         
     void				print();   
 	
-    inline const    double& operator()(std::size_t i, std::size_t j) const { return m[4*i+j]; }
-    inline          double& operator()(std::size_t i, std::size_t j)       { return m[4*i+j]; }
-    void            operator=(const cMatrix44& u);
+    inline const    T& operator()(std::size_t i, std::size_t j) const { return m[4*i+j]; }
+    inline          T& operator()(std::size_t i, std::size_t j)       { return m[4*i+j]; }
+    void            operator=(const cMatrix44<T>& u);
 };
 
 
-cMatrix44 invertTransform44(const cMatrix44 &mat);
+template <typename T> cMatrix44<T> invertTransform44(const cMatrix44<T> &mat);

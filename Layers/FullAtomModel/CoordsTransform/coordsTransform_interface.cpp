@@ -1,5 +1,4 @@
 #include "cConformation.h"
-#include "cSO3Sampler.h"
 #include <iostream>
 #include <string>
 #include "nUtil.h"
@@ -27,8 +26,8 @@ void CoordsTranslate_forward(   at::Tensor input_coords,
         at::Tensor single_input_coords = input_coords[i];
         at::Tensor single_output_coords = output_coords[i];
         auto aT = T.accessor<double,2>();
-        cVector3 translation(aT[i][0], aT[i][1], aT[i][2]);
-        ProtUtil::translate(single_input_coords, translation, single_output_coords, num_at[i]);
+        cVector3<double> translation(aT[i][0], aT[i][1], aT[i][2]);
+        translate(single_input_coords, translation, single_output_coords, num_at[i]);
     }
 }
 void CoordsRotate_forward(  at::Tensor input_coords, 
@@ -52,8 +51,8 @@ void CoordsRotate_forward(  at::Tensor input_coords,
         at::Tensor single_output_coords = output_coords[i];
         at::Tensor single_R = R[i];
         
-        cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
-        ProtUtil::rotate(single_input_coords, _R, single_output_coords, num_at[i]);
+        cMatrix33<double> _R = tensor2Matrix33<double>(single_R);
+        rotate(single_input_coords, _R, single_output_coords, num_at[i]);
     }
 }
 void CoordsRotate_backward( at::Tensor grad_output_coords, 
@@ -77,9 +76,9 @@ void CoordsRotate_backward( at::Tensor grad_output_coords,
         at::Tensor single_grad_input_coords = grad_input_coords[i];
         at::Tensor single_R = R[i];
         
-        cMatrix33 _R = ProtUtil::tensor2Matrix33(single_R);
+        cMatrix33<double> _R = tensor2Matrix33<double>(single_R);
         _R = _R.getTranspose();
-        ProtUtil::rotate(single_grad_output_coords, _R, single_grad_input_coords, num_at[i]);
+        rotate(single_grad_output_coords, _R, single_grad_input_coords, num_at[i]);
     }
 }
 void getBBox(   at::Tensor input_coords,
@@ -101,9 +100,9 @@ void getBBox(   at::Tensor input_coords,
         at::Tensor single_a = a[i];
         at::Tensor single_b = b[i];
         
-        cVector3 va(single_a.data<double>());
-        cVector3 vb(single_b.data<double>());
-        ProtUtil::computeBoundingBox(single_input_coords, num_at[i], va, vb);
+        cVector3<double> va(single_a.data<double>());
+        cVector3<double> vb(single_b.data<double>());
+        computeBoundingBox(single_input_coords, num_at[i], va, vb);
     }
 }
 void getRandomRotation( at::Tensor R ){
@@ -118,8 +117,8 @@ void getRandomRotation( at::Tensor R ){
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         at::Tensor single_R = R[i];
-        cMatrix33 rnd_R = ProtUtil::getRandomRotation();
-        ProtUtil::matrix2Tensor(rnd_R, single_R);                
+        cMatrix33<double> rnd_R = getRandomRotation<double>();
+        matrix2Tensor(rnd_R, single_R);                
     }
 }
 void getRotation( at::Tensor R, at::Tensor u ){
@@ -136,8 +135,8 @@ void getRotation( at::Tensor R, at::Tensor u ){
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         at::Tensor single_R = R[i];
-        cMatrix33 R = ProtUtil::getRotation(param[i][0], param[i][1], param[i][2]);
-        ProtUtil::matrix2Tensor(R, single_R);
+        cMatrix33<double> R = getRotation(param[i][0], param[i][1], param[i][2]);
+        matrix2Tensor(R, single_R);
     }
 }
 void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, float volume_size){
@@ -155,24 +154,10 @@ void getRandomTranslation( at::Tensor T, at::Tensor a, at::Tensor b, float volum
         at::Tensor single_a = a[i];
         at::Tensor single_b = b[i];
                 
-        cVector3 _a(single_a.data<double>());
-        cVector3 _b(single_b.data<double>());
-        cVector3 _T(single_T.data<double>());
+        cVector3<double> _a(single_a.data<double>());
+        cVector3<double> _b(single_b.data<double>());
+        cVector3<double> _T(single_T.data<double>());
         
-        _T = ProtUtil::getRandomTranslation(volume_size, _a, _b);
-    }
-}
-
-void getSO3Samples( float dAngle, torch::Tensor R ){
-    cSO3Sampler samples(dAngle);
-
-    int num_samples = samples.U.size();
-    int64_t new_size[] = {num_samples, 3, 3};
-    R.resize_(at::IntList(new_size, 3));
-    
-    #pragma omp parallel for
-    for(int i=0; i<num_samples; i++){
-        at::Tensor single_R = R[i];
-        ProtUtil::matrix2Tensor(samples.U[i], single_R);
+        _T = getRandomTranslation(volume_size, _a, _b);
     }
 }

@@ -1,4 +1,4 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 void Angles2Coords_forward(     at::Tensor sequences,
                                 at::Tensor input_angles, 
                                 at::Tensor output_coords,

@@ -6,7 +6,7 @@
 #define KAPPA3 (3.14159 -2.1186)
 #define OMEGACIS -3.1318
 
-cGeometry::cGeometry(){
+template <typename T> cGeometry<T>::cGeometry(){
      //backbone angles
     C_N_CA_angle = (M_PI - 1.9391);
     N_CA_C_angle = (M_PI - 2.061);
@@ -85,11 +85,11 @@ cGeometry::cGeometry(){
     
 }
 
-cGeometry::~cGeometry(){
+template <typename T> cGeometry<T>::~cGeometry(){
     
 }
 
-void cGeometry::gly(){
+template <typename T> void cGeometry<T>::gly(){
     //backbone angles
     C_N_CA_angle = (3.14159 - 1.9391);
     N_CA_C_angle = (3.14159 - 2.061);
@@ -102,7 +102,7 @@ void cGeometry::gly(){
     R_N_CA = 1.460;
 }
 
-void cGeometry::ala(){
+template <typename T> void cGeometry<T>::ala(){
     //backbone angles
     C_N_CA_angle = (3.14159 - 1.9391);
     N_CA_C_angle = (3.14159 - 2.061);
@@ -119,3 +119,6 @@ void cGeometry::ala(){
     C_CA_CB_angle = -(3.14159 - 1.9111);//(3.14159 - 1.9111);
     N_C_CA_CB_diangle = M_PI*111.0/180.0;;
 }
+
+template class cGeometry<float>;
+template class cGeometry<double>;

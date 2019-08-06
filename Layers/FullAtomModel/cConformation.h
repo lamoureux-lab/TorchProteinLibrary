@@ -7,15 +7,16 @@
 #include <cRigidGroup.h>
 #include <cGeometry.h>
 
+template <typename T>
 class cTransform{
     public:
-        double *alpha, *beta;
-        double *grad_alpha;
-        double d;
+        T *alpha, *beta;
+        T *grad_alpha;
+        T d;
         
     public:
-        cMatrix44 mat, dmat;
-        cTransform(double *param_alpha, double *param_beta, double d, double *grad_alpha){
+        cMatrix44<T> mat, dmat;
+        cTransform(T *param_alpha, T *param_beta, T d, T *grad_alpha){
             this->alpha = param_alpha;
             this->beta = param_beta;
             this->d = d;
@@ -27,12 +28,13 @@ class cTransform{
         void print();
 };
 
+template <typename T>
 class cNode{
     public:
-        cRigidGroup *group;
-        cTransform *T; //transform from parent to this node
-        cMatrix44 M; //aggregate transform from root
-        cMatrix44 F; //matrix for computing gradient
+        cRigidGroup<T> *group;
+        cTransform<T> *Tr; //transform from parent to this node
+        cMatrix44<T> M; //aggregate transform from root
+        cMatrix44<T> F; //matrix for computing gradient
         cNode *left;
         cNode *right;
         cNode *parent;
@@ -41,62 +43,63 @@ class cNode{
         ~cNode(){};
 };
 
-std::ostream& operator<<(std::ostream& os, const cNode& node);
+// template <typename T> std::ostream& operator<<(std::ostream& os, const cNode<T>& node);
 
+template <typename T>
 class cConformation{
     // private:
     public:
-        std::vector<cNode*> nodes;
-        std::vector<cRigidGroup*> groups;
-        std::vector<cTransform*> transforms;
+        std::vector<cNode<T>*> nodes;
+        std::vector<cRigidGroup<T>*> groups;
+        std::vector<cTransform<T>*> transforms;
         
-        double zero_const;
-        double *atoms_global; //pointer to computed coordinates
-        cGeometry geo;
+        T zero_const;
+        T *atoms_global; //pointer to computed coordinates
+        cGeometry<T> geo;
         uint num_atoms;
 
     public:
-        cNode *root;
+        cNode<T> *root;
 
         // Construct protein graph and bind grad to the angles
-        cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global, bool add_terminal=false);    
+        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal=false);    
         ~cConformation();
         
-        void print(cNode *node);
+        void print(cNode<T> *node);
 
         // Backward propagation with external gradients
-        double backward(cNode *root_node, cNode *node, double *atoms_grad);
-        void backward(cNode *node, double *atoms_grad);
+        T backward(cNode<T> *root_node, cNode<T> *node, T *atoms_grad);
+        void backward(cNode<T> *node, T *atoms_grad);
 
         //Computes coordinates of the atoms
-        void update(cNode *node);
+        void update(cNode<T> *node);
 
         //Saving to pdb
         void save(std::string filename, const char mode);
 
     private:
-        cNode *addNode(cNode *parent, cRigidGroup *group, cTransform *t);
+        cNode<T> *addNode(cNode<T> *parent, cRigidGroup<T> *group, cTransform<T> *t);
         
-        cNode *addGly(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addAla(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addSer(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addCys(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addVal(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addIle(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addLeu(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addThr(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addArg(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addLys(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addAsp(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addAsn(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addGlu(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addGln(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addMet(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addHis(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addPro(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addPhe(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addTyr(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
-        cNode *addTrp(cNode *parentC, std::vector<double*> params, std::vector<double*> params_grad, bool terminal=false);
+        cNode<T> *addGly(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addAla(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addSer(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addCys(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addVal(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addIle(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addLeu(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addThr(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addArg(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addLys(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addAsp(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addAsn(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addGlu(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addGln(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addMet(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addHis(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addPro(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addPhe(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addTyr(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addTrp(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
 };
 
 #endif

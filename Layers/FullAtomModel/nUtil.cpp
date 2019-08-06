@@ -2,6 +2,120 @@
 #include <iostream>
 #include <stdarg.h>
 
+
+
+template <typename T> void rotate(torch::Tensor &input_coords, cMatrix33<T> &R, torch::Tensor &output_coords, int num_atoms){
+    T *data_in = input_coords.data<T>();
+    T *data_out = output_coords.data<T>();
+    for(int i=0;i<num_atoms;i++){
+        cVector3<T> in(data_in+3*i);
+        cVector3<T> out(data_out+3*i);
+        out = R*in;
+    }
+};
+
+template <typename T> void translate(torch::Tensor &input_coords, cVector3<T> &Tr, torch::Tensor &output_coords, int num_atoms){
+    T *data_in = input_coords.data<T>();
+    T *data_out = output_coords.data<T>();
+    for(int i=0;i<num_atoms;i++){
+        cVector3<T> in(data_in+3*i);
+        cVector3<T> out(data_out+3*i);
+        out = in + Tr;
+    }
+};
+
+template <typename T> void computeBoundingBox(torch::Tensor &input_coords, int num_atoms, cVector3<T> &b0, cVector3<T> &b1){
+    b0[0]=std::numeric_limits<T>::infinity(); 
+    b0[1]=std::numeric_limits<T>::infinity(); 
+    b0[2]=std::numeric_limits<T>::infinity();
+    b1[0]=-1*std::numeric_limits<T>::infinity(); 
+    b1[1]=-1*std::numeric_limits<T>::infinity(); 
+    b1[2]=-1*std::numeric_limits<T>::infinity();
+    T *data = input_coords.data<T>();
+    for(int i=0;i<num_atoms;i++){
+        cVector3<T> r(data + 3*i);
+        if(r[0]<b0[0]){
+            b0[0]=r[0];
+        }
+        if(r[1]<b0[1]){
+            b0[1]=r[1];
+        }
+        if(r[2]<b0[2]){
+            b0[2]=r[2];
+        }
+
+        if(r[0]>b1[0]){
+            b1[0]=r[0];
+        }
+        if(r[1]>b1[1]){
+            b1[1]=r[1];
+        }
+        if(r[2]>b1[2]){
+            b1[2]=r[2];
+        }
+    }
+};
+
+
+template <typename T> cMatrix33<T> getRotation(T u1, T u2, T u3){
+    T q[4];
+    q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
+    q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
+    q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
+    q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
+    cMatrix33<T> rotation;
+    rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+    rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
+    rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
+
+    rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
+    rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+    rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
+
+    rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
+    rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
+    rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
+    
+    return rotation;
+};
+template <typename T> cMatrix33<T> getRandomRotation(){
+    torch::Tensor uni_rnd = torch::rand({3}, torch::TensorOptions().dtype(torch::kDouble));
+    T u1 = uni_rnd.accessor<T,1>()[0];
+    T u2 = uni_rnd.accessor<T,1>()[1];
+    T u3 = uni_rnd.accessor<T,1>()[2];
+    return getRotation(u1, u2, u3);
+};
+template <typename T> cVector3<T> getRandomTranslation(float spatial_dim, cVector3<T> &b0, cVector3<T> &b1){
+    float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
+    float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
+    float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
+    torch::Tensor uni_rnd = torch::rand({3}, torch::TensorOptions().dtype(torch::kDouble));
+    
+    uni_rnd[0] = uni_rnd[0]*(2.0*dx_max) - dx_max;
+    uni_rnd[1] = uni_rnd[1]*(2.0*dy_max) - dy_max;
+    uni_rnd[2] = uni_rnd[2]*(2.0*dz_max) - dz_max;
+    auto acc = uni_rnd.accessor<T,1>();
+    return cVector3<T>(acc[0], acc[1], acc[2]);
+};
+
+
+template <typename T> cMatrix33<T> tensor2Matrix33(torch::Tensor Ten){
+    cMatrix33<T> dst;
+    auto aT = Ten.accessor<double,2>();
+    for(int i=0; i<3; i++)
+        for(int j=0; j<3; j++)
+            dst.m[i][j] = aT[i][j];
+    return dst;
+};
+template <typename T> void matrix2Tensor(cMatrix33<T> &mat, torch::Tensor &Ten){
+    // auto aT = T.accessor<double,2>();
+    for(int i=0; i<3; i++)
+        for(int j=0; j<3; j++)
+            Ten[i][j] = mat.m[i][j];
+};
+
+
+
 std::string StringUtil::trim(const std::string &s){
    auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){return std::isspace(c);});
    auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](int c){return std::isspace(c);}).base();
@@ -31,22 +145,22 @@ std::string StringUtil::string_format(const std::string fmt, ...) {
     return str;
 }
 
-at::Tensor StringUtil::string2Tensor(std::string s){
-    // at::Tensor T = at::CPU(at::kByte).zeros({s.length()+1});
-    at::Tensor T = torch::zeros({s.length()+1}, torch::TensorOptions().dtype(torch::kByte));
+torch::Tensor StringUtil::string2Tensor(std::string s){
+    // torch::Tensor T = torch::CPU(torch::kByte).zeros({s.length()+1});
+    torch::Tensor T = torch::zeros({s.length()+1}, torch::TensorOptions().dtype(torch::kByte));
     char* aT = static_cast<char*>(T.data_ptr());
     for(int i=0; i<s.length(); i++)
         aT[i] = s[i];
     aT[s.length()] = '\0';
     return T;
 } 
-void StringUtil::string2Tensor(std::string s, at::Tensor T){
+void StringUtil::string2Tensor(std::string s, torch::Tensor T){
     char* aT = static_cast<char*>(T.data_ptr());
     for(int i=0; i<s.length(); i++)
         aT[i] = s[i];
     aT[s.length()] = '\0';
 } 
-std::string StringUtil::tensor2String(at::Tensor T){
+std::string StringUtil::tensor2String(torch::Tensor T){
     return std::string(static_cast<char*>(T.data_ptr()));
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
@@ -56,20 +170,7 @@ bool ProtUtil::isHeavyAtom(std::string &atom_name){
         return false;
 }
 
-cMatrix33 ProtUtil::tensor2Matrix33(at::Tensor T){
-    cMatrix33 dst;
-    auto aT = T.accessor<double,2>();
-    for(int i=0; i<3; i++)
-        for(int j=0; j<3; j++)
-            dst.m[i][j] = aT[i][j];
-    return dst;
-}
-void ProtUtil::matrix2Tensor(cMatrix33 &mat, at::Tensor &T){
-    // auto aT = T.accessor<double,2>();
-    for(int i=0; i<3; i++)
-        for(int j=0; j<3; j++)
-            T[i][j] = mat.m[i][j];
-}
+
 uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     uint num_atoms = 0;
     std::string lastO("O");
@@ -86,128 +187,6 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
         num_atoms += getAtomIndex(AA, lastO) + 1;
     }
     return num_atoms;
-}
-
-void ProtUtil::translate(at::Tensor &input_coords, cVector3 &T, at::Tensor &output_coords, int num_atoms){
-    double *data_in = input_coords.data<double>();
-    double *data_out = output_coords.data<double>();
-    for(int i=0;i<num_atoms;i++){
-        cVector3 in(data_in+3*i);
-        cVector3 out(data_out+3*i);
-        out = in + T;
-    }
-}
-/*
-void ProtUtil::translate(THDoubleTensor *coords, cVector3 T){
-    uint num_atoms = coords->size[0]/3;
-    double *data = THDoubleTensor_data(coords);
-    for(int i=0;i<num_atoms;i++){
-        cVector3 r(data+3*i);
-        r = r + T;
-    }
-}
-*/
-
-void ProtUtil::rotate(at::Tensor &input_coords, cMatrix33 &R, at::Tensor &output_coords, int num_atoms){
-    double *data_in = input_coords.data<double>();
-    double *data_out = output_coords.data<double>();
-    for(int i=0;i<num_atoms;i++){
-        cVector3 in(data_in+3*i);
-        cVector3 out(data_out+3*i);
-        out = R*in;
-    }
-}
-/*
-void ProtUtil::rotate(THDoubleTensor *coords, cMatrix33 R){
-    uint num_atoms = coords->size[0]/3;
-    double *data = THDoubleTensor_data(coords);
-    for(int i=0;i<num_atoms;i++){
-        cVector3 r(data+3*i);
-        r = R*r;
-    }
-}
-*/
-cMatrix33 ProtUtil::getRandomRotation(){
-    // auto default_gen = &at::globalContext().defaultGenerator(at::kCPU);
-    // at::Tensor uni_rnd = at::CPU(at::kDouble).zeros({3});
-    at::Tensor uni_rnd = torch::rand({3}, torch::TensorOptions().dtype(torch::kDouble));
-    // uni_rnd.uniform_(0,1.0, default_gen);
-    double u1 = uni_rnd.accessor<double,1>()[0];
-    double u2 = uni_rnd.accessor<double,1>()[1];
-    double u3 = uni_rnd.accessor<double,1>()[2];
-        
-    return ProtUtil::getRotation(u1, u2, u3);
-}
-
-cMatrix33 ProtUtil::getRotation(double u1, double u2, double u3){
-    double q[4];
-    q[0] = sqrt(1-u1) * sin(2.0*M_PI*u2);
-    q[1] = sqrt(1-u1) * cos(2.0*M_PI*u2);
-    q[2] = sqrt(u1) * sin(2.0*M_PI*u3);
-    q[3] = sqrt(u1) * cos(2.0*M_PI*u3);
-    cMatrix33 rotation;
-    rotation.m[0][0] = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
-    rotation.m[0][1] = 2.0*(q[1]*q[2] - q[0]*q[3]);
-    rotation.m[0][2] = 2.0*(q[1]*q[3] + q[0]*q[2]);
-
-    rotation.m[1][0] = 2.0*(q[1]*q[2] + q[0]*q[3]);
-    rotation.m[1][1] = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
-    rotation.m[1][2] = 2.0*(q[2]*q[3] - q[0]*q[1]);
-
-    rotation.m[2][0] = 2.0*(q[1]*q[3] - q[0]*q[2]);
-    rotation.m[2][1] = 2.0*(q[2]*q[3] + q[0]*q[1]);
-    rotation.m[2][2] = q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3];
-    
-    return rotation;
-}
-
-cVector3 ProtUtil::getRandomTranslation(float spatial_dim, cVector3 &b0, cVector3 &b1){
-    float dx_max = fmax(0, spatial_dim/2.0 - (b1[0]-b0[0])/2.0)*0.5;
-    float dy_max = fmax(0, spatial_dim/2.0 - (b1[1]-b0[1])/2.0)*0.5;
-    float dz_max = fmax(0, spatial_dim/2.0 - (b1[2]-b0[2])/2.0)*0.5;
-
-    // auto default_gen = &at::globalContext().defaultGenerator(at::kCPU);
-    // at::Tensor uni_rnd = at::CPU(at::kDouble).zeros({3});
-    at::Tensor uni_rnd = torch::rand({3}, torch::TensorOptions().dtype(torch::kDouble));
-    
-    uni_rnd[0] = uni_rnd[0]*(2.0*dx_max) - dx_max;
-    uni_rnd[1] = uni_rnd[1]*(2.0*dy_max) - dy_max;
-    uni_rnd[2] = uni_rnd[2]*(2.0*dz_max) - dz_max;
-    auto acc = uni_rnd.accessor<double,1>();
-    return cVector3(acc[0], acc[1], acc[2]);
-}
-
-
-void ProtUtil::computeBoundingBox(at::Tensor &input_coords, int num_atoms, cVector3 &b0, cVector3 &b1){
-	b0[0]=std::numeric_limits<double>::infinity(); 
-	b0[1]=std::numeric_limits<double>::infinity(); 
-	b0[2]=std::numeric_limits<double>::infinity();
-	b1[0]=-1*std::numeric_limits<double>::infinity(); 
-	b1[1]=-1*std::numeric_limits<double>::infinity(); 
-	b1[2]=-1*std::numeric_limits<double>::infinity();
-    double *data = input_coords.data<double>();
-    for(int i=0;i<num_atoms;i++){
-        cVector3 r(data + 3*i);
-		if(r[0]<b0[0]){
-			b0[0]=r[0];
-		}
-		if(r[1]<b0[1]){
-			b0[1]=r[1];
-		}
-		if(r[2]<b0[2]){
-			b0[2]=r[2];
-		}
-
-		if(r[0]>b1[0]){
-			b1[0]=r[0];
-		}
-		if(r[1]>b1[1]){
-			b1[1]=r[1];
-		}
-		if(r[2]>b1[2]){
-			b1[2]=r[2];
-		}
-	}
 }
 
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
@@ -723,3 +702,21 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 	}
 	return assignedType - 1;
 }
+
+template void rotate(torch::Tensor&, cMatrix33<float>&, torch::Tensor&, int);
+template void translate(torch::Tensor&, cVector3<float>&, torch::Tensor&, int);
+template void computeBoundingBox(torch::Tensor&, int, cVector3<float>&, cVector3<float>&);
+template cMatrix33<float> getRotation(float u1, float u2, float u3);
+template cMatrix33<float> getRandomRotation();
+template cVector3<float> getRandomTranslation(float spatial_dim, cVector3<float>&, cVector3<float>&);
+template cMatrix33<float> tensor2Matrix33(torch::Tensor);
+template void matrix2Tensor(cMatrix33<float>&, torch::Tensor&);
+
+template void rotate(torch::Tensor&, cMatrix33<double>&, torch::Tensor&, int);
+template void translate(torch::Tensor&, cVector3<double>&, torch::Tensor&, int);
+template void computeBoundingBox(torch::Tensor&, int, cVector3<double>&, cVector3<double>&);
+template cMatrix33<double> getRotation(double u1, double u2, double u3);
+template cMatrix33<double> getRandomRotation();
+template cVector3<double> getRandomTranslation(float spatial_dim, cVector3<double>&, cVector3<double>&);
+template cMatrix33<double> tensor2Matrix33(torch::Tensor);
+template void matrix2Tensor(cMatrix33<double>&, torch::Tensor&);

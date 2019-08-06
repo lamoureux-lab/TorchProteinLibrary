@@ -1,4 +1,4 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 void Coords2TypedCoords_forward(    at::Tensor input_coords, 
                                     at::Tensor res_names,
                                     at::Tensor atom_names,

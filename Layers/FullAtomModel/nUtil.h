@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-#include <torch/torch.h>
+#include <torch/extension.h>
 #include <cVector3.h>
 #include <cMatrix33.h>
 #include <cConformation.h>
@@ -20,9 +20,9 @@ namespace StringUtil{
     //     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     // };
     std::string string_format(const std::string fmt, ...);
-    at::Tensor string2Tensor(std::string s);
-    void string2Tensor(std::string s, at::Tensor T);
-    std::string tensor2String(at::Tensor T);
+    torch::Tensor string2Tensor(std::string s);
+    void string2Tensor(std::string s, torch::Tensor T);
+    std::string tensor2String(torch::Tensor T);
 };
 
 namespace ProtUtil{
@@ -41,19 +41,17 @@ namespace ProtUtil{
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 
-    void rotate(at::Tensor &input_coords, cMatrix33 &R, at::Tensor &output_coords, int num_atoms);
-    // void rotate(THDoubleTensor *coords, cMatrix33 R);
-    void translate(at::Tensor &input_coords, cVector3 &T, at::Tensor &output_coords, int num_atoms);
-    // void translate(THDoubleTensor *coords, cVector3 T);
-    void computeBoundingBox(at::Tensor &input_coords, int num_atoms, cVector3 &b0, cVector3 &b1);
-
-    cMatrix33 getRandomRotation();
-    cMatrix33 getRotation(double u1, double u2, double u3);
-    cVector3 getRandomTranslation(float spatial_dim, cVector3 &b0, cVector3 &b1);
-    
-    cMatrix33 tensor2Matrix33(at::Tensor T);
-    void matrix2Tensor(cMatrix33 &mat, at::Tensor &T);
-
 };
+
+template <typename T> void rotate(torch::Tensor &input_coords, cMatrix33<T> &R, torch::Tensor &output_coords, int num_atoms);
+template <typename T> void translate(torch::Tensor &input_coords, cVector3<T> &Tr, torch::Tensor &output_coords, int num_atoms);
+template <typename T> void computeBoundingBox(torch::Tensor &input_coords, int num_atoms, cVector3<T> &b0, cVector3<T> &b1);
+
+template <typename T> cMatrix33<T> getRotation(T u1, T u2, T u3);
+template <typename T> cMatrix33<T> getRandomRotation();
+template <typename T> cVector3<T> getRandomTranslation(float spatial_dim, cVector3<T> &b0, cVector3<T> &b1);
+
+template <typename T> cMatrix33<T> tensor2Matrix33(torch::Tensor Ten);
+template <typename T> void matrix2Tensor(cMatrix33<T> &mat, torch::Tensor &Ten);
 
 #endif

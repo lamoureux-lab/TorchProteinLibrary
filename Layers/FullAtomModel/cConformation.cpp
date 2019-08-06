@@ -4,44 +4,44 @@
 using namespace StringUtil;
 using namespace ProtUtil;
 
-void cTransform::updateMatrix(){
-    cMatrix44 Ry, T, Rx;
+template <typename T> void cTransform<T>::updateMatrix(){
+    cMatrix44<T> Ry, Tr, Rx;
     Ry.setRy(*beta);
-    T.setT(d, 'x');
+    Tr.setT(d, 'x');
     Rx.setRx(*alpha);
-    mat = Ry*T*Rx;
+    mat = Ry*Tr*Rx;
 }
-void cTransform::updateDMatrix(){
-    cMatrix44 Ry, T, DRx;
+template <typename T> void cTransform<T>::updateDMatrix(){
+    cMatrix44<T> Ry, Tr, DRx;
     Ry.setRy(*beta);
-    T.setT(d, 'x');
+    Tr.setT(d, 'x');
     DRx.setDRx(*alpha);
-    dmat = Ry*T*DRx;
+    dmat = Ry*Tr*DRx;
 }
-void cTransform::print(){
+template <typename T> void cTransform<T>::print(){
     mat.print();
 }
 
 
-std::ostream& operator<<(std::ostream& os, const cNode& node){
-    return os<<*(node.group);
-}
+// template <typename T> std::ostream& operator<<(std::ostream& os, const cNode<T>& node){
+//     return os<<*(node.group);
+// }
 
-cConformation::cConformation(std::string aa, double *angles, double *angles_grad, uint angles_length, double *atoms_global, bool add_terminal){
-    cNode *lastC = NULL;
+template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal){
+    cNode<T> *lastC = NULL;
     zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
     for(int i=0; i<aa.length(); i++){
-        double *phi = angles + i + angles_length*0;double *dphi = angles_grad + i + angles_length*0;
-        double *psi = angles + i + angles_length*1;double *dpsi = angles_grad + i + angles_length*1;
-        double *xi1 = angles + i + angles_length*2;double *dxi1 = angles_grad + i + angles_length*2;
-        double *xi2 = angles + i + angles_length*3;double *dxi2 = angles_grad + i + angles_length*3;
-        double *xi3 = angles + i + angles_length*4;double *dxi3 = angles_grad + i + angles_length*4;
-        double *xi4 = angles + i + angles_length*5;double *dxi4 = angles_grad + i + angles_length*5;
-        double *xi5 = angles + i + angles_length*6;double *dxi5 = angles_grad + i + angles_length*6;
-        std::vector<double*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
-        std::vector<double*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
+        T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
+        T *psi = angles + i + angles_length*1;T *dpsi = angles_grad + i + angles_length*1;
+        T *xi1 = angles + i + angles_length*2;T *dxi1 = angles_grad + i + angles_length*2;
+        T *xi2 = angles + i + angles_length*3;T *dxi2 = angles_grad + i + angles_length*3;
+        T *xi3 = angles + i + angles_length*4;T *dxi3 = angles_grad + i + angles_length*4;
+        T *xi4 = angles + i + angles_length*5;T *dxi4 = angles_grad + i + angles_length*5;
+        T *xi5 = angles + i + angles_length*6;T *dxi5 = angles_grad + i + angles_length*6;
+        std::vector<T*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
+        std::vector<T*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
         if(add_terminal){
             if(i == (aa.length()-1))
                 terminal = true;
@@ -121,7 +121,7 @@ cConformation::cConformation(std::string aa, double *angles, double *angles_grad
     }
 }
 
-cConformation::~cConformation(){
+template <typename T> cConformation<T>::~cConformation(){
     for(int i=0; i<nodes.size(); i++)
         delete nodes[i];
     for(int i=0; i<transforms.size(); i++)
@@ -130,10 +130,10 @@ cConformation::~cConformation(){
         delete groups[i];
 }
 
-cNode *cConformation::addNode(cNode *parent, cRigidGroup *group, cTransform *t){
-    cNode *new_node = new cNode();
+template <typename T> cNode<T> *cConformation<T>::addNode(cNode<T> *parent, cRigidGroup<T> *group, cTransform<T> *t){
+    cNode<T> *new_node = new cNode<T>();
     new_node->group = group;
-    new_node->T = t;
+    new_node->Tr = t;
     new_node->parent = parent;
     nodes.push_back(new_node);
     if(parent==NULL){
@@ -148,16 +148,16 @@ cNode *cConformation::addNode(cNode *parent, cRigidGroup *group, cTransform *t){
     return new_node;
 }
 
-void cConformation::update(cNode *node){
-    node->T->updateMatrix();
-    node->T->updateDMatrix();
+template <typename T> void cConformation<T>::update(cNode<T> *node){
+    node->Tr->updateMatrix();
+    node->Tr->updateDMatrix();
     if(node->parent!=NULL){    
-        node->M = (node->parent->M) * (node->T->mat);
-        node->F = (node->parent->M) * (node->T->dmat) * invertTransform44(node->M);
+        node->M = (node->parent->M) * (node->Tr->mat);
+        node->F = (node->parent->M) * (node->Tr->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
     }else{
         node->M.setIdentity();
-        node->F = (node->T->dmat) * invertTransform44(node->M);
+        node->F = (node->Tr->dmat) * invertTransform44(node->M);
         node->group->applyTransform(node->M);
     }
     if(node->left!=NULL){
@@ -168,8 +168,8 @@ void cConformation::update(cNode *node){
     }
 }
 
-double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad){
-    double grad = 0.0;
+template <typename T> T cConformation<T>::backward(cNode<T> *root_node, cNode<T> *node, T *atoms_grad){
+    T grad = 0.0;
     if(node->left!=NULL){
         grad += backward(root_node, node->left, atoms_grad);
     }
@@ -177,7 +177,7 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
         grad += backward(root_node, node->right, atoms_grad);
     }
     for(int i=0;i<node->group->atoms_global.size(); i++){
-        cVector3 gradVec(
+        cVector3<T> gradVec(
             atoms_grad[node->group->atomIndexes[i]*3 + 0],
             atoms_grad[node->group->atomIndexes[i]*3 + 1],
             atoms_grad[node->group->atomIndexes[i]*3 + 2]
@@ -194,35 +194,35 @@ double cConformation::backward(cNode *root_node, cNode *node, double *atoms_grad
 }
 
 
-void cConformation::backward(cNode *node, double *atoms_grad){
+template <typename T> void cConformation<T>::backward(cNode<T> *node, T *atoms_grad){
     for(int i=0; i<nodes.size();i++){
-        if(nodes[i]->T->grad_alpha!=NULL) 
-            *(nodes[i]->T->grad_alpha) = backward(nodes[i], nodes[i], atoms_grad);
+        if(nodes[i]->Tr->grad_alpha!=NULL) 
+            *(nodes[i]->Tr->grad_alpha) = backward(nodes[i], nodes[i], atoms_grad);
     }
 }
 
-void cConformation::print(cNode *node){
-    std::cout<<*node;
-    if(node->left!=NULL){
-        std::cout<<"---";
-        print(node->left);
-    }
-    if(node->right!=NULL){
-        std::cout<<"|\n";
-        std::cout<<"---";
-        print(node->right);
-    }
-    std::cout<<".\n";
+template <typename T> void cConformation<T>::print(cNode<T> *node){
+    // std::cout<<*node;
+    // if(node->left!=NULL){
+    //     std::cout<<"---";
+    //     print(node->left);
+    // }
+    // if(node->right!=NULL){
+    //     std::cout<<"|\n";
+    //     std::cout<<"---";
+    //     print(node->right);
+    // }
+    // std::cout<<".\n";
     
 }
 
-void cConformation::save(std::string filename, const char mode){
+template <typename T> void cConformation<T>::save(std::string filename, const char mode){
     if(mode=='w'){
         std::ofstream pfile(filename, std::ofstream::out);
     
         for(int i=0; i<groups.size(); i++){
             for(int j=0; j<groups[i]->atoms_global.size(); j++){
-                cVector3 r;
+                cVector3<T> r;
                 r = groups[i]->atoms_global[j];
                 std::string atom_name;
                 atom_name = groups[i]->atomNames[j];
@@ -238,7 +238,7 @@ void cConformation::save(std::string filename, const char mode){
         pfile<<"MODEL\n";
         for(int i=0; i<groups.size(); i++){
             for(int j=0; j<groups[i]->atoms_global.size(); j++){
-                cVector3 r;
+                cVector3<T> r;
                 r = groups[i]->atoms_global[j];
                 std::string atom_name;
                 atom_name = groups[i]->atomNames[j];
@@ -252,3 +252,5 @@ void cConformation::save(std::string filename, const char mode){
     }
 }
 
+template class cConformation<float>;
+template class cConformation<double>;
