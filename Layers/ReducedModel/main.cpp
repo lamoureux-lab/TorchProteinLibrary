@@ -1,4 +1,4 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 #include <Angles2Backbone/angles2backbone_interface.h>
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {

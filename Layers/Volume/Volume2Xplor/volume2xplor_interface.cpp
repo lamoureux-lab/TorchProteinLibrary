@@ -1,15 +1,12 @@
 #include "volume2xplor_interface.h"
 #include <stdio.h>
 #include <string>
+#include <nUtil.h>
 
 void Volume2Xplor( at::Tensor volume, const char *filename, float resolution){
-    // if( (volume.type().is_cuda()) || volume.dtype() != at::kFloat ){
-    //     throw("Incorrect tensor types");
-    //     std::cout<<"Incorrect tensor types"<<std::endl;
-    // }
+    CHECK_CPU_INPUT(volume);
     if(volume.ndimension() != 3){
-        std::cout<<"Incorrect input ndim"<<std::endl;
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     auto V = volume.accessor<float, 3>();
     int size = volume.size(0);

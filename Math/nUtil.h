@@ -6,19 +6,10 @@
 #include <torch/extension.h>
 #include <cVector3.h>
 #include <cMatrix33.h>
-#include <cConformation.h>
 
 namespace StringUtil{
     //string utils
     std::string trim(const std::string &s);
-
-    // template<typename ... Args>
-    // inline std::string string_format( const std::string& format, Args ... args ){
-    //     size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    //     std::unique_ptr<char[]> buf( new char[ size ] ); 
-    //     std::snprintf( buf.get(), size, format.c_str(), args ... );
-    //     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-    // };
     std::string string_format(const std::string fmt, ...);
     torch::Tensor string2Tensor(std::string s);
     void string2Tensor(std::string s, torch::Tensor T);
@@ -53,5 +44,16 @@ template <typename T> cVector3<T> getRandomTranslation(float spatial_dim, cVecto
 
 template <typename T> cMatrix33<T> tensor2Matrix33(torch::Tensor Ten);
 template <typename T> void matrix2Tensor(cMatrix33<T> &mat, torch::Tensor &Ten);
+
+#define ERROR(x) AT_ASSERTM(true, #x)
+#define CHECK_CPU(x) AT_ASSERTM(!(x.type().is_cuda()), #x "must be a CPU tensor")
+#define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
+#define CHECK_TYPE(x,y) AT_ASSERTM(x.dtype()==y, #x " wrong tensor type")
+#define CHECK_CPU_INPUT(x) CHECK_CPU(x); CHECK_CONTIGUOUS(x)
+#define CHECK_CPU_INPUT_TYPE(x, y) CHECK_CPU(x); CHECK_CONTIGUOUS(x); CHECK_TYPE(x, y)
+
+#define CHECK_GPU(x) AT_ASSERTM(x.type().is_cuda(), #x "must be a GPU tensor")
+#define CHECK_GPU_INPUT(x) CHECK_GPU(x); CHECK_CONTIGUOUS(x)
+#define CHECK_GPU_INPUT_TYPE(x, y) CHECK_GPU(x); CHECK_CONTIGUOUS(x); CHECK_TYPE(x, y)
 
 #endif

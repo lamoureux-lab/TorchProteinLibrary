@@ -2,24 +2,20 @@
 #include <iostream>
 #include <string>
 #include <Kernels.h>
+#include <nUtil.h>
 
-
-void SelectVolume_forward(  at::Tensor volume,
-                            at::Tensor coords,
-                            at::Tensor num_atoms,
-                            at::Tensor features,
+void SelectVolume_forward(  torch::Tensor volume,
+                            torch::Tensor coords,
+                            torch::Tensor num_atoms,
+                            torch::Tensor features,
                             float res
                         ){
-    // if( volume.dtype() != at::kFloat || coords.dtype() != at::kFloat || num_atoms.dtype() != at::kInt 
-    // || features.dtype() != at::kFloat){
-    //     throw("Incorrect tensor types");
-    // }
-    if( (!volume.type().is_cuda()) || (!coords.type().is_cuda()) || (!num_atoms.type().is_cuda()) 
-    || (!features.type().is_cuda())){
-        throw("Incorrect device");
-    }
+    CHECK_GPU_INPUT(volume);
+    CHECK_GPU_INPUT(coords);
+    CHECK_GPU_INPUT(features);
+    CHECK_GPU_INPUT_TYPE(num_atoms, torch::kInt);
     if(coords.ndimension() != 2){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
 
 
@@ -30,9 +26,9 @@ void SelectVolume_forward(  at::Tensor volume,
 
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
-        at::Tensor single_volume = volume[i];
-        at::Tensor single_coords = coords[i];
-        at::Tensor single_features = features[i];
+        torch::Tensor single_volume = volume[i];
+        torch::Tensor single_coords = coords[i];
+        torch::Tensor single_features = features[i];
 
         int single_num_atoms = num_atoms[i].item().toInt();
         gpu_selectFromTensor(   single_features.data<float>(), num_features,

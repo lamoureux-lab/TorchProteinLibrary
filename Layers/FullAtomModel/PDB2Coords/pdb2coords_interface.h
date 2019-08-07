@@ -1,3 +1,3 @@
 #include <torch/extension.h>
-// void PDB2CoordsOrdered(at::Tensor filenames, at::Tensor coords, at::Tensor res_names, at::Tensor atom_names, at::Tensor mask);
-void PDB2CoordsUnordered(at::Tensor filenames, at::Tensor coords, at::Tensor chain_names, at::Tensor res_names, at::Tensor res_nums, at::Tensor atom_names, at::Tensor num_atoms);
+// void PDB2CoordsOrdered(torch::Tensor filenames, torch::Tensor coords, torch::Tensor res_names, torch::Tensor atom_names, torch::Tensor mask);
+void PDB2CoordsUnordered(torch::Tensor filenames, torch::Tensor coords, torch::Tensor chain_names, torch::Tensor res_names, torch::Tensor res_nums, torch::Tensor atom_names, torch::Tensor num_atoms);

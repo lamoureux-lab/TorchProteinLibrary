@@ -2,6 +2,7 @@
 #include <cRMSD.h>
 #include <iostream>
 #include <string>
+#include <nUtil.h>
 
 
 void Coords2RMSD_CPU_forward(   torch::Tensor src, torch::Tensor dst, torch::Tensor rmsd,
@@ -9,18 +10,16 @@ void Coords2RMSD_CPU_forward(   torch::Tensor src, torch::Tensor dst, torch::Ten
                             torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
                             torch::Tensor num_atoms
                         ){
-    // if( src.dtype() != torch::kDouble || dst.dtype() != torch::kDouble || rmsd.dtype() != torch::kDouble
-    // || ce_src.dtype() != torch::kDouble || ce_dst.dtype() != torch::kDouble || U_ce_src.dtype() != torch::kDouble
-    // || UT_ce_dst.dtype() != torch::kDouble || num_atoms.dtype() != torch::kInt){
-    //     throw("Incorrect tensor types");
-    // }
-    if( (src.type().is_cuda()) || (dst.type().is_cuda()) || (rmsd.type().is_cuda())
-        || (ce_src.type().is_cuda()) || (ce_dst.type().is_cuda()) || (U_ce_src.type().is_cuda()) 
-        || (UT_ce_dst.type().is_cuda()) || (num_atoms.type().is_cuda()) ){
-        throw("Incorrect device");
-    }
+    CHECK_CPU_INPUT(src);
+    CHECK_CPU_INPUT(dst);
+    CHECK_CPU_INPUT(rmsd);
+    CHECK_CPU_INPUT(ce_src);
+    CHECK_CPU_INPUT(ce_dst);
+    CHECK_CPU_INPUT(U_ce_src);
+    CHECK_CPU_INPUT(UT_ce_dst);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
     if(src.ndimension() != 2){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     
     int batch_size = src.size(0);
@@ -45,21 +44,15 @@ void Coords2RMSD_CPU_backward(  torch::Tensor grad_atoms, torch::Tensor grad_out
                             torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
                             torch::Tensor num_atoms
                         ){
-    // if( grad_atoms.dtype() != torch::kDouble || grad_output.dtype() != torch::kDouble
-    // || ce_src.dtype() != torch::kDouble || ce_dst.dtype() != torch::kDouble || U_ce_src.dtype() != torch::kDouble
-    // || UT_ce_dst.dtype() != torch::kDouble || num_atoms.dtype() != torch::kInt){
-    //     std::cout<<"Incorrect tensor types"<<std::endl;
-    //     throw("Incorrect tensor types");
-    // }
-    if( (grad_atoms.type().is_cuda()) || (grad_output.type().is_cuda())
-        || (ce_src.type().is_cuda()) || (ce_dst.type().is_cuda()) || (U_ce_src.type().is_cuda()) 
-        || (UT_ce_dst.type().is_cuda()) || (num_atoms.type().is_cuda()) ){
-        std::cout<<"Incorrect device"<<std::endl;
-        throw("Incorrect device");
-    }
+    CHECK_CPU_INPUT(grad_atoms);
+    CHECK_CPU_INPUT(grad_output);
+    CHECK_CPU_INPUT(ce_src);
+    CHECK_CPU_INPUT(ce_dst);
+    CHECK_CPU_INPUT(U_ce_src);
+    CHECK_CPU_INPUT(UT_ce_dst);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
     if(grad_atoms.ndimension() != 2){
-        std::cout<<"Incorrect input ndim"<<std::endl;
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     int batch_size = grad_atoms.size(0);
     auto grad_output_acc = grad_output.accessor<double, 1>();

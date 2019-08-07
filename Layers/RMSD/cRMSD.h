@@ -1,7 +1,7 @@
 #pragma once
 #include <cVector3.h>
 #include <cMatrix33.h>
-#include <torch/torch.h>
+#include <torch/extension.h>
 
 template <typename T>
 class cRMSD{

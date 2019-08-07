@@ -3,34 +3,34 @@
 #include <iostream>
 #include <cVector3.h>
 #include <cMatrix33.h>
+#include <nUtil.h>
 
-
-void VolumeGenRMSD( at::Tensor coords,
-                    at::Tensor num_atoms,
-                    at::Tensor R0,
-                    at::Tensor R1,
-                    at::Tensor T0,
-                    at::Tensor translation_volume,
+void VolumeGenRMSD( torch::Tensor coords,
+                    torch::Tensor num_atoms,
+                    torch::Tensor R0,
+                    torch::Tensor R1,
+                    torch::Tensor T0,
+                    torch::Tensor translation_volume,
                     float resolution){
-    // if( volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat || output.dtype() != at::kFloat){
-    //     throw("Incorrect tensor types");
-    // }
-    if( (!translation_volume.type().is_cuda())){
-        throw("Incorrect device");
-    }
+    CHECK_CPU_INPUT_TYPE(coords, torch::kDouble);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
+    CHECK_CPU_INPUT_TYPE(R0, torch::kDouble);
+    CHECK_CPU_INPUT_TYPE(R1, torch::kDouble);
+    CHECK_CPU_INPUT_TYPE(T0, torch::kDouble);
+    CHECK_GPU_INPUT_TYPE(translation_volume, torch::kFloat);
     if(translation_volume.ndimension()!=4){
-        throw("incorrect input dimension");
+        ERROR("incorrect input dimension");
     }
 
     int batch_size = coords.size(0);
     auto num_atoms_acc = num_atoms.accessor<int,1>();
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
-        at::Tensor single_volume = translation_volume[i];
-        at::Tensor single_coords = coords[i];
-        at::Tensor single_R0 = R0[i];
-        at::Tensor single_R1 = R1[i];
-        at::Tensor single_T0 = T0[i];
+        torch::Tensor single_volume = translation_volume[i];
+        torch::Tensor single_coords = coords[i];
+        torch::Tensor single_R0 = R0[i];
+        torch::Tensor single_R1 = R1[i];
+        torch::Tensor single_T0 = T0[i];
         auto R0_acc = single_R0.accessor<double,2>();
         auto R1_acc = single_R1.accessor<double,2>();
         auto T0_acc = single_T0.accessor<double,1>();        

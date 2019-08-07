@@ -1,2 +1,2 @@
-#include <torch/torch.h>
-void VolumeGenGrid( at::Tensor rotations, at::Tensor grid);
+#include <torch/extension.h>
+void VolumeGenGrid( torch::Tensor rotations, torch::Tensor grid);

@@ -5,25 +5,27 @@
 #include "nUtil.h"
 
 
-void Coords2TypedCoords_forward(    at::Tensor input_coords, 
-                                    at::Tensor res_names,
-                                    at::Tensor atom_names,
-                                    at::Tensor input_num_atoms,
-                                    at::Tensor output_coords,
-                                    at::Tensor output_num_atoms_of_type,
-                                    at::Tensor output_offsets,
-                                    at::Tensor output_atom_indexes
+void Coords2TypedCoords_forward(    torch::Tensor input_coords, 
+                                    torch::Tensor res_names,
+                                    torch::Tensor atom_names,
+                                    torch::Tensor input_num_atoms,
+                                    torch::Tensor output_coords,
+                                    torch::Tensor output_num_atoms_of_type,
+                                    torch::Tensor output_offsets,
+                                    torch::Tensor output_atom_indexes
                                 ){
     const uint num_atom_types = 11;
-
-    // if( res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
-    //     || input_coords.dtype() != at::kDouble || output_coords.dtype() != at::kDouble
-    //     || input_num_atoms.dtype() != at::kInt || output_num_atoms_of_type.dtype() != at::kInt
-    //     || output_offsets.dtype() != at::kInt || output_atom_indexes.dtype() != at::kInt){
-    //         throw("Incorrect tensor types");
-    // }
+    CHECK_CPU_INPUT(input_coords);
+    CHECK_CPU_INPUT_TYPE(res_names, torch::kByte);
+    CHECK_CPU_INPUT_TYPE(atom_names, torch::kByte);
+    CHECK_CPU_INPUT_TYPE(input_num_atoms, torch::kInt);
+    CHECK_CPU_INPUT(output_coords);
+    CHECK_CPU_INPUT_TYPE(output_num_atoms_of_type, torch::kInt);
+    CHECK_CPU_INPUT_TYPE(output_offsets, torch::kInt);
+    CHECK_CPU_INPUT_TYPE(output_atom_indexes, torch::kInt);
+    
     if(input_coords.ndimension() != 2){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     int batch_size = input_coords.size(0);
                     
@@ -31,15 +33,15 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
     for(int i=0; i<batch_size; i++){
         int num_atoms = input_num_atoms.accessor<int,1>()[i];
 
-        at::Tensor single_intput_coords = input_coords[i];
-        at::Tensor single_atom_names = atom_names[i];
-        at::Tensor single_res_names = res_names[i];
+        torch::Tensor single_intput_coords = input_coords[i];
+        torch::Tensor single_atom_names = atom_names[i];
+        torch::Tensor single_res_names = res_names[i];
         
-        at::Tensor single_output_coords = output_coords[i];
-        at::Tensor single_output_num_atoms_of_type = output_num_atoms_of_type[i];
-        at::Tensor single_output_offsets = output_offsets[i];
-        at::Tensor single_output_atom_indexes = output_atom_indexes[i];
-        // std::cout<<num_atoms<<std::endl;
+        torch::Tensor single_output_coords = output_coords[i];
+        torch::Tensor single_output_num_atoms_of_type = output_num_atoms_of_type[i];
+        torch::Tensor single_output_offsets = output_offsets[i];
+        torch::Tensor single_output_atom_indexes = output_atom_indexes[i];
+        
         int num_atoms_added[num_atom_types];
         int atom_types[num_atoms];
         for(int j=0;j<num_atom_types;j++){
@@ -47,7 +49,7 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
         }
         
         //Assign atom types
-        at::Tensor single_atom_name, single_res_name;
+        torch::Tensor single_atom_name, single_res_name;
                 
         for(int j=0; j<num_atoms; j++){
             single_atom_name = single_atom_names[j];
@@ -64,12 +66,12 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
             atom_types[j] = type;
             single_output_num_atoms_of_type[type] += 1;
         }
-        // std::cout<<"assigned types"<<std::endl;
+        
         //Compute memory offsets for an atom type
         for(int j=1;j<num_atom_types; j++){
             single_output_offsets[j] = single_output_offsets[j-1] + single_output_num_atoms_of_type[j-1];
         }
-        // std::cout<<"assigned offsets"<<std::endl;
+        
         //Copy information
         auto a_single_output_offsets = single_output_offsets.accessor<int,1>();
         for(int j=0;j<num_atoms; j++){
@@ -82,35 +84,36 @@ void Coords2TypedCoords_forward(    at::Tensor input_coords,
             single_output_atom_indexes[offset + num_atoms_added[type]] = j;
             num_atoms_added[type] += 1;
         }
-        // std::cout<<"rearranged coordinates"<<std::endl;
+        
     }
     
 }
-void Coords2TypedCoords_backward(   at::Tensor grad_typed_coords,
-                                    at::Tensor grad_flat_coords,
-                                    at::Tensor num_atoms_of_type,
-                                    at::Tensor offsets,
-                                    at::Tensor atom_indexes
+void Coords2TypedCoords_backward(   torch::Tensor grad_typed_coords,
+                                    torch::Tensor grad_flat_coords,
+                                    torch::Tensor num_atoms_of_type,
+                                    torch::Tensor offsets,
+                                    torch::Tensor atom_indexes
                         ){
     const uint num_atom_types=11;
-    // if( grad_typed_coords.dtype() != at::kDouble || grad_flat_coords.dtype() != at::kDouble
-    //     || num_atoms_of_type.dtype() != at::kInt || offsets.dtype() != at::kInt
-    //     || atom_indexes.dtype() != at::kInt){
-    //         throw("Incorrect tensor types");
-    // }
+    CHECK_CPU_INPUT(grad_typed_coords);
+    CHECK_CPU_INPUT(grad_flat_coords);
+    
+    CHECK_CPU_INPUT_TYPE(num_atoms_of_type, torch::kInt);
+    CHECK_CPU_INPUT_TYPE(offsets, torch::kInt);
+    CHECK_CPU_INPUT_TYPE(atom_indexes, torch::kInt);
     if(grad_typed_coords.ndimension() != 2){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
    
     int batch_size = grad_flat_coords.size(0);
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
 
-        at::Tensor single_grad_typed_coords = grad_typed_coords[i];
-        at::Tensor single_grad_flat_coords = grad_flat_coords[i];
-        at::Tensor single_atom_indexes = atom_indexes[i];
-        at::Tensor single_offsets = offsets[i];
-        at::Tensor single_num_atoms_of_type = num_atoms_of_type[i];
+        torch::Tensor single_grad_typed_coords = grad_typed_coords[i];
+        torch::Tensor single_grad_flat_coords = grad_flat_coords[i];
+        torch::Tensor single_atom_indexes = atom_indexes[i];
+        torch::Tensor single_offsets = offsets[i];
+        torch::Tensor single_num_atoms_of_type = num_atoms_of_type[i];
         
         for(int j=0;j<num_atom_types; j++){
             int num_atoms = single_num_atoms_of_type.accessor<int,1>()[j];

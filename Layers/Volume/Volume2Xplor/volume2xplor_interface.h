@@ -1,2 +1,2 @@
-#include <torch/torch.h>
-void Volume2Xplor(  at::Tensor volume, const char *filename, float resolution);
+#include <torch/extension.h>
+void Volume2Xplor(  torch::Tensor volume, const char *filename, float resolution);

@@ -1,19 +1,17 @@
 #include "volumeConvolution_interface.h"
 #include <VolumeConv.h>
 #include <iostream>
+#include <nUtil.h>
 
 
-void VolumeConvolution_forward( at::Tensor volume1, 
-                                at::Tensor volume2, 
-                                at::Tensor output){
-    // if( volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat || output.dtype() != at::kFloat){
-    //     throw("Incorrect tensor types");
-    // }
-    if( (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) || (!output.type().is_cuda()) ){
-        throw("Incorrect device");
-    }
+void VolumeConvolution_forward( torch::Tensor volume1, 
+                                torch::Tensor volume2, 
+                                torch::Tensor output){
+    CHECK_GPU_INPUT_TYPE(volume1, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(volume2, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(output, torch::kFloat);
     if(volume1.ndimension()!=4){
-        throw("incorrect input dimension");
+        ERROR("incorrect input dimension");
     }
     cpu_VolumeConv(	volume1.data<float>(), 
                     volume2.data<float>(), 
@@ -22,38 +20,33 @@ void VolumeConvolution_forward( at::Tensor volume1,
                     volume1.size(1),
                     true);
 }
-void VolumeConvolution_backward(    at::Tensor gradOutput,
-                                    at::Tensor gradVolume1,
-                                    at::Tensor gradVolume2,
-                                    at::Tensor volume1, 
-                                    at::Tensor volume2){
-    // if( gradOutput.dtype() != at::kFloat || gradVolume1.dtype() != at::kFloat || gradVolume2.dtype() != at::kFloat
-    //     || volume1.dtype() != at::kFloat || volume2.dtype() != at::kFloat){
-    //     throw("Incorrect tensor types");
-    // }
-    if( (!gradOutput.type().is_cuda()) || (!gradVolume1.type().is_cuda()) || (!gradVolume2.type().is_cuda())
-        || (!volume1.type().is_cuda()) || (!volume2.type().is_cuda()) ){
-        throw("Incorrect device");
-    }
+void VolumeConvolution_backward(    torch::Tensor gradOutput,
+                                    torch::Tensor gradVolume1,
+                                    torch::Tensor gradVolume2,
+                                    torch::Tensor volume1, 
+                                    torch::Tensor volume2){
+    CHECK_GPU_INPUT_TYPE(gradVolume1, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(gradVolume2, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(gradOutput, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(volume1, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(volume2, torch::kFloat);
     if(gradOutput.ndimension()!=4){
-        throw("incorrect input dimension");
+        ERROR("incorrect input dimension");
     }
-    // std::cout<<"backward start"<<std::endl;
+
     cpu_VolumeConv(	gradOutput.data<float>(), 
                     volume2.data<float>(), 
                     gradVolume1.data<float>(), 
                     volume1.size(0),
                     volume1.size(1),
                     false);
-    // std::cout<<"backward step1"<<std::endl;
+
     cpu_VolumeConv(	volume1.data<float>(), 
                     gradOutput.data<float>(),
                     gradVolume2.data<float>(), 
                     volume1.size(0),
                     volume1.size(1),
-                    true);
-    // std::cout<<"backward end"<<std::endl;
-    
+                    true);    
 }
 
 

@@ -31,12 +31,12 @@ if __name__=='__main__':
 					sources = [
 					'Math/cVector3.cpp',
 					'Math/cMatrix33.cpp',
-					'Math/cMatrix44.cpp',					
+					'Math/cMatrix44.cpp',
+					'Math/nUtil.cpp',
 					'Layers/FullAtomModel/cConformation.cpp',
 					'Layers/FullAtomModel/cConformationAA.cpp',
 					'Layers/FullAtomModel/cGeometry.cpp',
 					'Layers/FullAtomModel/cRigidGroup.cpp',
-					'Layers/FullAtomModel/nUtil.cpp',
 					'Layers/FullAtomModel/cPDBLoader.cpp',
 					'Layers/FullAtomModel/Angles2Coords/angles2coords_interface.cpp',
 					'Layers/FullAtomModel/PDB2Coords/pdb2coords_interface.cpp',
@@ -52,6 +52,7 @@ if __name__=='__main__':
 					'Math/cMatrix33.cpp',
 					'Math/cMatrix44.cpp',
 					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
 					'Layers/Volume/TypedCoords2Volume/typedcoords2volume_interface.cpp',
 					'Layers/Volume/Volume2Xplor/volume2xplor_interface.cpp',
 					'Layers/Volume/Select/select_interface.cpp',
@@ -74,6 +75,7 @@ if __name__=='__main__':
 					'Math/cMatrix33.cpp',
 					'Math/cMatrix44.cpp',
 					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
 					'Layers/ReducedModel/cBackboneProteinCPUKernels.cpp',
 					'Layers/ReducedModel/Angles2Backbone/angles2backbone_interface.cpp',
 					'Layers/ReducedModel/cBackboneProteinCUDAKernels.cu',
@@ -89,6 +91,7 @@ if __name__=='__main__':
 					'Math/cMatrix33.cpp',
 					'Math/cMatrix44.cpp',
 					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
 					'Layers/RMSD/Coords2RMSD_CPU/coords2rmsd_interface.cpp',
 					'Layers/RMSD/cRMSD.cpp',
 					'Layers/RMSD/main_cpu.cpp'],
@@ -96,10 +99,14 @@ if __name__=='__main__':
 	
 	RMSD_GPU = CppExtension('_RMSD_GPU',
 					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
 					'Layers/RMSD/Coords2RMSD_GPU/coords2rmsd_interface.cpp',
 					'Layers/RMSD/RMSDKernels.cu',
 					'Layers/RMSD/main_gpu.cpp'],
-					include_dirs = ['Layers/RMSD'])
+					include_dirs = ['Layers/RMSD', 'Math'])
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",

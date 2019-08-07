@@ -1,8 +1,8 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 
-void SelectVolume_forward(  at::Tensor volume,
-                            at::Tensor coords,
-                            at::Tensor num_atoms,
-                            at::Tensor features,
+void SelectVolume_forward(  torch::Tensor volume,
+                            torch::Tensor coords,
+                            torch::Tensor num_atoms,
+                            torch::Tensor features,
                             float res
                         );

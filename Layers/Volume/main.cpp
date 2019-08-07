@@ -1,4 +1,4 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 #include <TypedCoords2Volume/typedcoords2volume_interface.h>
 #include <Volume2Xplor/volume2xplor_interface.h>
 #include <Select/select_interface.h>

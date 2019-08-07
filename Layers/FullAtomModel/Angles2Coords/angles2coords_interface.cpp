@@ -12,12 +12,14 @@ void Angles2Coords_forward(     at::Tensor sequences,
                                 at::Tensor atom_names
                         ){
     bool add_terminal = false;
-    // if( sequences.dtype() != at::kByte || res_names.dtype() != at::kByte || atom_names.dtype() != at::kByte 
-    //     || input_angles.dtype() != at::kDouble || output_coords.dtype() != at::kDouble){
-    //         throw("Incorrect tensor types");
-    // }
+    CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
+    CHECK_CPU_INPUT(input_angles);
+    CHECK_CPU_INPUT(output_coords);
+    CHECK_CPU_INPUT_TYPE(res_names, torch::kByte);
+    CHECK_CPU_INPUT_TYPE(atom_names, torch::kByte);
+
     if(input_angles.ndimension() != 3){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim")
     }
     
     int batch_size = input_angles.sizes()[0];
@@ -37,22 +39,21 @@ void Angles2Coords_forward(     at::Tensor sequences,
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
         if( single_coords.sizes()[0]<3*num_atoms){
-            throw("incorrect coordinates tensor length");
+            ERROR("incorrect coordinates tensor length");
         }
         
         if( length<seq.length() || single_angles.sizes()[0]<7 ){
-            throw("incorrect angles tensor length");
+            ERROR("incorrect angles tensor length");
         }
         
         if( single_res_names.sizes()[0]<seq.length() ){
-            throw("incorrect res names tensor length");
+            ERROR("incorrect res names tensor length");
         }
         
         if( single_atom_names.sizes()[0]<seq.length() ){
-            throw("incorrect atom names tensor length");
+            ERROR("incorrect atom names tensor length");
         }
-        // at::Tensor dummy_grad = at::CPU(at::kDouble).zeros_like(single_angles);
-        at::Tensor dummy_grad = torch::zeros({single_angles.size(0), single_angles.size(1)}, torch::TensorOptions().dtype(torch::kDouble));
+        at::Tensor dummy_grad = torch::zeros_like(single_angles);
         cConformation<double> conf( seq, single_angles.data<double>(), dummy_grad.data<double>(),
                             length, single_coords.data<double>());
         //Output atom names and residue names
@@ -74,12 +75,12 @@ void Angles2Coords_backward(    at::Tensor grad_atoms,
                                 at::Tensor input_angles
                         ){
     bool add_terminal = false;
-    // if( sequences.dtype() != at::kByte || grad_atoms.dtype() != at::kDouble || grad_angles.dtype() != at::kDouble
-    //     || input_angles.dtype() != at::kDouble){
-    //         throw("Incorrect tensor types");
-    // }
+    CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
+    CHECK_CPU_INPUT(input_angles);
+    CHECK_CPU_INPUT(grad_atoms);
+    CHECK_CPU_INPUT(grad_angles);
     if(input_angles.ndimension() != 3){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     
     int batch_size = input_angles.sizes()[0];
@@ -97,8 +98,7 @@ void Angles2Coords_backward(    at::Tensor grad_atoms,
         uint length = single_angles.sizes()[1];
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
-        // at::Tensor dummy_coords = at::CPU(at::kDouble).zeros({3*num_atoms});
-        at::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(torch::kDouble));
+        at::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
         cConformation<double> conf( seq, single_angles.data<double>(), single_grad_angles.data<double>(),
                             length, dummy_coords.data<double>());
         conf.backward(conf.root, single_grad_atoms.data<double>());
@@ -113,14 +113,12 @@ void Angles2Coords_save(    const char* sequence,
                         ){
     bool add_terminal = false;
     if(input_angles.ndimension() != 2){
-        throw("Incorrect input ndim");
+        ERROR("Incorrect input ndim");
     }
     std::string aa(sequence);
     uint length = aa.length();
     int num_atoms = ProtUtil::getNumAtoms(aa, add_terminal);
-    // at::Tensor dummy_grad = at::CPU(at::kDouble).zeros_like(input_angles);
     at::Tensor dummy_grad = torch::zeros_like(input_angles, torch::TensorOptions().dtype(torch::kDouble));
-    // at::Tensor dummy_coords = at::CPU(at::kDouble).zeros({3*num_atoms});
     at::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(torch::kDouble));
     cConformation<double> conf( aa, input_angles.data<double>(), dummy_grad.data<double>(), 
                         length, dummy_coords.data<double>());
@@ -133,10 +131,3 @@ int getSeqNumAtoms( const char *sequence){
     int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
     return num_atoms;
 }
-
-// PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-//   m.def("Angles2Coords_forward", &Angles2Coords_forward, "Angles2Coords forward");
-//   m.def("Angles2Coords_backward", &Angles2Coords_backward, "Angles2Coords backward");
-//   m.def("Angles2Coords_save", &Angles2Coords_save, "Angles2Coords save");
-//   m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
-// }
