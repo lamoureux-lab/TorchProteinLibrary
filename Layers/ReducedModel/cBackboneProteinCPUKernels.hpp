@@ -1,21 +1,21 @@
-
-void cpu_computeCoordinatesBackbone(    double *angles, 
-										double *dr, 
-										double *dR_dangle, 
+template <typename T>
+void cpu_computeCoordinatesBackbone(    T *angles, 
+										T *dr, 
+										T *dR_dangle, 
 										int *length, 
 										int batch_size, 
 										int angles_stride);
-
-void cpu_computeDerivativesBackbone(    double *angles,  
-                                        double *dR_dangle,   
-                                        double *A,       
+template <typename T>
+void cpu_computeDerivativesBackbone(    T *angles,  
+                                        T *dR_dangle,   
+                                        T *A,       
                                         int *length,
                                         int batch_size,
                                         int angles_stride);
-
-void cpu_backwardFromCoordsBackbone(    double *gradInput,
-                                        double *gradOutput,
-                                        double *dR_dangle,
+template <typename T>
+void cpu_backwardFromCoordsBackbone(    T *gradInput,
+                                        T *gradOutput,
+                                        T *dR_dangle,
                                         int *length,
                                         int batch_size,
                                         int angles_stride);

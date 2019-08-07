@@ -3,22 +3,23 @@
 #include <cMatrix33.h>
 #include <torch/torch.h>
 
+template <typename T>
 class cRMSD{
     private:
         bool external;
 
     public:
-        cVector3 centroid_src, centroid_dst;
+        cVector3<T> centroid_src, centroid_dst;
         uint num_atoms;
 
-        double *ce_src, *ce_dst; //centered coordinates
-        double *U_ce_src, *UT_ce_dst; //centered and rotated coordinates
-        cMatrix33 U, UT; //rotation matrix and its transpose
+        T *ce_src, *ce_dst; //centered coordinates
+        T *U_ce_src, *UT_ce_dst; //centered and rotated coordinates
+        cMatrix33<T> U, UT; //rotation matrix and its transpose
 
     public:
         cRMSD(uint num_atoms);
-        cRMSD(double *ce_src, double *ce_dst, double *U_ce_src, double *UT_ce_dst, const uint num_atoms);
+        cRMSD(T *ce_src, T *ce_dst, T *U_ce_src, T *UT_ce_dst, const uint num_atoms);
         ~cRMSD();
-        double compute( double *src, double *dst );
-        void grad( double *grad_atoms, double *grad_output );
+        T compute( T *src, T *dst );
+        void grad( T *grad_atoms, T *grad_output );
 };

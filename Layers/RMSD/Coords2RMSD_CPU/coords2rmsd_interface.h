@@ -1,11 +1,11 @@
-#include <torch/torch.h>
-void Coords2RMSD_CPU_forward(   at::Tensor src, at::Tensor dst, at::Tensor rmsd,
-                            at::Tensor ce_src, at::Tensor ce_dst,
-                            at::Tensor U_ce_src, at::Tensor UT_ce_dst,
-                            at::Tensor num_atoms
+#include <torch/extension.h>
+void Coords2RMSD_CPU_forward(   torch::Tensor src, torch::Tensor dst, torch::Tensor rmsd,
+                            torch::Tensor ce_src, torch::Tensor ce_dst,
+                            torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
+                            torch::Tensor num_atoms
                         );
-void Coords2RMSD_CPU_backward(  at::Tensor grad_atoms, at::Tensor grad_output,
-                            at::Tensor ce_src, at::Tensor ce_dst,
-                            at::Tensor U_ce_src, at::Tensor UT_ce_dst,
-                            at::Tensor num_atoms
+void Coords2RMSD_CPU_backward(  torch::Tensor grad_atoms, torch::Tensor grad_output,
+                            torch::Tensor ce_src, torch::Tensor ce_dst,
+                            torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
+                            torch::Tensor num_atoms
                         );

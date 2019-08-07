@@ -79,7 +79,7 @@ int Angles2BackboneCPU_forward(at::Tensor input_angles,
         throw("Incorrect input ndim");
     }
     
-    cpu_computeCoordinatesBackbone(	input_angles.data<double>(), 
+    cpu_computeCoordinatesBackbone<double>(	input_angles.data<double>(), 
                                     output_coords.data<double>(), 
                                     A.data<double>(), 
                                     angles_length.data<int>(),
@@ -107,14 +107,14 @@ int Angles2BackboneCPU_backward(at::Tensor gradInput,
         throw("Incorrect input ndim");
     }
     
-    cpu_computeDerivativesBackbone( input_angles.data<double>(),
+    cpu_computeDerivativesBackbone<double>( input_angles.data<double>(),
                                     dr_dangle.data<double>(),
                                     A.data<double>(),
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));
     
-    cpu_backwardFromCoordsBackbone( gradInput.data<double>(),
+    cpu_backwardFromCoordsBackbone<double>( gradInput.data<double>(),
                                     gradOutput.data<double>(),
                                     dr_dangle.data<double>(),
                                     angles_length.data<int>(),

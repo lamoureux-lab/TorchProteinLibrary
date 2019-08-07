@@ -36,10 +36,10 @@ void VolumeGenRMSD( at::Tensor coords,
         auto T0_acc = single_T0.accessor<double,1>();        
 
         //Computing additive term: 2/N (delta - R0*R1)X
-        cMatrix33 X; X.setZero();
+        cMatrix33<double> X; X.setZero();
         double rmsd2R = 0.0;
         for(int j=0; j<num_atoms_acc[i]; j++){
-            cVector3 r(single_coords.data<double>()+3*j);
+            cVector3<double> r(single_coords.data<double>()+3*j);
             X(0,0) += r.v[0]*r.v[0];
             X(0,1) += r.v[0]*r.v[1];
             X(0,2) += r.v[0]*r.v[2];
@@ -66,11 +66,11 @@ void VolumeGenRMSD( at::Tensor coords,
 
         
         //Computing multiplicative term delta: 2.0*(R1 - R2)C
-        cVector3 centroid; centroid.setZero();
-        cVector3 delta; delta.setZero();        
+        cVector3<double> centroid; centroid.setZero();
+        cVector3<double> delta; delta.setZero();        
 
         for(int j=0; j<num_atoms_acc[i]; j++){
-            centroid += cVector3(single_coords.data<double>()+3*j);
+            centroid += cVector3<double>(single_coords.data<double>()+3*j);
         }
         centroid /= double(num_atoms_acc[i]);
 

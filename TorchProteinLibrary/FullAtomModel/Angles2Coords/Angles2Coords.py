@@ -10,23 +10,24 @@ import _FullAtomModel
 
 
 def convertStringList(stringList):
-    '''Converts list of strings to 0-terminated byte tensor'''
-    maxlen = 0
-    for string in stringList:
-        string += '\0'
-        if len(string)>maxlen:
-            maxlen = len(string)
-    ar = np.zeros( (len(stringList), maxlen), dtype=np.uint8)
-    
-    for i,string in enumerate(stringList):
-        npstring = np.fromstring(string, dtype=np.uint8)
-        ar[i,:npstring.shape[0]] = npstring
-    
-    return torch.from_numpy(ar)
+	'''Converts list of strings to 0-terminated byte tensor'''
+	maxlen = 0
+	for string in stringList:
+		string += '\0'
+		if len(string)>maxlen:
+			maxlen = len(string)
+	ar = np.zeros( (len(stringList), maxlen), dtype=np.uint8)
+	
+	for i,string in enumerate(stringList):
+		# npstring = np.fromstring(string, dtype=np.uint8)
+		npstring = np.frombuffer(bytes(string,'ascii'), dtype=np.uint8)
+		ar[i,:npstring.shape[0]] = npstring
+	
+	return torch.from_numpy(ar)
 
 def convertString(string):
-    '''Converts a string to 0-terminated byte tensor'''  
-    return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
+	'''Converts a string to 0-terminated byte tensor'''  
+	return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
 
 class Angles2CoordsFunction(Function):

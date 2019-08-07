@@ -4,14 +4,14 @@
 #include <string>
 
 
-void Coords2RMSD_CPU_forward(   at::Tensor src, at::Tensor dst, at::Tensor rmsd,
-                            at::Tensor ce_src, at::Tensor ce_dst,
-                            at::Tensor U_ce_src, at::Tensor UT_ce_dst,
-                            at::Tensor num_atoms
+void Coords2RMSD_CPU_forward(   torch::Tensor src, torch::Tensor dst, torch::Tensor rmsd,
+                            torch::Tensor ce_src, torch::Tensor ce_dst,
+                            torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
+                            torch::Tensor num_atoms
                         ){
-    // if( src.dtype() != at::kDouble || dst.dtype() != at::kDouble || rmsd.dtype() != at::kDouble
-    // || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
-    // || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
+    // if( src.dtype() != torch::kDouble || dst.dtype() != torch::kDouble || rmsd.dtype() != torch::kDouble
+    // || ce_src.dtype() != torch::kDouble || ce_dst.dtype() != torch::kDouble || U_ce_src.dtype() != torch::kDouble
+    // || UT_ce_dst.dtype() != torch::kDouble || num_atoms.dtype() != torch::kInt){
     //     throw("Incorrect tensor types");
     // }
     if( (src.type().is_cuda()) || (dst.type().is_cuda()) || (rmsd.type().is_cuda())
@@ -27,27 +27,27 @@ void Coords2RMSD_CPU_forward(   at::Tensor src, at::Tensor dst, at::Tensor rmsd,
     auto num_atoms_acc = num_atoms.accessor<int,1>();
     // #pragma omp parallel for num_threads(10)
     for(int i=0; i<batch_size; i++){
-        at::Tensor single_src = src[i];
-        at::Tensor single_dst = dst[i];
-        at::Tensor single_ce_src = ce_src[i];
-        at::Tensor single_ce_dst = ce_dst[i];
-        at::Tensor single_U_ce_src = U_ce_src[i];
-        at::Tensor single_UT_ce_dst = UT_ce_dst[i];
+        torch::Tensor single_src = src[i];
+        torch::Tensor single_dst = dst[i];
+        torch::Tensor single_ce_src = ce_src[i];
+        torch::Tensor single_ce_dst = ce_dst[i];
+        torch::Tensor single_U_ce_src = U_ce_src[i];
+        torch::Tensor single_UT_ce_dst = UT_ce_dst[i];
 
-        cRMSD crmsd( single_ce_src.data<double>(), single_ce_dst.data<double>(), 
-                    single_U_ce_src.data<double>(), single_UT_ce_dst.data<double>(), 
-                    num_atoms_acc[i]);
+        cRMSD<double> crmsd( single_ce_src.data<double>(), single_ce_dst.data<double>(), 
+                            single_U_ce_src.data<double>(), single_UT_ce_dst.data<double>(), 
+                            num_atoms_acc[i]);
         rmsd[i] = crmsd.compute(single_src.data<double>(), single_dst.data<double>());
     }
 }
-void Coords2RMSD_CPU_backward(  at::Tensor grad_atoms, at::Tensor grad_output,
-                            at::Tensor ce_src, at::Tensor ce_dst,
-                            at::Tensor U_ce_src, at::Tensor UT_ce_dst,
-                            at::Tensor num_atoms
+void Coords2RMSD_CPU_backward(  torch::Tensor grad_atoms, torch::Tensor grad_output,
+                            torch::Tensor ce_src, torch::Tensor ce_dst,
+                            torch::Tensor U_ce_src, torch::Tensor UT_ce_dst,
+                            torch::Tensor num_atoms
                         ){
-    // if( grad_atoms.dtype() != at::kDouble || grad_output.dtype() != at::kDouble
-    // || ce_src.dtype() != at::kDouble || ce_dst.dtype() != at::kDouble || U_ce_src.dtype() != at::kDouble
-    // || UT_ce_dst.dtype() != at::kDouble || num_atoms.dtype() != at::kInt){
+    // if( grad_atoms.dtype() != torch::kDouble || grad_output.dtype() != torch::kDouble
+    // || ce_src.dtype() != torch::kDouble || ce_dst.dtype() != torch::kDouble || U_ce_src.dtype() != torch::kDouble
+    // || UT_ce_dst.dtype() != torch::kDouble || num_atoms.dtype() != torch::kInt){
     //     std::cout<<"Incorrect tensor types"<<std::endl;
     //     throw("Incorrect tensor types");
     // }
@@ -67,15 +67,15 @@ void Coords2RMSD_CPU_backward(  at::Tensor grad_atoms, at::Tensor grad_output,
 
     // #pragma omp parallel for num_threads(10)
     for(int i=0; i<batch_size; i++){
-        at::Tensor single_grad_atoms = grad_atoms[i];
-        at::Tensor single_ce_src = ce_src[i];
-        at::Tensor single_ce_dst = ce_dst[i];
-        at::Tensor single_U_ce_src = U_ce_src[i];
-        at::Tensor single_UT_ce_dst = UT_ce_dst[i];
+        torch::Tensor single_grad_atoms = grad_atoms[i];
+        torch::Tensor single_ce_src = ce_src[i];
+        torch::Tensor single_ce_dst = ce_dst[i];
+        torch::Tensor single_U_ce_src = U_ce_src[i];
+        torch::Tensor single_UT_ce_dst = UT_ce_dst[i];
         
         double single_grad_output = grad_output_acc[i];
         
-        cRMSD rmsd( single_ce_src.data<double>(), single_ce_dst.data<double>(), 
+        cRMSD<double> rmsd( single_ce_src.data<double>(), single_ce_dst.data<double>(), 
                     single_U_ce_src.data<double>(), single_UT_ce_dst.data<double>(), 
                     num_atoms_acc[i]);
 
