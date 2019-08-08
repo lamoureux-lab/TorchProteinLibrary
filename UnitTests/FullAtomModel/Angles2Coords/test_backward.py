@@ -10,7 +10,7 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 		self.a2c = FullAtomModel.Angles2Coords()
 
 	def runTest(self):
-		sequences = ['AFFAAGH', 'GGMLGWAHFGY']	
+		sequences = ['AFFAAGH', 'GGMLGWAHFGY', 'ACDEFGHIKLMNPQRSTVWY']	
 		x0 = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu').requires_grad_()
 		x1 = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu')
 		x0.data[:,0,:] = -1.047
