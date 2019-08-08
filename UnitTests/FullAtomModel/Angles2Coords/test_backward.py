@@ -11,11 +11,12 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 
 	def runTest(self):
 		sequences = ['AFFAAGH', 'GGMLGWAHFGY']	
-		x0 = torch.zeros(len(sequences), 7, len(sequences[-1]), dtype=torch.double, device='cpu').requires_grad_()
-		x1 = torch.zeros(len(sequences), 7, len(sequences[-1]), dtype=torch.double, device='cpu')
+		x0 = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu').requires_grad_()
+		x1 = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu')
 		x0.data[:,0,:] = -1.047
 		x0.data[:,1,:] = -0.698
-		x0.data[:,2:,:] = 110.4*np.pi/180.0
+		x0.data[:,2,:] = np.pi
+		x0.data[:,3:,:] = 110.4*np.pi/180.0
 		
 		y0, res, at, n_at = self.a2c(x0, sequences)
 		y0 = y0.sum()
@@ -26,7 +27,7 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 		error = 0.0
 		N = 0
 		for b in range(0,len(sequences)):
-			for i in range(0,7):
+			for i in range(0,8):
 				for j in range(0,x0.size(2)):
 					dx = 0.0001
 					x1.data.copy_(x0.data)

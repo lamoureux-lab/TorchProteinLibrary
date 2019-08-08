@@ -32,14 +32,15 @@ def generateSeq(seq):
 
 def getAngles(structure):
 	residues = list(structure.get_residues())
-	angles = torch.zeros(1, 7, len(residues), dtype=torch.double, device='cpu')
+	angles = torch.zeros(1, 8, len(residues), dtype=torch.double, device='cpu')
 	phi, psi = getBackbone(residues)
 	for i, residue in enumerate(residues):
 		angles[0, 0, i] = phi[i]
 		angles[0, 1, i] = psi[i]
+		angles[0, 2, i] = np.pi
 		xis = getRotamer(residue)
 		for j, xi in enumerate(xis):
-			angles[0, 2+j, i] = xis[j]
+			angles[0, 3+j, i] = xis[j]
 	return angles
 
 

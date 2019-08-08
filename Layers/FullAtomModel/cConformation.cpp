@@ -35,13 +35,21 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     for(int i=0; i<aa.length(); i++){
         T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
         T *psi = angles + i + angles_length*1;T *dpsi = angles_grad + i + angles_length*1;
-        T *xi1 = angles + i + angles_length*2;T *dxi1 = angles_grad + i + angles_length*2;
-        T *xi2 = angles + i + angles_length*3;T *dxi2 = angles_grad + i + angles_length*3;
-        T *xi3 = angles + i + angles_length*4;T *dxi3 = angles_grad + i + angles_length*4;
-        T *xi4 = angles + i + angles_length*5;T *dxi4 = angles_grad + i + angles_length*5;
-        T *xi5 = angles + i + angles_length*6;T *dxi5 = angles_grad + i + angles_length*6;
-        std::vector<T*> params({phi, psi, xi1, xi2, xi3, xi4, xi5});
-        std::vector<T*> params_grad({dphi, dpsi, dxi1, dxi2, dxi3, dxi4, dxi5});
+        
+        T *omega, *domega;
+        if(i>0){
+            omega = angles + i-1 + angles_length*2;domega = angles_grad + i-1 + angles_length*2;
+        }else{
+            omega = &geo.omega_const;domega = NULL;
+        }
+
+        T *xi1 = angles + i + angles_length*3;T *dxi1 = angles_grad + i + angles_length*3;
+        T *xi2 = angles + i + angles_length*4;T *dxi2 = angles_grad + i + angles_length*4;
+        T *xi3 = angles + i + angles_length*5;T *dxi3 = angles_grad + i + angles_length*5;
+        T *xi4 = angles + i + angles_length*6;T *dxi4 = angles_grad + i + angles_length*6;
+        T *xi5 = angles + i + angles_length*7;T *dxi5 = angles_grad + i + angles_length*7;
+        std::vector<T*> params({phi, psi, omega, xi1, xi2, xi3, xi4, xi5});
+        std::vector<T*> params_grad({dphi, dpsi, domega, dxi1, dxi2, dxi3, dxi4, dxi5});
         if(add_terminal){
             if(i == (aa.length()-1))
                 terminal = true;

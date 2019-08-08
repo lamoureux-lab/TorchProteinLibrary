@@ -42,7 +42,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             ERROR("incorrect coordinates tensor length");
         }
         
-        if( length<seq.length() || single_angles.sizes()[0]<7 ){
+        if( length<seq.length() || single_angles.sizes()[0]<8 ){
             ERROR("incorrect angles tensor length");
         }
         
