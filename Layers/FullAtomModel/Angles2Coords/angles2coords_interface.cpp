@@ -5,11 +5,11 @@
 #include <string>
 #include "nUtil.h"
 
-void Angles2Coords_forward(     at::Tensor sequences,
-                                at::Tensor input_angles, 
-                                at::Tensor output_coords,
-                                at::Tensor res_names,
-                                at::Tensor atom_names
+void Angles2Coords_forward(     torch::Tensor sequences,
+                                torch::Tensor input_angles, 
+                                torch::Tensor output_coords,
+                                torch::Tensor res_names,
+                                torch::Tensor atom_names
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
@@ -27,11 +27,11 @@ void Angles2Coords_forward(     at::Tensor sequences,
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
                 
-        at::Tensor single_sequence = sequences[i];
-        at::Tensor single_atom_names = atom_names[i];
-        at::Tensor single_res_names = res_names[i];
-        at::Tensor single_angles = input_angles[i];
-        at::Tensor single_coords = output_coords[i];
+        torch::Tensor single_sequence = sequences[i];
+        torch::Tensor single_atom_names = atom_names[i];
+        torch::Tensor single_res_names = res_names[i];
+        torch::Tensor single_angles = input_angles[i];
+        torch::Tensor single_coords = output_coords[i];
         
         std::string seq = StringUtil::tensor2String(single_sequence);
         
@@ -53,26 +53,30 @@ void Angles2Coords_forward(     at::Tensor sequences,
         if( single_atom_names.sizes()[0]<seq.length() ){
             ERROR("incorrect atom names tensor length");
         }
-        at::Tensor dummy_grad = torch::zeros_like(single_angles);
-        cConformation<double> conf( seq, single_angles.data<double>(), dummy_grad.data<double>(),
-                            length, single_coords.data<double>());
+        torch::Tensor dummy_grad = torch::zeros_like(single_angles);
+        AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
+            cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>());
+            for(int j=0; j<conf.groups.size(); j++){
+                for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
+                    int idx = conf.groups[j]->atomIndexes[k];
+                    torch::Tensor single_atom_name = single_atom_names[idx];
+                    torch::Tensor single_res_name = single_res_names[idx];
+                    StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name);
+                    StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
+                }
+            }                    
+        }));
+        // cConformation<double> conf( seq, single_angles.data<double>(), dummy_grad.data<double>(),
+        //                     length, single_coords.data<double>());
         //Output atom names and residue names
-        for(int j=0; j<conf.groups.size(); j++){
-            for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
-                int idx = conf.groups[j]->atomIndexes[k];
-                at::Tensor single_atom_name = single_atom_names[idx];
-                at::Tensor single_res_name = single_res_names[idx];
-                StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name);
-                StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
-            }
-        }
+        
     }
 }
 
-void Angles2Coords_backward(    at::Tensor grad_atoms,
-                                at::Tensor grad_angles,
-                                at::Tensor sequences,
-                                at::Tensor input_angles
+void Angles2Coords_backward(    torch::Tensor grad_atoms,
+                                torch::Tensor grad_angles,
+                                torch::Tensor sequences,
+                                torch::Tensor input_angles
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
@@ -88,26 +92,30 @@ void Angles2Coords_backward(    at::Tensor grad_atoms,
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         
-        at::Tensor single_sequence = sequences[i];
-        at::Tensor single_angles = input_angles[i];
-        at::Tensor single_grad_angles = grad_angles[i];
-        at::Tensor single_grad_atoms = grad_atoms[i];
+        torch::Tensor single_sequence = sequences[i];
+        torch::Tensor single_angles = input_angles[i];
+        torch::Tensor single_grad_angles = grad_angles[i];
+        torch::Tensor single_grad_atoms = grad_atoms[i];
         
         std::string seq = StringUtil::tensor2String(single_sequence);
                 
         uint length = single_angles.sizes()[1];
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
-        at::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
-        cConformation<double> conf( seq, single_angles.data<double>(), single_grad_angles.data<double>(),
-                            length, dummy_coords.data<double>());
-        conf.backward(conf.root, single_grad_atoms.data<double>());
+        torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
+        AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
+            cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>());
+            conf.backward(conf.root, single_grad_atoms.data<scalar_t>());
+        }));
+        // cConformation<double> conf( seq, single_angles.data<double>(), single_grad_angles.data<double>(),
+        //                     length, dummy_coords.data<double>());
+        // conf.backward(conf.root, single_grad_atoms.data<double>());
     }
 
 }
 
 void Angles2Coords_save(    const char* sequence,
-                            at::Tensor input_angles, 
+                            torch::Tensor input_angles, 
                             const char* output_filename,
                             const char mode
                         ){
@@ -118,11 +126,14 @@ void Angles2Coords_save(    const char* sequence,
     std::string aa(sequence);
     uint length = aa.length();
     int num_atoms = ProtUtil::getNumAtoms(aa, add_terminal);
-    at::Tensor dummy_grad = torch::zeros_like(input_angles, torch::TensorOptions().dtype(torch::kDouble));
-    at::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(torch::kDouble));
-    cConformation<double> conf( aa, input_angles.data<double>(), dummy_grad.data<double>(), 
+    torch::Tensor dummy_grad = torch::zeros_like(input_angles);
+    torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(input_angles.dtype()));
+    AT_DISPATCH_FLOATING_TYPES(input_angles.type(), "cConformation.save", ([&]{
+        cConformation<double> conf( aa, input_angles.data<double>(), dummy_grad.data<double>(), 
                         length, dummy_coords.data<double>());
-    conf.save(std::string(output_filename), mode);
+        conf.save(std::string(output_filename), mode);
+    }));
+    
 }
 
 int getSeqNumAtoms( const char *sequence){

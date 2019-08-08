@@ -78,9 +78,11 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
             int type = atom_types[j];
             int offset = a_single_output_offsets[type];
             int dst_idx = offset + num_atoms_added[type];
-            cVector3<double> r_dst( single_output_coords.data<double>() + 3*dst_idx );
-            cVector3<double> r_src( single_intput_coords.data<double>() + 3*j);
-            r_dst = r_src;
+            AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "Coords2TypedCoords_forward", ([&]{
+                cVector3<scalar_t> r_dst( single_output_coords.data<scalar_t>() + 3*dst_idx );
+                cVector3<scalar_t> r_src( single_intput_coords.data<scalar_t>() + 3*j);
+                r_dst = r_src;
+            }));
             single_output_atom_indexes[offset + num_atoms_added[type]] = j;
             num_atoms_added[type] += 1;
         }
@@ -121,9 +123,11 @@ void Coords2TypedCoords_backward(   torch::Tensor grad_typed_coords,
             for(int k=0; k<num_atoms; k++){
                 int src_idx = offset + k;
                 int dst_idx = single_atom_indexes.accessor<int,1>()[src_idx];
-                cVector3<double> r_src( single_grad_typed_coords.data<double>()+ 3*src_idx );
-                cVector3<double> r_dst( single_grad_flat_coords.data<double>() + 3*dst_idx );
-                r_dst = r_src;
+                AT_DISPATCH_FLOATING_TYPES(grad_typed_coords.type(), "Coords2TypedCoords_backward", ([&]{
+                    cVector3<scalar_t> r_src( single_grad_typed_coords.data<scalar_t>()+ 3*src_idx );
+                    cVector3<scalar_t> r_dst( single_grad_flat_coords.data<scalar_t>() + 3*dst_idx );
+                    r_dst = r_src;
+                }));
             }
         }
     }

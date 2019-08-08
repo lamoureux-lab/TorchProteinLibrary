@@ -12,8 +12,8 @@ import os
 def getBBox(input_coords, num_atoms):
 	if len(input_coords.size())==2:
 		batch_size = input_coords.size(0)
-		a = torch.zeros(batch_size, 3, dtype=torch.double)
-		b = torch.zeros(batch_size, 3, dtype=torch.double)
+		a = torch.zeros(batch_size, 3, dtype=input_coords.dtype)
+		b = torch.zeros(batch_size, 3, dtype=input_coords.dtype)
 	else:
 		raise ValueError('getBBox: ', 'Incorrect input size:', input_coords.size()) 
 
@@ -24,7 +24,7 @@ def getBBox(input_coords, num_atoms):
 def getRandomTranslation(a, b, volume_size):
 	if len(a.size())==2:
 		batch_size = a.size(0)
-		T = torch.zeros(batch_size, 3, dtype=torch.double)
+		T = torch.zeros(batch_size, 3, dtype=a.dtype)
 	else:
 		raise ValueError('getRandomTranslation: ', 'Incorrect input size:', a.size()) 
 
@@ -43,11 +43,6 @@ def getRotation(u):
 	_FullAtomModel.getRotation(R, u)
 	return R
 
-def getSO3Samples(dAngle):
-	R = torch.zeros(1, 3, 3, dtype=torch.double, device='cpu')
-	_FullAtomModel.getSO3Samples(dAngle, R)
-	return R
-
 class CoordsTranslateFunction(Function):
 	"""
 	coordinates translation
@@ -59,7 +54,7 @@ class CoordsTranslateFunction(Function):
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
 			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
+			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=input_coords_cpu.dtype)
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
@@ -78,7 +73,7 @@ class CoordsTranslateFunction(Function):
 		if len(grad_output_coords_cpu.size()) == 2:
 			batch_size = grad_output_coords_cpu.size(0)
 			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
+			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=grad_output_coords_cpu.dtype)
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
@@ -105,7 +100,7 @@ class CoordsRotateFunction(Function):
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
 			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
+			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=input_coords_cpu.dtype)
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
@@ -125,7 +120,7 @@ class CoordsRotateFunction(Function):
 		if len(grad_output_coords_cpu.size()) == 2:
 			batch_size = grad_output_coords_cpu.size(0)
 			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=torch.double)
+			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=grad_output_coords_cpu.dtype)
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		

@@ -62,20 +62,6 @@ def test_rotation(angle_inc = 0.1):
 	rotated = rotate(coords, R, num_atoms)
 	return rotated
 
-def test_SO3Sampling(angle_inc = 0.1):
-	R = getSO3Samples(angle_inc)
-	print(R.size())
-	rotate = CoordsRotate()
-	
-	num_atoms = torch.ones(R.size(0), dtype=torch.int)
-	coords = torch.zeros(R.size(0), 3, dtype=torch.double)
-	coords[:,0]=1.0
-	coords[:,1]=0.0
-	coords[:,2]=0.0
-
-	rotated = rotate(coords, R, num_atoms)
-	return rotated
-
 def plot_coords(coords, filename, plot_name='Rotation test'):
 	if not os.path.exists("TestFig"):
 		os.mkdir("TestFig")
@@ -97,23 +83,21 @@ def plot_coords(coords, filename, plot_name='Rotation test'):
 
 if __name__=='__main__':
 
-	# sequences = ['GGGGGG', 'GGAARRRRRRRRR']
-	# angles = torch.zeros(2, 7,len(sequences[1]), dtype=torch.double)
-	# angles[:,0,:] = -1.047
-	# angles[:,1,:] = -0.698
-	# angles[:,2:,:] = 110.4*np.pi/180.0
-	# a2c = Angles2Coords()
-	# protein, res_names, atom_names, num_atoms = a2c(angles, sequences)
+	sequences = ['GGGGGG', 'GGAARRRRRRRRR']
+	angles = torch.zeros(2, 7,len(sequences[1]), dtype=torch.double)
+	angles[:,0,:] = -1.047
+	angles[:,1,:] = -0.698
+	angles[:,2:,:] = 110.4*np.pi/180.0
+	a2c = Angles2Coords()
+	protein, res_names, atom_names, num_atoms = a2c(angles, sequences)
 	
-	# test_translation(protein, num_atoms)
+	test_translation(protein, num_atoms)
 	
-	# rotated = test_random_rotation(1000)
-	# plot_coords(rotated, "random_rotation.png")
+	rotated = test_random_rotation(1000)
+	plot_coords(rotated, "random_rotation.png")
 	
-	# rotated = test_rotation()
-	# plot_coords(rotated, "uniform_rotation.png")
+	rotated = test_rotation()
+	plot_coords(rotated, "uniform_rotation.png")
 
-	rotated = test_SO3Sampling(15.0)
-	plot_coords(rotated, "SO3_sample_rotation.png")
 		
 	

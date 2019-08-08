@@ -112,12 +112,17 @@ void PDB2CoordsUnordered(   torch::Tensor filenames, torch::Tensor coords, torch
         std::string filename = StringUtil::tensor2String(single_filename);
         cPDBLoader pdb(filename);
         for(int j=0; j<pdb.r.size(); j++){
-            cVector3<double> r_target(single_coords.data<double>() + 3*j);
-            r_target = pdb.r[j];
+            AT_DISPATCH_FLOATING_TYPES(coords.type(), "PDB2CoordsUnordered", ([&]{
+                cVector3<scalar_t> r_target(single_coords.data<scalar_t>() + 3*j);
+                r_target.v[0] = pdb.r[j].v[0];
+                r_target.v[1] = pdb.r[j].v[1];
+                r_target.v[2] = pdb.r[j].v[2];
+            }));
             StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[j]);
             StringUtil::string2Tensor(pdb.res_names[j], single_res_names[j]);
             StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[j]);
             single_res_nums.data<int>()[j] = pdb.res_nums[j];
+            
         }
     }
 }

@@ -24,9 +24,11 @@ void CoordsTranslate_forward(   torch::Tensor input_coords,
     for(int i=0; i<batch_size; i++){
         torch::Tensor single_input_coords = input_coords[i];
         torch::Tensor single_output_coords = output_coords[i];
-        auto aT = T.accessor<double,2>();
-        cVector3<double> translation(aT[i][0], aT[i][1], aT[i][2]);
-        translate(single_input_coords, translation, single_output_coords, num_at[i]);
+        AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "CoordsTranslate_forward", ([&]{
+            auto aT = T.accessor<scalar_t,2>();
+            cVector3<scalar_t> translation(aT[i][0], aT[i][1], aT[i][2]);
+            translate<scalar_t>(single_input_coords, translation, single_output_coords, num_at[i]);
+        }));
     }
 }
 void CoordsRotate_forward(  torch::Tensor input_coords, 
@@ -50,8 +52,10 @@ void CoordsRotate_forward(  torch::Tensor input_coords,
         torch::Tensor single_output_coords = output_coords[i];
         torch::Tensor single_R = R[i];
         
-        cMatrix33<double> _R = tensor2Matrix33<double>(single_R);
-        rotate(single_input_coords, _R, single_output_coords, num_at[i]);
+        AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "CoordsRotate_forward", ([&]{
+            cMatrix33<scalar_t> _R = tensor2Matrix33<scalar_t>(single_R);
+            rotate<scalar_t>(single_input_coords, _R, single_output_coords, num_at[i]);
+        }));
     }
 }
 void CoordsRotate_backward( torch::Tensor grad_output_coords, 
@@ -73,10 +77,11 @@ void CoordsRotate_backward( torch::Tensor grad_output_coords,
         torch::Tensor single_grad_output_coords = grad_output_coords[i];
         torch::Tensor single_grad_input_coords = grad_input_coords[i];
         torch::Tensor single_R = R[i];
-        
-        cMatrix33<double> _R = tensor2Matrix33<double>(single_R);
-        _R = _R.getTranspose();
-        rotate(single_grad_output_coords, _R, single_grad_input_coords, num_at[i]);
+        AT_DISPATCH_FLOATING_TYPES(grad_output_coords.type(), "CoordsRotate_backward", ([&]{
+            cMatrix33<scalar_t> _R = tensor2Matrix33<scalar_t>(single_R);
+            _R = _R.getTranspose();
+            rotate<scalar_t>(single_grad_output_coords, _R, single_grad_input_coords, num_at[i]);
+        }));
     }
 }
 void getBBox(   torch::Tensor input_coords,
@@ -98,9 +103,11 @@ void getBBox(   torch::Tensor input_coords,
         torch::Tensor single_a = a[i];
         torch::Tensor single_b = b[i];
         
-        cVector3<double> va(single_a.data<double>());
-        cVector3<double> vb(single_b.data<double>());
-        computeBoundingBox(single_input_coords, num_at[i], va, vb);
+        AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "getBBox", ([&]{
+            cVector3<scalar_t> va(single_a.data<scalar_t>());
+            cVector3<scalar_t> vb(single_b.data<scalar_t>());
+            computeBoundingBox<scalar_t>(single_input_coords, num_at[i], va, vb);
+        }));
     }
 }
 void getRandomRotation( torch::Tensor R ){
@@ -113,8 +120,10 @@ void getRandomRotation( torch::Tensor R ){
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         torch::Tensor single_R = R[i];
-        cMatrix33<double> rnd_R = getRandomRotation<double>();
-        matrix2Tensor(rnd_R, single_R);                
+        AT_DISPATCH_FLOATING_TYPES(R.type(), "getRandomRotation", ([&]{
+            cMatrix33<scalar_t> rnd_R = getRandomRotation<scalar_t>();
+            matrix2Tensor<scalar_t>(rnd_R, single_R);                
+        }));
     }
 }
 void getRotation( torch::Tensor R, torch::Tensor u ){
@@ -125,13 +134,15 @@ void getRotation( torch::Tensor R, torch::Tensor u ){
     }
 
     int batch_size = R.size(0);
-    auto param = u.accessor<double,2>();
-
+    
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         torch::Tensor single_R = R[i];
-        cMatrix33<double> R = getRotation(param[i][0], param[i][1], param[i][2]);
-        matrix2Tensor(R, single_R);
+        AT_DISPATCH_FLOATING_TYPES(R.type(), "getRotation", ([&]{ 
+            auto param = u.accessor<scalar_t,2>();
+            cMatrix33<scalar_t> Rot = getRotation(param[i][0], param[i][1], param[i][2]);
+            matrix2Tensor<scalar_t>(Rot, single_R);
+        }));
     }
 }
 void getRandomTranslation( torch::Tensor T, torch::Tensor a, torch::Tensor b, float volume_size){
@@ -148,11 +159,13 @@ void getRandomTranslation( torch::Tensor T, torch::Tensor a, torch::Tensor b, fl
         torch::Tensor single_T = T[i];
         torch::Tensor single_a = a[i];
         torch::Tensor single_b = b[i];
-                
-        cVector3<double> _a(single_a.data<double>());
-        cVector3<double> _b(single_b.data<double>());
-        cVector3<double> _T(single_T.data<double>());
         
-        _T = getRandomTranslation(volume_size, _a, _b);
+        AT_DISPATCH_FLOATING_TYPES(T.type(), "getRandomTranslation", ([&]{        
+            cVector3<scalar_t> _a(single_a.data<scalar_t>());
+            cVector3<scalar_t> _b(single_b.data<scalar_t>());
+            cVector3<scalar_t> _T(single_T.data<scalar_t>());
+            
+            _T = getRandomTranslation<scalar_t>(volume_size, _a, _b);
+        }));
     }
 }

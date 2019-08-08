@@ -20,7 +20,7 @@ class Coords2TypedCoordsFunction(Function):
 			
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
-			output_coords_cpu = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double)
+			output_coords_cpu = torch.zeros(batch_size, 3*max_num_atoms, dtype=input_coords_cpu.dtype)
 			num_atoms_of_type = torch.zeros(batch_size, num_atom_types, dtype=torch.int)
 			offsets = torch.zeros(batch_size, num_atom_types, dtype=torch.int)
 			ctx.atom_indexes = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
@@ -45,14 +45,14 @@ class Coords2TypedCoordsFunction(Function):
 		num_atoms_of_type, offsets = ctx.saved_tensors
 
 		if len(grad_typed_coords_cpu.size()) == 2:
-			grad_coords_cpu = torch.zeros(grad_typed_coords_cpu.size(0), grad_typed_coords_cpu.size(1), dtype=torch.double)
+			grad_coords_cpu = torch.zeros(grad_typed_coords_cpu.size(0), grad_typed_coords_cpu.size(1), dtype=grad_typed_coords_cpu.dtype)
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		_FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu.data, grad_coords_cpu, 
-															num_atoms_of_type, 
-															offsets, 
-															ctx.atom_indexes)
+		_FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu, grad_coords_cpu, 
+													num_atoms_of_type, 
+													offsets, 
+													ctx.atom_indexes)
 		
 		if math.isnan(grad_coords_cpu.sum()):
 			raise(Exception('Coords2TypedCoordsFunction: backward Nan'))		
