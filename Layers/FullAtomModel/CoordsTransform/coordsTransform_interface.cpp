@@ -31,6 +31,35 @@ void CoordsTranslate_forward(   torch::Tensor input_coords,
         }));
     }
 }
+
+void CoordsTranslate_backward(  torch::Tensor grad_output_coords, 
+                                torch::Tensor grad_input_coords,
+                                torch::Tensor T,
+                                torch::Tensor num_atoms
+                                ){
+    CHECK_CPU_INPUT(grad_output_coords);
+    CHECK_CPU_INPUT(grad_input_coords);
+    CHECK_CPU_INPUT(T);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
+    if(grad_output_coords.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+    int batch_size = grad_output_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        torch::Tensor single_grad_input_coords = grad_input_coords[i];
+        torch::Tensor single_grad_output_coords = grad_output_coords[i];
+        AT_DISPATCH_FLOATING_TYPES(single_grad_output_coords.type(), "CoordsTranslate_backward", ([&]{
+            for(int j=0; j<num_at[i]; j++){
+                cVector3<scalar_t> r_in(single_grad_input_coords.data<scalar_t>() + 3*j);
+                cVector3<scalar_t> r_out(single_grad_output_coords.data<scalar_t>() + 3*j);
+                r_in = r_out;
+            }
+        }));
+    }
+}
+
 void CoordsRotate_forward(  torch::Tensor input_coords, 
                             torch::Tensor output_coords,
                             torch::Tensor R,

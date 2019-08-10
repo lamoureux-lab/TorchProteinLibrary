@@ -137,9 +137,6 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 		self.assertLess(error, 0.01)
 	
 if __name__=='__main__':
-	suite = unittest.TestSuite()
-	suite.addTest(TestAngles2CoordsForward())
-	suite.addTest(TestAngles2CoordsBackward())
 	unittest.main()
 	
 

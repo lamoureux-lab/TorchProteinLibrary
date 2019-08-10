@@ -98,12 +98,12 @@
 from TorchProteinLibrary import FullAtomModel
 a2c = FullAtomModel.Angles2Coords()
 sequences = ["AAA"]
-torch.randn(1, 7, 3, dtype=torch.double)
+angles = torch.randn(1, 8, 3, dtype=torch.double)
 coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
 			</code></pre>
 			
-			Each amino acid is described by a list of 7 dihedral angles $\{\phi, \psi, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order).
-			The angles not needed for a given amino acid are ignored but a list of 7 elements should be provided for all amino acids.
+			Each amino acid is described by a list of 8 dihedral angles $\{\phi, \psi, \omega, \chi_1, \chi_2, \chi_3, \chi_4, \chi_5\}$ (in that order).
+			The angles not needed for a given amino acid are ignored but a list of 8 elements should be provided for all amino acids.
 			<br><br>
 			
 			<h3>Implementation</h3>
@@ -212,11 +212,11 @@ coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
 	<script>
 		generate_table("Angles2Coords", 
 						[
-							["Angles", "CPU", "double", "[batch_size, 7, number of amino acids]"], 
+							["Angles", "CPU", "float/double", "[batch_size, 8, number of amino acids]"], 
 							["Sequences", "CPU", "list of strings", "length = batch_size"]
 						],
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 							["ResidueNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
 							["AtomNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"],
@@ -238,10 +238,11 @@ if __name__=='__main__':
 	sequences = ['GGMLGWAHFGY']
 	
 	#Setting conformation to alpha-helix
-	angles = torch.zeros(len(sequences), 7, len(sequences[-1]), dtype=torch.double, device='cpu')
+	angles = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu')
 	angles.data[:,0,:] = -1.047 # phi = -60 degrees
 	angles.data[:,1,:] = -0.698 # psi = -40 degrees
-	angles.data[:,2:,:] = 110.4*np.pi/180.0 # chi1 = 110.4 degrees
+	angles.data[:,2,:] = np.pi # omega = 180 degrees
+	angles.data[:,3:,:] = 110.4*np.pi/180.0 # chi1 = 110.4 degrees
 	
 	#Converting angles to coordinates
 	coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
@@ -367,13 +368,13 @@ if __name__=='__main__':
 	<script>
 		generate_table("Coords2TypedCoords", 
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 							["ResidueNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
 							["AtomNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"]
 						],
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 							["NumAtomsOfType", "CPU", "int", "[batch_size, num atoms types]"],
 							["Offsets", "CPU", "int", "[batch_size, num atoms types]"],
 						]
@@ -402,8 +403,10 @@ coords, res_names, atom_names, num_atoms = FullAtomModel.PDB2CoordsUnordered(["f
 						],
 						[
 							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
-							["ResidueNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
-							["AtomNames", "CPU", "byte", "[batch_size, number of amino acids, 4]"],
+							["ChainNames", "CPU", "byte", "[batch_size, number of atoms, 1]"],
+							["ResidueNames", "CPU", "byte", "[batch_size, number of atoms, 4]"],
+							["ResidueNumbers", "CPU", "byte", "[batch_size, number of atoms]"],
+							["AtomNames", "CPU", "byte", "[batch_size, number of atoms, 4]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"]
 						]
 						);
@@ -421,7 +424,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 if __name__=='__main__':
 	#Reading pdb file
 	p2c = FullAtomModel.PDB2CoordsUnordered()
-	coords, res_names, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
+	coords, _, res_names, _, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
 	
 	#Resizing coordinates array for convenience
 	N = int(num_atoms.data[0])
@@ -464,12 +467,12 @@ coords_t = translate(coords, translation, num_atoms)
 	<script>
 		generate_table("CoordsTranslate", 
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
-							["Translation", "CPU", "double", "[batch_size, 3]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Translation", "CPU", "float/double", "[batch_size, 3]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"]
 						],
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 						]
 						);
 									
@@ -499,12 +502,12 @@ coords_r = rotate(coords, rotation, num_atoms)
 	<script>
 		generate_table("CoordsRotate", 
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
-							["Rotation", "CPU", "double", "[batch_size, 3, 3]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Rotation", "CPU", "float/double", "[batch_size, 3, 3]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"]
 						],
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 						]
 						);
 									
@@ -529,12 +532,12 @@ A, B = FullAtomModel.getBBox(coords, num_atoms)
 	<script>
 		generate_table("getBBox", 
 						[
-							["Coordinates", "CPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
 							["NumAtoms", "CPU", "int", "[batch_size]"]
 						],
 						[
-							["A", "CPU", "double", "[batch_size, 3]"],
-							["B", "CPU", "double", "[batch_size, 3]"],
+							["A", "CPU", "float/double", "[batch_size, 3]"],
+							["B", "CPU", "float/double", "[batch_size, 3]"],
 						]
 						);
 									
@@ -558,8 +561,8 @@ translation = FullAtomModel.getRandomTranslation(A, B, 120)
 	<script>
 		generate_table("getRandomTranslation", 
 						[
-							["A", "CPU", "double", "[batch_size, 3]"],
-							["B", "CPU", "double", "[batch_size, 3]"],
+							["A", "CPU", "float/double", "[batch_size, 3]"],
+							["B", "CPU", "float/double", "[batch_size, 3]"],
 							["VolumeSize", "CPU", "python float", "-"],
 						],
 						[

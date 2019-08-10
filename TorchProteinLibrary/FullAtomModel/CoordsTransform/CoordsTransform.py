@@ -49,7 +49,7 @@ class CoordsTranslateFunction(Function):
 	"""
 	@staticmethod	
 	def forward(ctx, input_coords_cpu, T, num_atoms):
-		# ctx.save_for_backward(num_atoms)
+		ctx.save_for_backward(T, num_atoms)
 
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
@@ -69,6 +69,7 @@ class CoordsTranslateFunction(Function):
 	def backward(ctx, grad_output_coords_cpu):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_output_coords_cpu = grad_output_coords_cpu.contiguous()
+		T, num_atoms = ctx.saved_tensors
 
 		if len(grad_output_coords_cpu.size()) == 2:
 			batch_size = grad_output_coords_cpu.size(0)
@@ -77,8 +78,8 @@ class CoordsTranslateFunction(Function):
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
-		grad_input_coords_cpu.data.copy_(grad_output_coords_cpu)
-				
+		_FullAtomModel.CoordsTranslate_backward(grad_output_coords_cpu, grad_input_coords_cpu, T, num_atoms)
+						
 		return grad_input_coords_cpu, None, None
 
 class CoordsTranslate(Module):

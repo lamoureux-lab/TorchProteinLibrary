@@ -15,11 +15,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
 
 	m.def("PDB2CoordsUnordered", &PDB2CoordsUnordered, "Convert PDB to coordinates in the PDB order");
+	
 	m.def("Coords2TypedCoords_forward", &Coords2TypedCoords_forward, "Convert coordinates to atom types");
 	m.def("Coords2TypedCoords_backward", &Coords2TypedCoords_backward, "Backward of Coords2TypedCoords");
+
 	m.def("CoordsTranslate_forward", &CoordsTranslate_forward, "Translate coordinates");
+	m.def("CoordsTranslate_backward", &CoordsTranslate_backward, "Backward of translate coordinates");
+
 	m.def("CoordsRotate_forward", &CoordsRotate_forward, "Rotate coordinates");
 	m.def("CoordsRotate_backward", &CoordsRotate_backward, "Backward of rotate coordinates");
+
 	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
 	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
 	m.def("getRotation", &getRotation, "Get rotation from parameters");

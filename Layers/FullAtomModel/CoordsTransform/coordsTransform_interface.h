@@ -5,6 +5,12 @@ void CoordsTranslate_forward(   torch::Tensor input_coords,
                                 torch::Tensor num_atoms
                                 );
 
+void CoordsTranslate_backward(  torch::Tensor grad_output_coords, 
+                                torch::Tensor grad_input_coords,
+                                torch::Tensor T,
+                                torch::Tensor num_atoms
+                                );
+
 void CoordsRotate_forward(  torch::Tensor input_coords, 
                             torch::Tensor output_coords,
                             torch::Tensor R,

@@ -8,6 +8,7 @@ __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, 
     int atoms_stride = 3*angles_stride;
     int num_angles = length[batch_idx];
     int num_atoms = 3*length[batch_idx];
+	// printf("angles_stride=%d, batch_idx=%d, num_atoms=%d, num_angles=%d\n",angles_stride, batch_idx,num_atoms,num_angles);
 
 	REAL *d_atoms = atoms + batch_idx*(atoms_stride)*3;
 	REAL *d_phi = angles + 3*batch_idx*angles_stride;
@@ -34,6 +35,7 @@ __global__ void computeCoordinatesBackbone( REAL *angles, REAL *atoms, REAL *A, 
         
         mat44Mul(d_A+16*(i-1), B, d_A+16*(i));
 	    mat44Vec3Mul(d_A+16*i, d_atoms, d_atoms + 3*i);
+		// printf("batch_idx=%d, i=%d, x=%f, y=%f, z=%f\n", batch_idx, i, *(d_atoms + 3*i), *(d_atoms + 3*i+1), *(d_atoms + 3*i+2));
 	}
 }
 

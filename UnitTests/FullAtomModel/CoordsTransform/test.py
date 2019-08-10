@@ -45,6 +45,16 @@ class TestCoordsTranslateForward(TestCoordsTransform):
 		self.assertAlmostEqual(center[0,1].item(), 0.0)
 		self.assertAlmostEqual(center[0,2].item(), 0.0)
 
+class TestCoordsTranslateBackward(TestCoordsTransform):
+	def runTest(self):
+		batch_size = 16
+		number_atoms = 32
+		coords = torch.randn(batch_size, number_atoms*3, dtype=torch.double, device='cpu').requires_grad_()
+		num_atoms = torch.zeros(batch_size, dtype=torch.int, device='cpu').random_(int(number_atoms/2), number_atoms)
+		T = torch.randn(batch_size, 3, dtype=torch.double, device='cpu')
+		result = torch.autograd.gradcheck(self.translate, (coords, T, num_atoms))#, eps=1e-5, atol=1e-5, rtol=0.01)
+		self.assertTrue(result)
+
 class TestCoordsRotateForward(TestCoordsTransform):
 	def runTest(self):
 		#CCW rotation around y by 90deg
@@ -55,6 +65,30 @@ class TestCoordsRotateForward(TestCoordsTransform):
 		self.assertAlmostEqual(rot_coords[0,0].item(), 0.0)
 		self.assertAlmostEqual(rot_coords[0,1].item(), 0.0)
 		self.assertAlmostEqual(rot_coords[0,2].item(), -1.0)
+
+class TestCoordsRotateBackward(TestCoordsTransform):
+	def runTest(self):
+		batch_size = 16
+		number_atoms = 32
+		coords = torch.randn(batch_size, number_atoms*3, dtype=torch.double, device='cpu').requires_grad_()
+		num_atoms = torch.zeros(batch_size, dtype=torch.int, device='cpu').random_(int(number_atoms/2), number_atoms)
+		
+		#CCW rotation around y by 90deg
+		R = torch.cat([torch.tensor([[	[0, 0, 1],
+							[0, 1, 0],
+							[-1, 0, 0]]], dtype=torch.double, device='cpu') for i in range(batch_size)], dim=0)
+		
+		result = torch.autograd.gradcheck(self.rotate, (coords, R, num_atoms))
+		self.assertTrue(result)
+		
+		#Random rotation matrixes
+		R = getRandomRotation(batch_size)
+		
+		result = torch.autograd.gradcheck(self.rotate, (coords, R, num_atoms))
+		self.assertTrue(result)
+		
+		
+
 
 class TestRandomRotations(TestCoordsTransform):
 	def runTest(self):
