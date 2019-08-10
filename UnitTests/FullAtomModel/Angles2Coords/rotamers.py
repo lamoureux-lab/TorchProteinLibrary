@@ -37,7 +37,7 @@ def getAngles(structure):
 	for i, residue in enumerate(residues):
 		angles[0, 0, i] = phi[i]
 		angles[0, 1, i] = psi[i]
-		angles[0, 2, i] = np.pi
+		angles[0, 2, i] = 0.0#-np.pi
 		xis = getRotamer(residue)
 		for j, xi in enumerate(xis):
 			angles[0, 3+j, i] = xis[j]

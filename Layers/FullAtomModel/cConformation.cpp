@@ -41,6 +41,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
             omega = angles + i-1 + angles_length*2;domega = angles_grad + i-1 + angles_length*2;
         }else{
             omega = &geo.omega_const;domega = NULL;
+            // omega = &zero_const;domega = NULL;
         }
 
         T *xi1 = angles + i + angles_length*3;T *dxi1 = angles_grad + i + angles_length*3;
