@@ -17,7 +17,7 @@ int Angles2BackboneGPU_forward(torch::Tensor input_angles,
         ERROR("Incorrect input ndim");
     }
     
-    gpu_computeCoordinatesBackbone(	input_angles.data<float>(), 
+    gpu_computeCoordinatesBackbone<float>(	input_angles.data<float>(), 
                                     output_coords.data<float>(), 
                                     A.data<float>(), 
                                     angles_length.data<int>(),
@@ -40,14 +40,14 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
     if(gradOutput.ndimension() != 2){
         ERROR("Incorrect input ndim");
     }
-    gpu_computeDerivativesBackbone( input_angles.data<float>(),
+    gpu_computeDerivativesBackbone<float>( input_angles.data<float>(),
                                     dr_dangle.data<float>(),
                                     A.data<float>(),
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));
     
-    gpu_backwardFromCoordsBackbone( gradInput.data<float>(),
+    gpu_backwardFromCoordsBackbone<float>( gradInput.data<float>(),
                                     gradOutput.data<float>(),
                                     dr_dangle.data<float>(),
                                     angles_length.data<int>(),

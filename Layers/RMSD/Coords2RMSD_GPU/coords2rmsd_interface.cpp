@@ -7,8 +7,8 @@
 
 
 void Coords2RMSD_GPU_forward(   torch::Tensor re_coordinates_src, torch::Tensor re_coordinates_dst, 
-                            torch::Tensor output, torch::Tensor num_atoms,
-                            torch::Tensor Ut_coordinates_dst
+                                torch::Tensor output, torch::Tensor num_atoms,
+                                torch::Tensor Ut_coordinates_dst
                         ){
     CHECK_GPU_INPUT(re_coordinates_src);
     CHECK_GPU_INPUT(re_coordinates_dst);
@@ -81,13 +81,10 @@ void Coords2RMSD_GPU_forward(   torch::Tensor re_coordinates_src, torch::Tensor 
             for(int k=0;k<3;k++){
                 rot_mat_t_single[j][k] = U[3*k+j];
         }}
-        
-        // int num_atoms_cpu = torch::Scalar(num_atoms[i]).toInt();
+
         int num_atoms_cpu = num_atoms[i].item().toInt();
         //computing R2 coefficient
-        // torch::Tensor R2 = torch::CUDA(torch::kDouble).zeros({1});
         torch::Tensor R2 = torch::zeros({1}, torch::TensorOptions().device(torch::kCUDA).dtype(torch::kDouble));
-        // torch::Tensor R2_tmp = torch::CUDA(torch::kDouble).zeros({3});
         torch::Tensor R2_tmp = torch::zeros({3}, torch::TensorOptions().device(torch::kCUDA).dtype(torch::kDouble));
         cpu_computeR2(re_coords_src_single.data<double>(), num_atoms_cpu, R2_tmp.data<double>());
         R2 += R2_tmp.sum();

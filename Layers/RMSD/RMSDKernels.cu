@@ -1,5 +1,5 @@
 #include "RMSDKernels.h"
-
+#include <cMathCUDAKernels.cu>
 
 __global__ void gpu_correlationMatrix( double *d_coords1, double *d_coords2, double *R, int *num_atoms, int coords_stride){
     uint batch_idx = blockIdx.x;
@@ -35,26 +35,6 @@ __global__ void gpu_computeR2( double *d_coordinates, int num_atoms, double *R2)
     }
 }
 
-__device__ void mat33Vec3Mul(double *d_m, double *d_v, double *dst){
-	if(dst == d_v){
-		double tmp[3];
-		for(int i=0;i<3;i++){
-			tmp[i] = 0.0;
-			for(int j=0;j<3;j++){
-				tmp[i] += d_m[i*3+j]*d_v[j];
-			}
-		}
-		memcpy(dst, tmp, 3*sizeof(double));
-	}else{
-		for(int i=0;i<3;i++){
-			dst[i] = 0.0;
-			for(int j=0;j<3;j++){
-				dst[i] += d_m[i*3+j]*d_v[j];
-			}
-		}
-	}
-}
-
 __global__ void gpu_transformCoordinates( double *d_coordinates_src, double *d_coordinates_dst, double *d_matrix, int atoms_stride){
     int atom_idx = blockIdx.x;
     int batch_idx = threadIdx.x;
@@ -62,7 +42,7 @@ __global__ void gpu_transformCoordinates( double *d_coordinates_src, double *d_c
     double *coordinates_dst = d_coordinates_dst + batch_idx*atoms_stride*3;
     double *matrix = d_matrix + 9*batch_idx;
 
-    mat33Vec3Mul(matrix, coordinates_src + 3*atom_idx, coordinates_dst + 3*atom_idx);
+    mat33Vec3Mul<double>(matrix, coordinates_src + 3*atom_idx, coordinates_dst + 3*atom_idx);
 }
 
 void cpu_correlationMatrix(     double *d_coords1,  //input: coordinates 1

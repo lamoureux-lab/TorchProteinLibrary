@@ -1,23 +1,23 @@
 
 #define REAL float
-
-void gpu_computeCoordinatesBackbone(REAL *angles, 
-                                    REAL *dr, 
-                                    REAL *dR_dangle, 
+template <typename T>
+void gpu_computeCoordinatesBackbone(T *angles, 
+                                    T *dr, 
+                                    T *dR_dangle, 
                                     int *length, 
                                     int batch_size, 
                                     int angles_stride);
-
-void gpu_computeDerivativesBackbone(REAL *angles,  
-									REAL *atoms,   
-									REAL *A,       
+template <typename T>
+void gpu_computeDerivativesBackbone(T *angles,  
+									T *atoms,   
+									T *A,       
 									int *length,
 									int batch_size,
 									int angles_stride);
-
-void gpu_backwardFromCoordsBackbone(REAL *angles,
-									REAL *dR_dangle,
-									REAL *A,
+template <typename T>
+void gpu_backwardFromCoordsBackbone(T *angles,
+									T *dR_dangle,
+									T *A,
 									int *length,
 									int batch_size,
 									int angles_stride);

@@ -3,6 +3,7 @@
 #include <PDB2Coords/pdb2coords_interface.h>
 #include <Coords2TypedCoords/coords2typedcoords_interface.h>
 #include <CoordsTransform/coordsTransform_interface.h>
+#include <CoordsTransform/coordsTransformGPU_interface.h>
 
 // #include <cConformation.h>
 // #include <nUtil.h>
@@ -20,9 +21,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("Coords2TypedCoords_backward", &Coords2TypedCoords_backward, "Backward of Coords2TypedCoords");
 
 	m.def("CoordsTranslate_forward", &CoordsTranslate_forward, "Translate coordinates");
+	m.def("CoordsTranslateGPU_forward", &CoordsTranslateGPU_forward, "Translate coordinates on GPU");
 	m.def("CoordsTranslate_backward", &CoordsTranslate_backward, "Backward of translate coordinates");
+	m.def("CoordsTranslateGPU_backward", &CoordsTranslateGPU_backward, "Backward of translate coordinates");
+
 
 	m.def("CoordsRotate_forward", &CoordsRotate_forward, "Rotate coordinates");
+	m.def("CoordsRotateGPU_forward", &CoordsRotateGPU_forward, "Rotate coordinates on GPU");
 	m.def("CoordsRotate_backward", &CoordsRotate_backward, "Backward of rotate coordinates");
 
 	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
