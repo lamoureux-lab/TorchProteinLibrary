@@ -27,7 +27,7 @@ if __name__=='__main__':
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
 				]
 
-	FullAtomModel = CppExtension('_FullAtomModel', 
+	FullAtomModel = CUDAExtension('_FullAtomModel', 
 					sources = [
 					'Math/cVector3.cpp',
 					'Math/cMatrix33.cpp',
@@ -42,10 +42,13 @@ if __name__=='__main__':
 					'Layers/FullAtomModel/PDB2Coords/pdb2coords_interface.cpp',
 					'Layers/FullAtomModel/Coords2TypedCoords/coords2typedcoords_interface.cpp',
 					'Layers/FullAtomModel/CoordsTransform/coordsTransform_interface.cpp',
+					'Layers/FullAtomModel/CoordsTransform/coordsTransformGPU_interface.cpp',
+					'Layers/FullAtomModel/TransformCUDAKernels.cu',
 					'Layers/FullAtomModel/main.cpp'],
 					include_dirs = ['Layers/FullAtomModel', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args=['-fopenmp'])
+					extra_compile_args={'cxx': ['-fopenmp'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp']})
 
 	Volume = CUDAExtension('_Volume',
 					sources = [
