@@ -5,136 +5,71 @@ from torch.nn.modules.module import Module
 import _RMSD_CPU
 import _RMSD_GPU
 import math
+from TorchProteinLibrary.FullAtomModel.CoordsTransform import Coords2Center, CoordsTranslate
 
-
-class Coords2RMSD_GPU_Function(Function):
+class Coords2RMSDFunction(Function):
 	"""
 	Protein coords, target coords -> rmsd function
 	"""
 
 	@staticmethod		
-	def forward(ctx, input, target, num_atoms):
-				
-		max_atoms = torch.max(num_atoms)
-		if len(input.size())==2:
-			batch_size = input.size(0)
-			output = torch.zeros(batch_size, dtype=torch.double, device='cuda')
-			ctx.Ut_coordinates_dst = torch.zeros(batch_size, 3*max_atoms, dtype=torch.double, device='cuda')
+	def forward(ctx, centered_input, centered_target, num_atoms):
+		if len(centered_input.size())==2:
+			batch_size = centered_input.size(0)
+			num_coords = centered_input.size(1)
 		else:
-			raise ValueError('Coords2RMSD_GPU_Function: ', 'Incorrect input size:', input.size())
-		
-		re_input = torch.zeros(input.size(), dtype=torch.double, device='cuda').copy_(input.double())
-		re_target = torch.zeros(target.size(), dtype=torch.double, device='cuda').copy_(target.double())
-		
-		re_input.resize_(batch_size, max_atoms, 3)
-		re_target.resize_(batch_size, max_atoms, 3)
-		center_input = re_input.sum(dim=1)/num_atoms.unsqueeze(dim=1).double()
-		center_target = re_target.sum(dim=1)/num_atoms.unsqueeze(dim=1).double()
-		ctx.c_coords_input = (re_input - center_input.unsqueeze(dim=1)).resize_(batch_size, max_atoms*3).contiguous()
-		ctx.c_coords_target = (re_target - center_target.unsqueeze(dim=1)).resize_(batch_size, max_atoms*3).contiguous()
-		
-		
-		_RMSD_GPU.Coords2RMSD_GPU_forward( 	ctx.c_coords_input, ctx.c_coords_target, 
-											output, num_atoms, ctx.Ut_coordinates_dst)
-		
+			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
+
+		if centered_input.is_cuda():
+			output = torch.zeros(batch_size, dtype=torch.centered_input.dtype, device='cuda')
+			UT = torch.zeros(batch_size, 3, 3, dtype=torch.centered_input.dtype, device='cuda')
+			_RMSD.Coords2RMSDGPU_forward( centered_input, centered_target, output, num_atoms, UT)
+		else:
+			output = torch.zeros(batch_size, dtype=torch.centered_input.dtype, device='cpu')
+			UT = torch.zeros(batch_size, 3, 3, dtype=torch.centered_input.dtype, device='cpu')
+			_RMSD.Coords2RMSD_forward( centered_input, centered_target, output, num_atoms, UT)
+				
 		if math.isnan(output.sum()):
-			raise(Exception('Coords2RMSD_GPU_Function: forward Nan'))
+			raise(Exception('Coords2RMSDFunction: forward Nan'))
 		
-		ctx.save_for_backward(output, num_atoms)
-		return output
+		ctx.save_for_backward(output, num_atoms, UT, centered_input, centered_target)
+		return output, UT
 			
 	@staticmethod
-	def backward(ctx, gradOutput):
-		output, num_atoms = ctx.saved_tensors
-		max_atoms = torch.max(num_atoms)
-		gradOutput = gradOutput.contiguous()
-
-		if len(ctx.c_coords_input.size()) == 2:
-			batch_size = ctx.c_coords_input.size(0)
-			gradInput_gpu = torch.zeros(batch_size, 3*max_atoms, dtype=torch.double, device='cuda')
-		else:
-			raise ValueError('Coords2RMSD_GPU_Function: ', 'Incorrect input size:', gradOutput.size())
+	def backward(ctx, gradRMSD, gradUT):
+		output, num_atoms, UT, centered_input, centered_target = ctx.saved_tensors
+		gradRMSD = gradRMSD.contiguous()
 		
-		gradInput_gpu = (ctx.c_coords_input - ctx.Ut_coordinates_dst)
+		num_coords = centered_input.size(1)
+		
+		if centered_target.is_cuda():
+			UT_centered_target = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
+			_FullAtomModel.CoordsRotateGPU_forward( centered_target, UT_centered_target, UT, num_atoms)
+		else:
+			UT_centered_target = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cpu')
+			_FullAtomModel.CoordsRotate_forward( centered_target, UT_centered_target, UT, num_atoms)
+		
+		gradInput_gpu = (centered_input - UT_centered_target)
 		
 		for i in range(batch_size):
-			gradInput_gpu[i,:] = gradInput_gpu[i,:]/(math.sqrt(output[i]+1E-5)*num_atoms[i].double())
+			gradInput_gpu[i,:] = gradRMSD[i]*gradInput_gpu[i,:]/( (output[i].item()) * (num_atoms[i].item()) + 1E-5)
 		
 		if math.isnan(gradInput_gpu.sum()):
-			raise(Exception('Coords2RMSD_GPU_Function: backward Nan'))		
+			raise(Exception('Coords2RMSDFunction: backward Nan'))		
 		
-		return Variable(gradInput_gpu), None, None
-
-
-class Coords2RMSD_CPU_Function(Function):
-	"""
-	Protein coords, target coords -> rmsd function
-	"""
-	
-	@staticmethod
-	def forward(ctx, input, target, num_atoms):
-		
-		if len(input.size())==2:
-			batch_size = input.size()[0]
-			max_num_atoms = torch.max(num_atoms)
-			#allocating temp outputs on cpu
-			output = torch.zeros(batch_size, dtype=torch.double, device='cpu')
-			ctx.c_coords_input = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
-			ctx.c_coords_target = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
-			ctx.U_coordinates_src = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
-			ctx.Ut_coordinates_dst = torch.zeros(batch_size, 3*max_num_atoms, dtype=torch.double, device='cpu')
-		else:
-			raise ValueError('Coords2RMSD_CPU_Function: ', 'Incorrect input size:', input.size())
-		
-		_RMSD_CPU.Coords2RMSD_CPU_forward( input, target, output,
-											ctx.c_coords_input,
-											ctx.c_coords_target,
-											ctx.U_coordinates_src,
-											ctx.Ut_coordinates_dst,
-											num_atoms)
-		
-		if math.isnan(output.sum()):
-			raise(Exception('Coords2RMSD_CPU_Function: forward Nan'))
-		
-		ctx.save_for_backward(output, num_atoms)
-		return output
-	
-	@staticmethod
-	def backward(ctx, gradOutput):
-
-		output, num_atoms = ctx.saved_tensors
-		
-		if len(ctx.c_coords_input.size()) == 2:
-			batch_size = ctx.c_coords_input.size(0)
-			max_num_coords = ctx.c_coords_input.size(1)
-			gradInput = torch.zeros(batch_size, max_num_coords, dtype=torch.double, device='cpu')
-		else:
-			raise ValueError('Coords2RMSD_CPU_Function: ', 'Incorrect input size:', c_coords_input.size())
-				
-		_RMSD_CPU.Coords2RMSD_CPU_backward(gradInput, gradOutput,
-											ctx.c_coords_input,
-											ctx.c_coords_target,
-											ctx.U_coordinates_src,
-											ctx.Ut_coordinates_dst,
-											num_atoms
-											)
-		
-		
-		for i in range(batch_size):
-			gradInput[i,:] = gradInput[i,:]/math.sqrt(output[i]+1E-5)
-		
-		if math.isnan(gradInput.sum()):
-			raise(Exception('Coords2RMSD_CPU_Function: backward Nan'))	
-		
-		return Variable(gradInput), None, None
-
+		return gradInput_gpu, None, None
 
 class Coords2RMSD(Module):
 	def __init__(self):
 		super(Coords2RMSD, self).__init__()
+		self.c2c = Coords2Center()
+		self.translate = CoordsTraslate()
 		
 	def forward(self, input, target, num_atoms):
-		if input.is_cuda:
-			return Coords2RMSD_GPU_Function.apply(input, target, num_atoms)
-		else:
-			return Coords2RMSD_CPU_Function.apply(input, target, num_atoms)
+
+		input_center = self.c2c(input, num_atoms)
+		target_center = self.c2c(target, num_atoms)
+		centered_input = self.translate(input, -input_center, num_atoms)
+		centered_target = self.translate(target, -target_center, num_atoms)
+
+		return Coords2RMSDFunction.apply(centered_input, centered_target, num_atoms)

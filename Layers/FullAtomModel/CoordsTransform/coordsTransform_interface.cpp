@@ -113,6 +113,65 @@ void CoordsRotate_backward( torch::Tensor grad_output_coords,
         }));
     }
 }
+
+
+void Coords2Center_forward(     torch::Tensor input_coords, 
+                                torch::Tensor output_T,
+                                torch::Tensor num_atoms){
+    CHECK_CPU_INPUT(input_coords);
+    CHECK_CPU_INPUT(output_T);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
+    if(input_coords.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+    
+    int batch_size = input_coords.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        torch::Tensor single_input_coords = input_coords[i];
+        torch::Tensor single_output_T = output_T[i];
+        
+        AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "Coords2Center_forward", ([&]{
+            cVector3<scalar_t> T(single_output_T.data<scalar_t>());
+            for(int k=0; k<num_at[i]; k++){
+                cVector3<scalar_t> r(single_input_coords.data<scalar_t>() + 3*k);
+                T += r;
+            }
+            T /= (scalar_t)num_at[i];
+        }));
+    }
+}
+
+void Coords2Center_backward(    torch::Tensor grad_output_T, 
+                                torch::Tensor grad_input_coords,
+                                torch::Tensor num_atoms){
+    CHECK_CPU_INPUT(grad_output_T);
+    CHECK_CPU_INPUT(grad_input_coords);
+    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
+    if(grad_input_coords.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+        
+    int batch_size = grad_output_T.size(0);
+    auto num_at = num_atoms.accessor<int,1>();
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        torch::Tensor single_grad_output_T = grad_output_T[i];
+        torch::Tensor single_grad_input_coords = grad_input_coords[i];
+        AT_DISPATCH_FLOATING_TYPES(single_grad_output_T.type(), "Coords2Center_backward", ([&]{
+            cVector3<scalar_t> grad_T(single_grad_output_T.data<scalar_t>());
+            for(int k=0; k<num_at[i]; k++){
+                cVector3<scalar_t> grad_r(single_grad_input_coords.data<scalar_t>() + 3*k);
+                grad_r = grad_T;
+                grad_r /= ((scalar_t)num_at[i]);
+            }
+        }));
+    }
+}
+
+
+
 void getBBox(   torch::Tensor input_coords,
                 torch::Tensor a, torch::Tensor b,
                 torch::Tensor num_atoms){

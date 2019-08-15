@@ -1,71 +1,61 @@
 #include "RMSDKernels.h"
 #include <cMathCUDAKernels.cu>
 
-__global__ void gpu_correlationMatrix( double *d_coords1, double *d_coords2, double *R, int *num_atoms, int coords_stride){
+template <typename T>
+__global__ void cuda_correlationMatrix( T *d_coords1, T *d_coords2, double *RMat, int *num_atoms, int atoms_stride){
     uint batch_idx = blockIdx.x;
     uint i = threadIdx.x;
     uint j = threadIdx.y;
     int r_index = 9*batch_idx + 3*i+j;
     int n_atoms = num_atoms[batch_idx];
-    double *coords1 = d_coords1 + batch_idx*coords_stride;
-    double *coords2 = d_coords2 + batch_idx*coords_stride;
+    T *coords1 = d_coords1 + batch_idx*atoms_stride*3;
+    T *coords2 = d_coords2 + batch_idx*atoms_stride*3;
     
-    R[r_index] = 0.0;
+    RMat[r_index] = 0.0;
     for(int k=0; k<n_atoms; k++){
-        R[r_index] += coords1[3*k + i]*coords2[3*k + j];
+        RMat[r_index] += ((double)coords1[3*k + i]) * ((double)coords2[3*k + j]);
     }
     
 }
-__global__ void gpu_TMatrix( double *d_R, double *d_T){
-    uint batch_idx = blockIdx.x;
-    double *R = d_R + batch_idx*9;
-    double *T = d_T + batch_idx*16;
 
-    T[0] = R[0]+R[4]+R[8];      T[1] = R[5]-R[7];           T[2] = R[6]-R[2];            T[3] = R[1]-R[3];
-    T[4] = R[5]-R[7];           T[5] = R[0]-R[4]-R[8];      T[6] = R[1]+R[3];            T[7] = R[2]+R[6];
-    T[8] = R[6]-R[2];           T[9] = R[1]+R[3];           T[10] = -R[0]+R[4]-R[8];     T[11] = R[5]+R[7];
-    T[12] = R[1]-R[3];          T[13] = R[2]+R[6];          T[14] = R[5]+R[7];           T[15] = -R[0]-R[4]+R[8];
+__global__ void cuda_TMatrix( double *d_RMat, double *d_TMat){
+    uint batch_idx = blockIdx.x;
+    double *RMat = d_RMat + batch_idx*9;
+    double *TMat = d_TMat + batch_idx*16;
+
+    TMat[0] = RMat[0]+RMat[4]+RMat[8];   TMat[1] = RMat[5]-RMat[7];           TMat[2] = RMat[6]-RMat[2];            TMat[3] = RMat[1]-RMat[3];
+    TMat[4] = RMat[5]-RMat[7];           TMat[5] = RMat[0]-RMat[4]-RMat[8];   TMat[6] = RMat[1]+RMat[3];            TMat[7] = RMat[2]+RMat[6];
+    TMat[8] = RMat[6]-RMat[2];           TMat[9] = RMat[1]+RMat[3];           TMat[10] = -RMat[0]+RMat[4]-RMat[8];  TMat[11] = RMat[5]+RMat[7];
+    TMat[12] = RMat[1]-RMat[3];          TMat[13] = RMat[2]+RMat[6];          TMat[14] = RMat[5]+RMat[7];           TMat[15] = -RMat[0]-RMat[4]+RMat[8];
 }
 
-__global__ void gpu_computeR2( double *d_coordinates, int num_atoms, double *R2){
+template <typename T>
+__global__ void cuda_computeR2( T *d_coordinates, int num_atoms, double *R2){
     int dim_index = threadIdx.x;
-    R2[dim_index]=0.0;
-    for(int i=0;i<num_atoms;i++){
-        R2[dim_index]+=d_coordinates[3*i+dim_index]*d_coordinates[3*i+dim_index];
+    R2[dim_index] = 0.0;
+    for(int i=0; i<num_atoms; i++){
+        R2[dim_index] += ((double)d_coordinates[3*i+dim_index]) * ((double)d_coordinates[3*i+dim_index]);
     }
 }
 
-__global__ void gpu_transformCoordinates( double *d_coordinates_src, double *d_coordinates_dst, double *d_matrix, int atoms_stride){
-    int atom_idx = blockIdx.x;
-    int batch_idx = threadIdx.x;
-    double *coordinates_src = d_coordinates_src + batch_idx*atoms_stride*3;
-    double *coordinates_dst = d_coordinates_dst + batch_idx*atoms_stride*3;
-    double *matrix = d_matrix + 9*batch_idx;
-
-    mat33Vec3Mul<double>(matrix, coordinates_src + 3*atom_idx, coordinates_dst + 3*atom_idx);
-}
-
-void cpu_correlationMatrix(     double *d_coords1,  //input: coordinates 1
-                                double *d_coords2,  //input: coordinates 2
-                                double *T,  //output: T-correlation matrix
-                                int *num_atoms, int batch_size, int coords_stride){
-    double *R ;
-    cudaMalloc( &R, batch_size*9*sizeof(double));
+template <typename T>
+void gpu_correlationMatrix(T *d_coords1, T *d_coords2, double *TMat, int *num_atoms, int batch_size, int atoms_stride){
+    double *RMat;
+    cudaMalloc( &RMat, batch_size*9*sizeof(double));
     dim3 coords_dim(3, 3, 1);
-    gpu_correlationMatrix<<<batch_size, coords_dim>>>(d_coords1, d_coords2, R, num_atoms, coords_stride);
-    gpu_TMatrix<<<batch_size,1>>>(R, T);
-    cudaFree(R);
+    cuda_correlationMatrix<T><<<batch_size, coords_dim>>>(d_coords1, d_coords2, RMat, num_atoms, atoms_stride);
+    cuda_TMatrix<<<batch_size,1>>>(RMat, TMat);
+    cudaFree(RMat);
 }
 
-void cpu_computeR2( double *d_coordinates, int num_atoms, double *R2){
-    gpu_computeR2<<<1,3>>>( d_coordinates, num_atoms, R2);
+template <typename T>
+void gpu_computeR2( T *d_coordinates, int num_atoms, double *R2){
+    cuda_computeR2<T><<<1,3>>>( d_coordinates, num_atoms, R2);
 }
 
 
-void cpu_transformCoordinates( double *d_coordinates_src, //input: coordinates to transform
-                                double *d_coordinates_dst,   //output: transformed coordinates
-                                double *d_matrix,            //input: transformation matrix
-                                int batch_size, int coords_stride){
-    int max_num_atoms = coords_stride/3;
-    gpu_transformCoordinates<<<max_num_atoms, batch_size>>>(d_coordinates_src, d_coordinates_dst, d_matrix, max_num_atoms);
-}
+template void gpu_correlationMatrix<float>(float*, float*, double*, int*, int, int);
+template void gpu_correlationMatrix<double>(double*, double*, double*, int*, int, int);
+
+template void gpu_computeR2<float>(float*, int, double*);
+template void gpu_computeR2<double>(double*, int, double*);

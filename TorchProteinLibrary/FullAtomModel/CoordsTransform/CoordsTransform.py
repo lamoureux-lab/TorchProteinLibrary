@@ -48,46 +48,54 @@ class CoordsTranslateFunction(Function):
 	coordinates translation
 	"""
 	@staticmethod	
-	def forward(ctx, input_coords_cpu, T, num_atoms):
+	def forward(ctx, input_coords, T, num_atoms):
 		ctx.save_for_backward(T, num_atoms)
 
 		if len(input_coords_cpu.size())==2:
-			batch_size = input_coords_cpu.size(0)
-			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=input_coords_cpu.dtype)
+			batch_size = input_coords.size(0)
+			num_coords = input_coords.size(1)
 		else:
-			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
+			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords.size()) 
+		
+		if input_coords.is_cuda():
+			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
+			_FullAtomModel.CoordsTranslateGPU_forward( input_coords, output_coords, T, num_atoms)	
+		else:
+			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cpu')
+			_FullAtomModel.CoordsTranslate_forward( input_coords, output_coords, T, num_atoms)
 
-		_FullAtomModel.CoordsTranslate_forward( input_coords_cpu, output_coords_cpu, T, num_atoms)
-
-		if math.isnan(output_coords_cpu.sum()):
+		if math.isnan(output_coords.sum()):
 			raise(Exception('CoordsTranslateFunction: forward Nan'))	
 
-		return output_coords_cpu
+		return output_coords
 
 	@staticmethod
-	def backward(ctx, grad_output_coords_cpu):
+	def backward(ctx, grad_output_coords):
 		# ATTENTION! It passes non-contiguous tensor
-		grad_output_coords_cpu = grad_output_coords_cpu.contiguous()
+		grad_output_coords = grad_output_coords.contiguous()
 		T, num_atoms = ctx.saved_tensors
 
-		if len(grad_output_coords_cpu.size()) == 2:
-			batch_size = grad_output_coords_cpu.size(0)
-			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=grad_output_coords_cpu.dtype)
+		if len(grad_output_coords.size()) == 2:
+			batch_size = grad_output_coords.size(0)
+			num_coords = grad_output_coords.size(1)
 		else:
-			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
+			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', grad_output_coords.size()) 
 		
-		_FullAtomModel.CoordsTranslate_backward(grad_output_coords_cpu, grad_input_coords_cpu, T, num_atoms)
+		if grad_output_coords.is_cuda():
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cuda')
+			_FullAtomModel.CoordsTranslateGPU_backward(grad_output_coords, grad_input_coords, T, num_atoms)
+		else:
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cpu')
+			_FullAtomModel.CoordsTranslate_backward(grad_output_coords, grad_input_coords, T, num_atoms)
 						
-		return grad_input_coords_cpu, None, None
+		return grad_input_coords, None, None
 
 class CoordsTranslate(Module):
 	def __init__(self):
 		super(CoordsTranslate, self).__init__()
 		
-	def forward(self, input_coords_cpu, T, num_atoms):
-		return CoordsTranslateFunction.apply(input_coords_cpu, T, num_atoms)
+	def forward(self, input_coords, T, num_atoms):
+		return CoordsTranslateFunction.apply(input_coords, T, num_atoms)
 
 
 class CoordsRotateFunction(Function):
@@ -95,82 +103,115 @@ class CoordsRotateFunction(Function):
 	coordinates rotation
 	"""
 	@staticmethod					
-	def forward(ctx, input_coords_cpu, R, num_atoms):
+	def forward(ctx, input_coords, R, num_atoms):
 		ctx.save_for_backward(R, num_atoms)
 
-		if len(input_coords_cpu.size())==2:
-			batch_size = input_coords_cpu.size(0)
-			num_coords = input_coords_cpu.size(1)
-			output_coords_cpu = torch.zeros(batch_size, num_coords, dtype=input_coords_cpu.dtype)
+		if len(input_coords.size())==2:
+			batch_size = input_coords.size(0)
+			num_coords = input_coords.size(1)
 		else:
-			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
+			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords.size()) 
+		
+		if input_coords.is_cuda():
+			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
+			_FullAtomModel.CoordsRotateGPU_forward( input_coords, output_coords, R, num_atoms)
+		else:
+			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cpu')
+			_FullAtomModel.CoordsRotate_forward( input_coords, output_coords, R, num_atoms)
 
-		_FullAtomModel.CoordsRotate_forward( input_coords_cpu, output_coords_cpu, R, num_atoms)
-
-		if math.isnan(output_coords_cpu.sum()):
+		if math.isnan(output_coords.sum()):
 			raise(Exception('CoordsRotateFunction: forward Nan'))	
 
-		return output_coords_cpu
+		return output_coords
 	
 	@staticmethod		
-	def backward(ctx, grad_output_coords_cpu):
+	def backward(ctx, grad_output_coords):
 		# ATTENTION! It passes non-contiguous tensor
-		grad_output_coords_cpu = grad_output_coords_cpu.contiguous()
+		grad_output_coords = grad_output_coords.contiguous()
 		R, num_atoms = ctx.saved_tensors
 
-		if len(grad_output_coords_cpu.size()) == 2:
-			batch_size = grad_output_coords_cpu.size(0)
-			num_coords = grad_output_coords_cpu.size(1)
-			grad_input_coords_cpu = torch.zeros(batch_size, num_coords, dtype=grad_output_coords_cpu.dtype)
+		if len(grad_output_coords.size()) == 2:
+			batch_size = grad_output_coords.size(0)
+			num_coords = grad_output_coords.size(1)
 		else:
-			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
+			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', grad_output_coords.size()) 
 		
-		_FullAtomModel.CoordsRotate_backward(grad_output_coords_cpu, grad_input_coords_cpu, R, num_atoms)
+		if grad_output_coords.is_cuda():
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cuda')
+			_FullAtomModel.CoordsRotateGPU_backward(grad_output_coords, grad_input_coords, R, num_atoms)
+		else:
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cpu')
+			_FullAtomModel.CoordsRotate_backward(grad_output_coords, grad_input_coords, R, num_atoms)
 		
-		if math.isnan(grad_input_coords_cpu.sum()):
+		if math.isnan(grad_input_coords.sum()):
 			raise(Exception('CoordsRotateFunction: backward Nan'))		
 		
-		return grad_input_coords_cpu, None, None
+		return grad_input_coords, None, None
 
 class CoordsRotate(Module):
 	def __init__(self):
 		super(CoordsRotate, self).__init__()
 		
-	def forward(self, input_coords_cpu, R, num_atoms):
-		return CoordsRotateFunction.apply(input_coords_cpu, R, num_atoms)
+	def forward(self, input_coords, R, num_atoms):
+		return CoordsRotateFunction.apply(input_coords, R, num_atoms)
 
-class Coords2CenteredCoords(Module):
-	def __init__(self, rotate=True, translate=True, box_size=120, resolution=1.0):
-		super(Coords2CenteredCoords, self).__init__()
-		self.rotate = rotate
-		self.translate = translate
-		self.box_size = box_size
-		self.box_length = box_size * resolution
-		self.resolution = resolution
-		self.rot = CoordsRotate()
-		self.tra = CoordsTranslate()
+class Coords2CenterFunction(Function):
+	"""
+	Get coordinates geometrical center
+	"""
+	@staticmethod					
+	def forward(ctx, input_coords, num_atoms):
+		ctx.save_for_backward(input_coords, num_atoms)
 
+		if len(input_coords.size())==2:
+			batch_size = input_coords.size(0)
+			num_coords = input_coords.size(1)
+		else:
+			raise ValueError('Coords2CenterFunction: ', 'Incorrect input size:', input_coords.size()) 
+		
+		if input_coords.is_cuda():
+			output_center = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cuda')
+			_FullAtomModel.Coords2CenterGPU_forward( input_coords, output_center, num_atoms)
+		else:
+			output_coords = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cpu')
+			_FullAtomModel.Coords2Center_forward( input_coords, output_center, num_atoms)
+
+		if math.isnan(output_center.sum()):
+			raise(Exception('Coords2CenterFunction: forward Nan'))	
+
+		return output_center
+	
+	@staticmethod		
+	def backward(ctx, grad_output_center):
+		# ATTENTION! It passes non-contiguous tensor
+		output_center = output_center.contiguous()
+		input_coords, num_atoms = ctx.saved_tensors
+
+		if len(grad_output_center.size()) == 2:
+			batch_size = grad_output_center.size(0)
+			num_coords = input_coords.size(1)
+		else:
+			raise ValueError('Coords2CenterFunction: ', 'Incorrect input size:', grad_output_center.size()) 
+		
+		if grad_output_center.is_cuda():
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_center.dtype, device='cuda')
+			_FullAtomModel.Coords2CenterGPU_backward(grad_output_center, grad_input_coords, num_atoms)
+		else:
+			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_center.dtype, device='cpu')
+			_FullAtomModel.Coords2Center_backward(grad_output_center, grad_input_coords, num_atoms)
+		
+		if math.isnan(grad_input_coords.sum()):
+			raise(Exception('Coords2CenterFunction: backward Nan'))		
+		
+		return grad_input_coords, None
+
+class Coords2Center(Module):
+	def __init__(self):
+		super(Coords2Center, self).__init__()
+		
 	def forward(self, input_coords, num_atoms):
-		batch_size = input_coords.size(0)
-		a,b = getBBox(input_coords, num_atoms)
-		protein_center = (a+b)*0.5
-		coords = self.tra(input_coords, -protein_center, num_atoms)
+		return Coords2CenterFunction.apply(input_coords, num_atoms)
 
-		box_center = torch.zeros(batch_size, 3, dtype=torch.double)
-		box_center.fill_(self.box_length/2.0)
-		
-		if self.rotate:	
-			rR = getRandomRotation(batch_size)
-			coords = self.rot(coords, rR, num_atoms)
-		
-		coords = self.tra(coords, box_center, num_atoms)
-
-		if self.translate:
-			a,b = getBBox(coords, num_atoms)
-			rT = getRandomTranslation(a, b, self.box_length)
-			coords = self.tra(coords, rT, num_atoms)
-
-		return coords
 
 
 

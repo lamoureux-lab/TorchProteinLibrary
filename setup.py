@@ -89,32 +89,23 @@ if __name__=='__main__':
                                         'nvcc': ['-Xcompiler', '-fopenmp']}
 					)
 
-	RMSD_CPU = CppExtension('_RMSD_CPU',
+	RMSD = CppExtension('_RMSD',
 					sources = [
 					'Math/cMatrix33.cpp',
 					'Math/cMatrix44.cpp',
 					'Math/cVector3.cpp',
 					'Math/nUtil.cpp',
-					'Layers/RMSD/Coords2RMSD_CPU/coords2rmsd_interface.cpp',
-					'Layers/RMSD/cRMSD.cpp',
-					'Layers/RMSD/main_cpu.cpp'],
-					include_dirs = ['Layers/RMSD', 'Math'])
-	
-	RMSD_GPU = CppExtension('_RMSD_GPU',
-					sources = [
-					'Math/cMatrix33.cpp',
-					'Math/cMatrix44.cpp',
-					'Math/cVector3.cpp',
-					'Math/nUtil.cpp',
-					'Layers/RMSD/Coords2RMSD_GPU/coords2rmsd_interface.cpp',
+					'Layers/RMSD/Coords2RMSD/coords2rmsd_interface.cpp',
 					'Layers/RMSD/RMSDKernels.cu',
-					'Layers/RMSD/main_gpu.cpp'],
-					include_dirs = ['Layers/RMSD', 'Math'])
+					'Layers/RMSD/main.cpp'],
+					include_dirs = ['Layers/RMSD', 'Math'],
+					libraries = ['gomp'],
+					extra_compile_args={'cxx': ['-fopenmp'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp']})
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
-			ext_modules=[	RMSD_CPU,
-							RMSD_GPU,
+			ext_modules=[	RMSD,
 							FullAtomModel, 
 							Volume, 
 							ReducedModel

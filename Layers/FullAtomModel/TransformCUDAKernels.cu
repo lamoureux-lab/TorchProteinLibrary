@@ -73,6 +73,40 @@ void gpu_CoordsRotateBackward(T *grad_coords_output, T *grad_coords_input, T *ro
     cuda_CoordsRotateBackward<T><<<atoms_stride, batch_size>>>(grad_coords_output, grad_coords_input, rotation, num_atoms, atoms_stride);
 }
 
+template <typename T>
+__global__ void cuda_Coords2CenterForward(T *coords_src, T *center, int *num_atoms, int atoms_stride){
+    int batch_idx = threadIdx.x;
+    T *r_src = coords_src + batch_idx*atoms_stride*3;
+    T *r_cen = center + batch_idx*3;
+
+    for(int i=0; i<num_atoms[batch_idx];i++){
+       vec3Plus<T>(r_cen, r_src + 3*i, r_cen); 
+    }
+    vec3Mul<T>(r_cen, 1.0/((T)num_atoms[batch_idx]));
+}
+
+template <typename T>
+__global__ void cuda_Coords2CenterBackward(T *grad_T, T *grad_coords, int *num_atoms, int atoms_stride){
+    int atom_idx = blockIdx.x;
+    int batch_idx = threadIdx.x;
+    T *r_grad_coords = grad_coords + batch_idx*atoms_stride*3;
+    T *r_grad_T = grad_T + batch_idx*3;
+
+    if(atom_idx<num_atoms[batch_idx]){
+        setVec3<T>(r_grad_T, r_grad_coords + 3*atom_idx);     
+        vec3Mul<T>(r_grad_coords + 3*atom_idx, 1.0/((T)num_atoms[batch_idx]));
+    }
+}
+
+template <typename T> 
+void gpu_Coords2CenterForward(T *coords_src, T *center, int *num_atoms, int batch_size, int atoms_stride){
+    cuda_Coords2CenterForward<T><<<1, batch_size>>>(coords_src, center, num_atoms, atoms_stride);
+}
+template <typename T> 
+void gpu_Coords2CenterBackward(T *grad_T, T *grad_coords, int *num_atoms, int batch_size, int atoms_stride){
+    cuda_Coords2CenterBackward<T><<<atoms_stride, batch_size>>>(grad_T, grad_coords, num_atoms, atoms_stride);
+}
+
 template void gpu_CoordsTranslateForward<float>(float*, float*, float*, int*, int, int);
 template void gpu_CoordsTranslateBackward<float>(float*, float*, float*, int*, int, int);
 template void gpu_CoordsTranslateForward<double>(double*, double*, double*, int*, int, int);
@@ -82,3 +116,8 @@ template void gpu_CoordsRotateForward<float>(float*, float*, float*, int*, int, 
 template void gpu_CoordsRotateBackward<float>(float*, float*, float*, int*, int, int);
 template void gpu_CoordsRotateForward<double>(double*, double*, double*, int*, int, int);
 template void gpu_CoordsRotateBackward<double>(double*, double*, double*, int*, int, int);
+
+template void gpu_Coords2CenterForward<float>(float*, float*, int*, int, int);
+template void gpu_Coords2CenterBackward<float>(float*, float*, int*, int, int);
+template void gpu_Coords2CenterForward<double>(double*, double*, int*, int, int);
+template void gpu_Coords2CenterBackward<double>(double*, double*, int*, int, int);

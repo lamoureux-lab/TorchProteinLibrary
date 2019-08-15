@@ -29,6 +29,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("CoordsRotate_forward", &CoordsRotate_forward, "Rotate coordinates");
 	m.def("CoordsRotateGPU_forward", &CoordsRotateGPU_forward, "Rotate coordinates on GPU");
 	m.def("CoordsRotate_backward", &CoordsRotate_backward, "Backward of rotate coordinates");
+	m.def("CoordsRotateGPU_backward", &CoordsRotateGPU_backward, "Backward of rotate coordinates on GPU");
+
+	m.def("Coords2Center_forward", &Coords2Center_forward, "Get coordinates center");
+	m.def("Coords2CenterGPU_forward", &Coords2CenterGPU_forward, "Get coordinates center on GPU");
+	m.def("Coords2Center_backward", &Coords2Center_backward, "Backward of get coordinates center");
+	m.def("Coords2CenterGPU_backward", &Coords2CenterGPU_backward, "Backward of get coordinates center on GPU");
 
 	m.def("getBBox", &getBBox, "Get bounding box of coordinates");
 	m.def("getRandomRotation", &getRandomRotation, "Get random rotation");
