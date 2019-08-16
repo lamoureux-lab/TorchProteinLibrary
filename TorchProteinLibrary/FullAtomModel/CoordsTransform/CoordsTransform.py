@@ -51,13 +51,13 @@ class CoordsTranslateFunction(Function):
 	def forward(ctx, input_coords, T, num_atoms):
 		ctx.save_for_backward(T, num_atoms)
 
-		if len(input_coords_cpu.size())==2:
+		if len(input_coords.size())==2:
 			batch_size = input_coords.size(0)
 			num_coords = input_coords.size(1)
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', input_coords.size()) 
 		
-		if input_coords.is_cuda():
+		if input_coords.is_cuda:
 			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
 			_FullAtomModel.CoordsTranslateGPU_forward( input_coords, output_coords, T, num_atoms)	
 		else:
@@ -81,7 +81,7 @@ class CoordsTranslateFunction(Function):
 		else:
 			raise ValueError('CoordsTranslateFunction: ', 'Incorrect input size:', grad_output_coords.size()) 
 		
-		if grad_output_coords.is_cuda():
+		if grad_output_coords.is_cuda:
 			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cuda')
 			_FullAtomModel.CoordsTranslateGPU_backward(grad_output_coords, grad_input_coords, T, num_atoms)
 		else:
@@ -112,7 +112,7 @@ class CoordsRotateFunction(Function):
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', input_coords.size()) 
 		
-		if input_coords.is_cuda():
+		if input_coords.is_cuda:
 			output_coords = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
 			_FullAtomModel.CoordsRotateGPU_forward( input_coords, output_coords, R, num_atoms)
 		else:
@@ -169,7 +169,7 @@ class Coords2CenterFunction(Function):
 		else:
 			raise ValueError('Coords2CenterFunction: ', 'Incorrect input size:', input_coords.size()) 
 		
-		if input_coords.is_cuda():
+		if input_coords.is_cuda:
 			output_center = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cuda')
 			_FullAtomModel.Coords2CenterGPU_forward( input_coords, output_center, num_atoms)
 		else:
@@ -193,7 +193,7 @@ class Coords2CenterFunction(Function):
 		else:
 			raise ValueError('Coords2CenterFunction: ', 'Incorrect input size:', grad_output_center.size()) 
 		
-		if grad_output_center.is_cuda():
+		if grad_output_center.is_cuda:
 			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_center.dtype, device='cuda')
 			_FullAtomModel.Coords2CenterGPU_backward(grad_output_center, grad_input_coords, num_atoms)
 		else:

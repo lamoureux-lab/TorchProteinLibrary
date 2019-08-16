@@ -20,7 +20,7 @@ class Coords2RMSDFunction(Function):
 		else:
 			raise ValueError('Coords2RMSDFunction: ', 'Incorrect input size:', input.size())
 
-		if centered_input.is_cuda():
+		if centered_input.is_cuda:
 			output = torch.zeros(batch_size, dtype=torch.centered_input.dtype, device='cuda')
 			UT = torch.zeros(batch_size, 3, 3, dtype=torch.centered_input.dtype, device='cuda')
 			_RMSD.Coords2RMSDGPU_forward( centered_input, centered_target, output, num_atoms, UT)
@@ -42,7 +42,7 @@ class Coords2RMSDFunction(Function):
 		
 		num_coords = centered_input.size(1)
 		
-		if centered_target.is_cuda():
+		if centered_target.is_cuda:
 			UT_centered_target = torch.zeros(batch_size, num_coords, dtype=input_coords.dtype, device='cuda')
 			_FullAtomModel.CoordsRotateGPU_forward( centered_target, UT_centered_target, UT, num_atoms)
 		else:
