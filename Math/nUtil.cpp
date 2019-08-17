@@ -101,7 +101,7 @@ template <typename T> cVector3<T> getRandomTranslation(float spatial_dim, cVecto
 
 template <typename T> cMatrix33<T> tensor2Matrix33(torch::Tensor Ten){
     cMatrix33<T> dst;
-    auto aT = Ten.accessor<double,2>();
+    auto aT = Ten.accessor<T,2>();
     for(int i=0; i<3; i++)
         for(int j=0; j<3; j++)
             dst.m[i][j] = aT[i][j];

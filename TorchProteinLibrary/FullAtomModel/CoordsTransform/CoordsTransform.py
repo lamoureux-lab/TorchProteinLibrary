@@ -105,7 +105,7 @@ class CoordsRotateFunction(Function):
 	@staticmethod					
 	def forward(ctx, input_coords, R, num_atoms):
 		ctx.save_for_backward(R, num_atoms)
-
+		
 		if len(input_coords.size())==2:
 			batch_size = input_coords.size(0)
 			num_coords = input_coords.size(1)
@@ -136,7 +136,7 @@ class CoordsRotateFunction(Function):
 		else:
 			raise ValueError('CoordsRotateFunction: ', 'Incorrect input size:', grad_output_coords.size()) 
 		
-		if grad_output_coords.is_cuda():
+		if grad_output_coords.is_cuda:
 			grad_input_coords = torch.zeros(batch_size, num_coords, dtype=grad_output_coords.dtype, device='cuda')
 			_FullAtomModel.CoordsRotateGPU_backward(grad_output_coords, grad_input_coords, R, num_atoms)
 		else:
@@ -173,7 +173,7 @@ class Coords2CenterFunction(Function):
 			output_center = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cuda')
 			_FullAtomModel.Coords2CenterGPU_forward( input_coords, output_center, num_atoms)
 		else:
-			output_coords = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cpu')
+			output_center = torch.zeros(batch_size, 3, dtype=input_coords.dtype, device='cpu')
 			_FullAtomModel.Coords2Center_forward( input_coords, output_center, num_atoms)
 
 		if math.isnan(output_center.sum()):
@@ -184,7 +184,7 @@ class Coords2CenterFunction(Function):
 	@staticmethod		
 	def backward(ctx, grad_output_center):
 		# ATTENTION! It passes non-contiguous tensor
-		output_center = output_center.contiguous()
+		grad_output_center = grad_output_center.contiguous()
 		input_coords, num_atoms = ctx.saved_tensors
 
 		if len(grad_output_center.size()) == 2:

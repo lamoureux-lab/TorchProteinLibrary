@@ -7,6 +7,8 @@
 #include <math.h>
 
 
+#define EPS_LIMIT 1E-10
+
 double getMaxEig(torch::Tensor TMat, double *U){
     //soving eigenvalues problem
     std::tuple<torch::Tensor, torch::Tensor> result = TMat.eig(true);
@@ -57,7 +59,7 @@ void Coords2RMSDGPU_forward(   torch::Tensor centered_coords_src,
     CHECK_GPU_INPUT(centered_coords_dst);
     CHECK_GPU_INPUT(output);
     CHECK_GPU_INPUT(UT);
-    CHECK_CPU_INPUT_TYPE(num_atoms, torch::kInt);
+    CHECK_GPU_INPUT_TYPE(num_atoms, torch::kInt);
     if(centered_coords_src.ndimension() != 2 || centered_coords_dst.ndimension() != 2){
         ERROR("Incorrect input ndim");
     }
@@ -102,9 +104,9 @@ void Coords2RMSDGPU_forward(   torch::Tensor centered_coords_src,
             gpu_computeR2<scalar_t>(centered_coords_dst_single.data<scalar_t>(), num_atoms_cpu, R2_tmp.data<double>());
             R2 += R2_tmp.sum();
         }));
-    
+
         double R2_cpu = R2[0].item().toDouble();
-        output[i] = sqrt((R2_cpu - 2.0*fabs(max_eig_val))/(double(num_atoms_cpu)));
+        output[i] = sqrt((R2_cpu - 2.0*fabs(max_eig_val) + EPS_LIMIT)/(double(num_atoms_cpu)));
     }
 }
 
@@ -157,7 +159,7 @@ void Coords2RMSD_forward(   torch::Tensor centered_coords_src,
             
         double U[9];
         double max_eig_val = getMaxEig(Fmat, U);
-        
+                
         for(int j=0;j<3;j++){
             for(int k=0;k<3;k++){
                 UT_single[j][k] = U[3*k+j];
@@ -166,14 +168,17 @@ void Coords2RMSD_forward(   torch::Tensor centered_coords_src,
 
         double R2 = 0.0;
         AT_DISPATCH_FLOATING_TYPES(centered_coords_src.type(), "Coords2RMSD_forward", ([&]{ 
+            
             //computing R2 coefficient
             for(int j=0; j<single_num_atoms; j++){
                 cVector3<scalar_t> ce_src_atom(centered_coords_src_single.data<scalar_t>()+3*j);
                 cVector3<scalar_t> ce_dst_atom(centered_coords_dst_single.data<scalar_t>()+3*j);
-                R2 += ((double)ce_src_atom.norm2()) + ((double)ce_dst_atom.norm2());
+                cVector3<double> src_at_double((double)ce_src_atom.v[0], (double)ce_src_atom.v[1], (double)ce_src_atom.v[2]);
+                cVector3<double> dst_at_double((double)ce_dst_atom.v[0], (double)ce_dst_atom.v[1], (double)ce_dst_atom.v[2]);
+                R2 += src_at_double.norm2() + dst_at_double.norm2();
             }
         }));
         
-        output[i] = sqrt((R2 - 2.0*fabs(max_eig_val))/(double(single_num_atoms)));
+        output[i] = sqrt((R2 - 2.0*fabs(max_eig_val) + EPS_LIMIT)/(double(single_num_atoms)));
     }
 }
