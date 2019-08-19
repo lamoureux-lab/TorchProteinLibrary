@@ -1,23 +1,23 @@
 #include <THC/THC.h>
 
-void gpu_computeCoords2Volume(	double *coords,
+template <typename T>
+void gpu_computeCoords2Volume(	T *coords,
                                 int *num_atoms_of_type,
 							    int *offsets, 
-								float *volume,
+								T *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res,
-								int mode);
+								float res);
 
-void gpu_computeVolume2Coords(	double *coords,
-								double* grad,
+template <typename T>
+void gpu_computeVolume2Coords(	T *coords,
+								T* grad,
                                 int *num_atoms_of_type,
 							    int *offsets, 
-								float *volume,
+								T *volume,
 								int spatial_dim,
                                 int num_atom_types,
-								float res,
-								int mode);
+								float res);
 
 void gpu_selectFromTensor(	float *features, int num_features, 
 							float* volume, int spatial_dim, 

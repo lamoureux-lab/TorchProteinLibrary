@@ -179,8 +179,8 @@ class TestCoordsRotateBackward_CPUFloat(TestCoordsRotateBackward):
 	device = 'cpu'
 	dtype = torch.float
 	places = 5
-	eps=1e-03 
-	atol=1e-04 
+	eps=1e-05 
+	atol=1e-03 
 	rtol=0.01
 
 class TestCoordsRotateBackward_CUDADouble(TestCoordsRotateBackward):
@@ -191,8 +191,8 @@ class TestCoordsRotateBackward_CUDAFloat(TestCoordsRotateBackward):
 	device = 'cuda'
 	dtype = torch.float
 	places = 5
-	eps=1e-03 
-	atol=1e-04 
+	eps=1e-05 
+	atol=1e-03 
 	rtol=0.01
 		
 		

@@ -2,9 +2,9 @@ import os
 import sys
 import torch
 from TorchProteinLibrary import FullAtomModel
-from utils import transform, bytes2string
+from .utils import transform, bytes2string
 import numpy as np
-from rotamers import getAngles, generateAA
+from .rotamers import getAngles, generateAA
 from Bio.PDB.Polypeptide import aa1
 import unittest
 
