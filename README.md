@@ -1,14 +1,11 @@
-# Pytorch 1.1 version:
-Currently the "master" branch does not compile with pytorch 1.0 and 1.1 versions. Please use "dev" branch with the new pytorch library (https://github.com/lupoglaz/TorchProteinLibrary/tree/dev). Unfrtunately documentation for this branch is outdated. Mostly it affects PDB loading and protein backbone model. We will update the library shortly.
-
-# TorchProteinLibrary version 0.1
+# TorchProteinLibrary version 0.15
 This library pytorch layers for working with protein structures in a differentiable way. We are working on this project and it's bound to change:
 there will be interface changes to the current layers, addition of the new ones and code optimizations.
 
 # Requirements
- - GCC > 4.9
- - CUDA >= 8.0
- - PyTorch >= 0.4.1
+ - GCC >= 7
+ - CUDA >= 9.0
+ - PyTorch >= 1.1
  - Python >= 3.5
  - Biopython
  - setuptools
