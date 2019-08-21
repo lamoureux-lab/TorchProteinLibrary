@@ -41,7 +41,7 @@
 		<div class="navbar navbar-dark bg-dark shadow-sm">
 		  <div class="container d-flex justify-content-between">
 			<a href="index.html" class="navbar-brand d-flex align-items-center">
-			  <strong>TorchProteinLibrary v0.1 Documentation</strong>
+			  <strong>TorchProteinLibrary v0.15 Documentation</strong>
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
 			  <span class="navbar-toggler-icon"></span>
@@ -135,12 +135,12 @@ L = rmsd(src, ref, num_atoms)
 	<script>
 		generate_table("Coords2RMSD", 
 						[
-							["Input", "CPU/GPU", "float", "[batch_size, 3 x number of atoms]"], 
-							["Target", "CPU/GPU", "float", "[batch_size, 3 x number of atoms]"], 
+							["Input", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"], 
+							["Target", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"], 
 							["NumAtoms", "CPU/GPU", "int", "[batch_size]"]
 						],
 						[
-							["RMSD", "CPU/GPU", "float", "[batch_size]"],
+							["RMSD", "CPU/GPU", "float/double", "[batch_size]"],
 						]
 						);
 								

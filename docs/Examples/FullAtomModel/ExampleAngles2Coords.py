@@ -10,10 +10,11 @@ if __name__=='__main__':
     sequences = ['GGMLGWAHFGY']
     
     #Setting conformation to alpha-helix
-    angles = torch.zeros(len(sequences), 7, len(sequences[-1]), dtype=torch.double, device='cpu')
+    angles = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu')
     angles.data[:,0,:] = -1.047
     angles.data[:,1,:] = -0.698
-    angles.data[:,2:,:] = 110.4*np.pi/180.0
+    angles.data[:,3,:] = np.pi
+    angles.data[:,3:,:] = 110.4*np.pi/180.0
 
     #Converting angles to coordinates
     coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
@@ -30,7 +31,7 @@ if __name__=='__main__':
     isSelected = torch.ge(isCA + isC + isN, 1)
 
     #Resizing coordinates array for convenience (to match selection mask)
-    N = int(num_atoms.data[0])
+    N = int(num_atoms[0].item())
     coords.resize_(1, N, 3)
     
     backbone_x = torch.masked_select(coords[0,:,0], isSelected)
@@ -47,4 +48,5 @@ if __name__=='__main__':
     ax.plot(sx,sy,sz, 'r.', label = 'atoms')
     ax.plot(bx,by,bz, 'b-', label = 'backbone')
     ax.legend()
-    plt.savefig("ExampleAngles2Coords.png")
+    plt.show()
+    # plt.savefig("ExampleAngles2Coords.png")

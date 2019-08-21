@@ -41,7 +41,7 @@
 		<div class="navbar navbar-dark bg-dark shadow-sm">
 			<div class="container d-flex justify-content-between">
 			<a href="index.html" class="navbar-brand d-flex align-items-center">
-				<strong>TorchProteinLibrary v0.1 Documentation</strong>
+				<strong>TorchProteinLibrary v0.15 Documentation</strong>
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
@@ -87,7 +87,7 @@
 			<pre class="pre-scrollable"><code class="python">
 #Reading pdb file
 p2c = FullAtomModel.PDB2CoordsUnordered()
-coords_dst, res_names_dst, atom_names_dst, num_atoms_dst = p2c(["FullAtomModel/f4TQ1_B.pdb"])
+coords_dst, chain_names, res_names_dst, res_nums_dst, atom_names_dst, num_atoms_dst = p2c(["FullAtomModel/f4TQ1_B.pdb"])
                 </code></pre>
 
                 The variable <b>coords_dst</b> contains all coordinates, read from the pdb, majority of them do not belong to the backbone. Therefore
@@ -113,7 +113,7 @@ num_backbone_atoms = int(isSelected.sum())
 
                 <pre class="pre-scrollable"><code class="python">
 #Resizing coordinates array for convenience
-N = int(num_atoms_dst.data[0])
+N = int(num_atoms_dst[0].item())
 coords_dst.resize_(1, N, 3)
 
 backbone_x = torch.masked_select(coords_dst[0,:,0], isSelected)[:num_backbone_atoms]
@@ -125,53 +125,64 @@ backbone_coords = torch.stack([backbone_x, backbone_y, backbone_z], dim=1).resiz
                 Now, that we have our backbone atoms in the correct tensor layout, we prepare <b>ReducedModel.Angles2Backbone</b> layer:
 
                 <pre class="pre-scrollable"><code class="python">
+#Setting conformation to alpha-helix
 num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_( int(num_backbone_atoms/3) )
 num_atoms = torch.zeros(1, dtype=torch.int, device='cuda').fill_( int(num_backbone_atoms) )
-angles = torch.zeros(1, 2, int(num_backbone_atoms/3), dtype=torch.float, device='cuda').requires_grad_()
-angles.data.normal_()
+angles = torch.zeros(1, 3, int(num_backbone_atoms/3), dtype=torch.float, device='cuda').normal_().requires_grad_()
 
 a2b = ReducedModel.Angles2Backbone()
-rmsd = RMSD.Coords2RMSD().cuda()
-rmsd.register_forward_hook(hook)
-
+rmsd = RMSD.Coords2RMSD()
+	
 optimizer = optim.Adam([angles], lr = 0.05)
                 </code></pre>
                 We fill the initial angles using normal distribution to make the problem slightly more challenging.
                 Here we have separate tensors for number of atoms and number of amino-acids (<b>num_aa</b>) and take into account 
-                that each amino-acid is represented by three atoms in reduced model. Also, we register 
-                the following hook to the forward pass:
+				that each amino-acid is represented by three atoms in reduced model. Next, we want to have a movie of the fitting process, therefore we
+				will have to rotate and translate each structure to align them:
                 
                 <pre class="pre-scrollable"><code class="python">
+loss_data = []
 g_src = []
 g_dst = []
 
-def hook(module, input, output):
-    global g_src
-    global g_dst
-    dst = output.grad_fn.Ut_coordinates_dst
-    src = output.grad_fn.c_coords_input
+#Coords transforms
+c2c = FullAtomModel.Coords2Center()
+translate = FullAtomModel.CoordsTranslate()
+rotate = FullAtomModel.CoordsRotate()
 
-    src = src.resize( int(src.size(1)/3), 3).cpu().numpy()
-    dst = dst.resize( int(dst.size(1)/3), 3).cpu().numpy()
-    g_src.append(src)
-    g_dst.append(dst)
-                </code></pre>
-                
-                We use it to extract aligned structures and later, plot them.
+#Rotating for visualization convenience
+with torch.no_grad():
+	backbone_coords = rotate(backbone_coords, torch.tensor([[[0, 1, 0], [-1, 0, 0], [0, 0, 1]]], dtype=torch.float, device='cuda'), num_atoms)
+				</code></pre>
+				
                 The main loop is rather standard:
                 <pre class="pre-scrollable"><code class="python">
-loss_data = []
 for epoch in range(300):
-    optimizer.zero_grad()
-    coords_src = a2b(angles, num_aa)
-    L = rmsd(coords_src.double(), backbone_coords, num_atoms)
-    L.backward()
-    optimizer.step()
-    
-    loss_data.append(float(np.sqrt(L.data.cpu().numpy())))
-                </code></pre>
+	optimizer.zero_grad()
+	coords_src = a2b(angles, num_aa)
+	L = rmsd(coords_src, backbone_coords, num_atoms)
+	L.backward()
+	optimizer.step()
 
-                Here we have to notice, that <b>coords_src</b> is a float tensor and we need to convert it to double prior to passing to rmsd layer.
+	loss_data.append(L.item())
+                </code></pre>
+				However, inside this loop we align the structures and save them for plotting:
+				<pre class="pre-scrollable"><code class="python">
+	#Obtaining aligned structures
+	with torch.no_grad():
+		center_src = c2c(coords_src, num_atoms)
+		center_dst = c2c(backbone_coords, num_atoms)
+		c_src = translate(coords_src, -center_src, num_atoms)
+		c_dst = translate(backbone_coords, -center_dst, num_atoms)
+		rc_src = rotate(c_src, rmsd.UT.transpose(1,2).contiguous(), num_atoms)
+
+		rc_src = rc_src.resize( int(rc_src.size(1)/3), 3).cpu().numpy()
+		c_dst = c_dst.resize( int(c_dst.size(1)/3), 3).cpu().numpy()
+	
+		g_src.append(rc_src)
+		g_dst.append(c_dst)
+				</code></pre>
+                
                 Then after plotting RMSD loss versus iteration:
                 
                 <pre class="pre-scrollable"><code class="python">
@@ -183,7 +194,7 @@ plt.ylabel("rmsd")
 plt.savefig("ExampleFitBackboneTrace.png")
                 </code></pre>
                 We obtain:
-                <img src="Fig/examples/ExampleFitBackboneTrace.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+                <img src="Examples/ExampleFitBackboneTrace.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
                 
                 Next we plot aligned structures that we saved during optimization:
                 <pre class="pre-scrollable"><code class="python">

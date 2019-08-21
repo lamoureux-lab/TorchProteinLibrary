@@ -41,7 +41,7 @@
 		<div class="navbar navbar-dark bg-dark shadow-sm">
 		  <div class="container d-flex justify-content-between">
 			<a href="index.html" class="navbar-brand d-flex align-items-center">
-			  <strong>TorchProteinLibrary v0.1 Documentation</strong>
+			  <strong>TorchProteinLibrary v0.15 Documentation</strong>
 			</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
 			  <span class="navbar-toggler-icon"></span>
@@ -96,12 +96,12 @@
 	<script>
 		generate_table("TypedCoords2Volume", 
 						[
-							["Coordinates", "GPU", "double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "GPU", "float/double", "[batch_size, 3 x number of atoms]"],
 							["NumAtomsOfType", "GPU", "int", "[batch_size, num atoms types]"],
 							["Offsets", "GPU", "int", "[batch_size, num atoms types]"],
 						],
 						[
-							["Volume", "GPU", "float", "[batch_size, num atom types, box_size, box_size, box_size]"],
+							["Volume", "GPU", "float/double", "[batch_size, num atom types, box_size, box_size, box_size]"],
 						]
 						);
 								
@@ -186,33 +186,39 @@ if __name__=='__main__':
 	</script>
 	
 	<div class="container" id="VolumeConvolution">
-		<script>createHeader("VolumeConvolution", "class", "Volume", "VolumeConvolution", "(num_features)" );</script>
+		<script>createHeader("VolumeConvolution", "class", "Volume", "VolumeConvolution", "()" );</script>
 		<div class="container">
-			Computes the parametric weighted correlation between two sets of volumes of the same size. Let's denote 
+			Computes the correlation between two sets of volumes of the same size. Let's denote 
 			feature $i$ volume as $V_i$. The correlation between two sets of volumes is:
 			$$
-			Corr = \sum_i W_i (V^{(1)}_i * V^{(2)}_i)
+			Corr_i = (V^{(1)}_i * V^{(2)}_i)
 			$$
 			where 
 			$$
 			(V^{(1)}_i * V^{(2)}_i) (x,y,z) = \sum_{klm} V^{(1)}_i (k,l,m) V^{(1)}_i (k+x,l+y,m+z)
 			$$
-			
+			We will denote the translation of the second volume wrt the first as $\vec{\tau} = (x, y, z)$
 			<h3>Implementation</h3>
-			
-			To compute this sum for all $x$, $y$ and $z$ simultaneously we use FFT:
+			First we pad volumes to twice their sizes to avoid circular terms. Then we compute the correlation using FFT:
 			$$
-			(V^{(1)}_i * V^{(2)}_i) (x,y,z) = IFFT \left[ FFT(V^{(1)}_i) \cdot conj(FFT(V^{(2)}_i)) \right]
+			(V^{(1)}_i * V^{(2)}_i) (\vec{\tau}) = IFFT \left[ FFT(V^{(1)}_i) \cdot conj(FFT(V^{(2)}_i)) \right]
 			$$
 			The derivative of a function $L$, that depends on the correlation is:
 			$$\begin{eqnarray}
-				\frac{\partial L }{\partial V^{(1)}_i } &=& \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)} * V^{(2)}_i \\
-				\frac{\partial L }{\partial V^{(2)}_i } &=& \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)} * V^{(1)}_i
+				\frac{\partial L }{\partial V^{(1)}_i } &=& \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)} * conj(V^{(2)}_i) \\
+				\frac{\partial L }{\partial V^{(2)}_i } &=& V^{(1)}_i * \frac{\partial L}{\partial (V^{(1)}_i * V^{(2)}_i)}
 				\end{eqnarray}
 			$$
-			This layer is implemented using cuFFT. It should be taken into account that the correlation is curcular, therefore 
-			each volume is padded with zeros to twice its size. Also, the output volume has certain structure that is dictated by the circularity 
-			along each dimension.
+			This layer is implemented using cuFFT. It should be taken into account that the correlation is circular, therefore 
+			the output has circular structure. Let's denote $r_i$ to be the coordinates of a cell in the output volume, then
+			the translation of the second volume wrt the first ($\vec{\tau}$) will have coordinates:
+			$$
+			\tau_i = \begin{cases}
+			r_i & r_i < \mbox{box_size}, \\
+			r_i - 2\cdot\mbox{box_size} & r_i \ge \mbox{box_size} 
+			\end{cases}
+			$$
+
 			<br><br>
 			
 			<h3>Input/Output</h3>
@@ -225,11 +231,8 @@ if __name__=='__main__':
 							["Volume2", "GPU", "float", "[batch_size, number of features, box_size, box_size, box_size]"],
 						],
 						[
-							["OutputVolume", "GPU", "float", "[batch_size, box_size, box_size, box_size]"],
-						],
-						[
-							["W", "GPU", "float", "[1, number of features, 1, 1 ,1]"],
-						]
+							["OutputVolume", "GPU", "float", "[batch_size, number of features, 2*box_size, 2*box_size, 2*box_size]"],
+						]						
 						);
 	</script>
 	

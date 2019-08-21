@@ -47,7 +47,7 @@
 	<div class="navbar navbar-dark bg-dark shadow-sm">
 		<div class="container d-flex justify-content-between">
 		<a href="index.html" class="navbar-brand d-flex align-items-center">
-		<strong>TorchProteinLibrary v0.1 Documentation</strong>
+		<strong>TorchProteinLibrary v0.15 Documentation</strong>
 		</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
@@ -67,6 +67,7 @@
 					<li><a class="nav-link active" href="#PDB2CoordsUnordered">PDB2CoordsUnordered</a></li>
 					<li><a class="nav-link active" href="#CoordsTranslate">CoordsTranslate</a></li>
 					<li><a class="nav-link active" href="#CoordsRotate">CoordsRotate</a></li>
+					<li><a class="nav-link active" href="#Coords2Center">Coords2Center</a></li>
 					<li><a class="nav-link active" href="#getBBox">getBBox</a></li>
 					<li><a class="nav-link active" href="#getRandomTranslation">getRandomTranslation</a></li>
 					<li><a class="nav-link active" href="#getRandomRotation">getRandomRotation</a></li>
@@ -233,17 +234,18 @@ import numpy as np
 import matplotlib.pylab as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
+
 if __name__=='__main__':
 	a2c = FullAtomModel.Angles2Coords()
 	sequences = ['GGMLGWAHFGY']
 	
 	#Setting conformation to alpha-helix
 	angles = torch.zeros(len(sequences), 8, len(sequences[-1]), dtype=torch.double, device='cpu')
-	angles.data[:,0,:] = -1.047 # phi = -60 degrees
-	angles.data[:,1,:] = -0.698 # psi = -40 degrees
-	angles.data[:,2,:] = np.pi # omega = 180 degrees
-	angles.data[:,3:,:] = 110.4*np.pi/180.0 # chi1 = 110.4 degrees
-	
+	angles.data[:,0,:] = -1.047
+	angles.data[:,1,:] = -0.698
+	angles.data[:,3,:] = np.pi
+	angles.data[:,3:,:] = 110.4*np.pi/180.0
+
 	#Converting angles to coordinates
 	coords, res_names, atom_names, num_atoms = a2c(angles, sequences)
 	
@@ -257,15 +259,15 @@ if __name__=='__main__':
 	isC = is0C*is10
 	isN = is0N*is10
 	isSelected = torch.ge(isCA + isC + isN, 1)
-	
+
 	#Resizing coordinates array for convenience (to match selection mask)
-	N = int(num_atoms.data[0])
+	N = int(num_atoms[0].item())
 	coords.resize_(1, N, 3)
 	
 	backbone_x = torch.masked_select(coords[0,:,0], isSelected)
 	backbone_y = torch.masked_select(coords[0,:,1], isSelected)
 	backbone_z = torch.masked_select(coords[0,:,2], isSelected)
-	
+
 	#Plotting all atoms with the red dots and backbone with the blue line
 	sx, sy, sz = coords[0,:,0].numpy(), coords[0,:,1].numpy(), coords[0,:,2].numpy()
 	bx, by, bz = backbone_x.numpy(), backbone_y.numpy(), backbone_z.numpy()
@@ -276,12 +278,13 @@ if __name__=='__main__':
 	ax.plot(sx,sy,sz, 'r.', label = 'atoms')
 	ax.plot(bx,by,bz, 'b-', label = 'backbone')
 	ax.legend()
+	plt.show()
 	plt.savefig("ExampleAngles2Coords.png")
 			</code></pre>
 		<div class="codebox">
 			<script src = "Examples/FullAtomModel/ExampleAngles2Coords.py" type="text/x-python"></script>
 		</div>
-		<img src="Fig/examples/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+		<img src="Examples/FullAtomModel/ExampleAngles2Coords.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 	</div>
 	
 	<div class="container" id = "Coords2TypedCoords">
@@ -418,29 +421,59 @@ coords, res_names, atom_names, num_atoms = FullAtomModel.PDB2CoordsUnordered(["f
 import torch
 from TorchProteinLibrary import FullAtomModel
 import numpy as np
+import matplotlib
 import matplotlib.pylab as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
+from scipy.spatial import ConvexHull
+cmap = matplotlib.cm.get_cmap('Spectral')
+
 if __name__=='__main__':
+	
 	#Reading pdb file
 	p2c = FullAtomModel.PDB2CoordsUnordered()
-	coords, _, res_names, _, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
+	coords, chains, res_names, res_nums, atom_names, num_atoms = p2c(["f4TQ1_B.pdb"])
 	
 	#Resizing coordinates array for convenience
-	N = int(num_atoms.data[0])
+	N = int(num_atoms[0].item())
 	coords.resize_(1, N, 3)
 
+	
+	N_res = res_nums[0,-1].item()+1
+	residue_hulls = []
+	residue_coords = []
+	for i in range(N_res):
+		mask = torch.eq(res_nums[0,:], i)
+		num_res_atoms = int(mask.sum().item())
+
+		# Obtaining coordinates of all atoms of a single residue
+		coords_mask = torch.stack([mask, mask, mask], dim = 1).unsqueeze(dim=0)
+		res_coords = coords.masked_select(coords_mask).resize(num_res_atoms, 3).numpy()
+		residue_coords.append(res_coords)
+		
+		# Constructing a convex hull
+		hull = ConvexHull(res_coords)
+		residue_hulls.append(hull)
+	
 	#Plotting all atoms with the red dots
+	cmap = matplotlib.cm.get_cmap('Set3')
 	sx, sy, sz = coords[0,:,0].numpy(), coords[0,:,1].numpy(), coords[0,:,2].numpy()
 	fig = plt.figure()
-	plt.title("Full atom model")
+	plt.title("PDB2CoordsUnordered")
 	ax = p3.Axes3D(fig)
+	i_res = 0
+	for hull, coords in zip(residue_hulls,residue_coords):
+		for simplex in hull.simplices:
+			ax.plot(coords[simplex, 0], coords[simplex,1], coords[simplex,2], color = cmap(float(i_res)/float(N_res)))
+		i_res += 1
+
 	ax.plot(sx,sy,sz, 'r.', label = 'atoms')
 	ax.legend()
+	plt.show()
 	plt.savefig("ExamplePDB2CoordsUnordered.png")
 	
 				</code></pre>
-			<img src="Fig/examples/ExamplePDB2CoordsUnordered.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
+			<img src="Examples/FullAtomModel/ExamplePDB2CoordsUnordered.png" class="rounded mx-auto d-block float-center" alt="..." width=60%>
 		</div>
 	
 	
@@ -467,12 +500,12 @@ coords_t = translate(coords, translation, num_atoms)
 	<script>
 		generate_table("CoordsTranslate", 
 						[
-							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
-							["Translation", "CPU", "float/double", "[batch_size, 3]"],
-							["NumAtoms", "CPU", "int", "[batch_size]"]
+							["Coordinates", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Translation", "CPU/GPU", "float/double", "[batch_size, 3]"],
+							["NumAtoms", "CPU/GPU", "int", "[batch_size]"]
 						],
 						[
-							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"],
 						]
 						);
 									
@@ -502,16 +535,49 @@ coords_r = rotate(coords, rotation, num_atoms)
 	<script>
 		generate_table("CoordsRotate", 
 						[
-							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
-							["Rotation", "CPU", "float/double", "[batch_size, 3, 3]"],
-							["NumAtoms", "CPU", "int", "[batch_size]"]
+							["Coordinates", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Rotation", "CPU/GPU", "float/double", "[batch_size, 3, 3]"],
+							["NumAtoms", "CPU/GPU", "int", "[batch_size]"]
 						],
 						[
-							["Coordinates", "CPU", "float/double", "[batch_size, 3 x number of atoms]"],
+							["Coordinates", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"],
 						]
 						);
 									
 	</script>
+
+<div class="container" id = "Coords2Center">
+	<script>createHeader("Coords2Center", "class", "FullAtomModel", "Coords2Center" );</script>
+	<div class="container">
+		Returns geometrical center of a set of coordinates:
+		$$ \mathbf{r}_i' = \frac{1}{N_k}\sum_i \mathbf{r}_i $$
+		where $i = 0$ to $N_k - 1$ and $k = 0$ to $batch\_size-1$.
+		($N_k$ is the number of atoms in the $k$-th batch sample.)
+		
+		<pre class="pre-scrollable"><code class="python">
+from TorchProteinLibrary import FullAtomModel
+center = FullAtomModel.Coords2Center()
+coords = torch.randn(1, 4*3, dtype=torch.double)
+num_atoms = torch.tensor([4], dtype=torch.int)
+coords_c = center(coords, num_atoms)
+		</code></pre>
+		
+		<h3>Input/Output</h3>
+	</div>
+</div>
+
+<script>
+	generate_table("Coords2Center", 
+					[
+						["Coordinates", "CPU/GPU", "float/double", "[batch_size, 3 x number of atoms]"],
+						["NumAtoms", "CPU/GPU", "int", "[batch_size]"]
+					],
+					[
+						["Center", "CPU/GPU", "float/double", "[batch_size, 3]"],
+					]
+					);
+								
+</script>
 	
 	<div class="container" id ="getBBox">
 		<script>createHeader("getBBox", "function", "FullAtomModel", "getBBox", "(Coordinates, NumAtoms)" );</script>

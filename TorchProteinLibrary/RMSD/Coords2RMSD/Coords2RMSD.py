@@ -66,6 +66,7 @@ class Coords2RMSD(Module):
 		super(Coords2RMSD, self).__init__()
 		self.c2c = Coords2Center()
 		self.translate = CoordsTranslate()
+		self.UT = None
 		
 	def forward(self, input, target, num_atoms):
 
@@ -73,5 +74,5 @@ class Coords2RMSD(Module):
 		target_center = self.c2c(target, num_atoms)
 		centered_input = self.translate(input, -input_center, num_atoms)
 		centered_target = self.translate(target, -target_center, num_atoms)
-		rmsd, UT = Coords2RMSDFunction.apply(centered_input, centered_target, num_atoms)
+		rmsd, self.UT = Coords2RMSDFunction.apply(centered_input, centered_target, num_atoms)
 		return rmsd

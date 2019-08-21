@@ -7,26 +7,10 @@ import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
 
-
-g_src = []
-g_dst = []
-
-def hook(module, input, output):
-	global g_src
-	global g_dst
-	dst = output.grad_fn.Ut_coordinates_dst
-	src = output.grad_fn.c_coords_input
-
-	src = src.resize( int(src.size(1)/3), 3).cpu().numpy()
-	dst = dst.resize( int(dst.size(1)/3), 3).cpu().numpy()
-	g_src.append(src)
-	g_dst.append(dst)
-
-
 if __name__=='__main__':
 	#Reading pdb file
 	p2c = FullAtomModel.PDB2CoordsUnordered()
-	coords_dst, res_names_dst, atom_names_dst, num_atoms_dst = p2c(["FullAtomModel/f4TQ1_B.pdb"])
+	coords_dst, chain_names, res_names_dst, res_nums_dst, atom_names_dst, num_atoms_dst = p2c(["FullAtomModel/f4TQ1_B.pdb"])
 	
 	#Making a mask on CA, C, N atoms
 	is0C = torch.eq(atom_names_dst[:,:,0], 67).squeeze()
@@ -41,37 +25,60 @@ if __name__=='__main__':
 	num_backbone_atoms = int(isSelected.sum())
 
 	#Resizing coordinates array for convenience
-	N = int(num_atoms_dst.data[0])
+	N = int(num_atoms_dst[0].item())
 	coords_dst.resize_(1, N, 3)
 
 	backbone_x = torch.masked_select(coords_dst[0,:,0], isSelected)[:num_backbone_atoms]
 	backbone_y = torch.masked_select(coords_dst[0,:,1], isSelected)[:num_backbone_atoms]
 	backbone_z = torch.masked_select(coords_dst[0,:,2], isSelected)[:num_backbone_atoms]
-	backbone_coords = torch.stack([backbone_x, backbone_y, backbone_z], dim=1).resize_(1, num_backbone_atoms*3).contiguous()
+	backbone_coords = torch.stack([backbone_x, backbone_y, backbone_z], dim=1).resize_(1, num_backbone_atoms*3).contiguous().to(device='cuda', dtype=torch.float)
 		
 	#Setting conformation to alpha-helix
 	num_aa = torch.zeros(1, dtype=torch.int, device='cuda').fill_( int(num_backbone_atoms/3) )
 	num_atoms = torch.zeros(1, dtype=torch.int, device='cuda').fill_( int(num_backbone_atoms) )
-	angles = torch.zeros(1, 2, int(num_backbone_atoms/3), dtype=torch.float, device='cuda').requires_grad_()
-	angles.data.normal_()
+	angles = torch.zeros(1, 3, int(num_backbone_atoms/3), dtype=torch.float, device='cuda').normal_().requires_grad_()
 	
-
 	a2b = ReducedModel.Angles2Backbone()
-	rmsd = RMSD.Coords2RMSD().cuda()
-	
-	rmsd.register_forward_hook(hook)
-
-	
+	rmsd = RMSD.Coords2RMSD()
+		
 	optimizer = optim.Adam([angles], lr = 0.05)
 	loss_data = []
+	g_src = []
+	g_dst = []
+
+	#Coords transforms
+	c2c = FullAtomModel.Coords2Center()
+	translate = FullAtomModel.CoordsTranslate()
+	rotate = FullAtomModel.CoordsRotate()
+	
+	#Rotating for visualization convenience
+	with torch.no_grad():
+		backbone_coords = rotate(backbone_coords, torch.tensor([[[0, 1, 0], [-1, 0, 0], [0, 0, 1]]], dtype=torch.float, device='cuda'), num_atoms)
+
 	for epoch in range(300):
 		optimizer.zero_grad()
 		coords_src = a2b(angles, num_aa)
-		L = rmsd(coords_src.double(), backbone_coords, num_atoms)
+		L = rmsd(coords_src, backbone_coords, num_atoms)
 		L.backward()
 		optimizer.step()
+
+		loss_data.append(L.item())
 		
-		loss_data.append(float(np.sqrt(L.data.cpu().numpy())))
+		#Obtaining aligned structures
+		with torch.no_grad():
+			center_src = c2c(coords_src, num_atoms)
+			center_dst = c2c(backbone_coords, num_atoms)
+			c_src = translate(coords_src, -center_src, num_atoms)
+			c_dst = translate(backbone_coords, -center_dst, num_atoms)
+			rc_src = rotate(c_src, rmsd.UT.transpose(1,2).contiguous(), num_atoms)
+
+			rc_src = rc_src.resize( int(rc_src.size(1)/3), 3).cpu().numpy()
+			c_dst = c_dst.resize( int(c_dst.size(1)/3), 3).cpu().numpy()
+		
+			g_src.append(rc_src)
+			g_dst.append(c_dst)
+		
+		
 
 	fig = plt.figure()
 	plt.title("Backbone fitting")
