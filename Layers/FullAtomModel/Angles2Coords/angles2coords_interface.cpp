@@ -19,7 +19,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
     CHECK_CPU_INPUT_TYPE(atom_names, torch::kByte);
 
     if(input_angles.ndimension() != 3){
-        ERROR("Incorrect input ndim")
+        ERROR("Incorrect input ndim");
     }
     
     int batch_size = input_angles.sizes()[0];
