@@ -2,8 +2,8 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
-import _RMSD_CPU
-import _RMSD_GPU
+#import _RMSD_CPU
+#import _RMSD_GPU
 import math
 from TorchProteinLibrary.FullAtomModel.CoordsTransform import Coords2Center, CoordsTranslate
 import _RMSD
