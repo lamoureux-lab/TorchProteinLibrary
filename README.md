@@ -3,8 +3,8 @@ This library pytorch layers for working with protein structures in a differentia
 there will be interface changes to the current layers, addition of the new ones and code optimizations.
 
 # Requirements
- - GCC >= 7
- - CUDA >= 9.0
+ - GCC >= 7 
+ - CUDA >= 10.0
  - PyTorch >= 1.1
  - Python >= 3.5
  - Biopython
