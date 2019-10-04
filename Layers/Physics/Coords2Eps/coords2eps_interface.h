@@ -1,1 +1,2 @@
-int test(int a, int b);
+#include <torch/extension.h>
+torch::Tensor test(torch::Tensor a, torch::Tensor b);
