@@ -80,6 +80,62 @@ class TestAngles2BackboneBackward(TestAngles2Backbone):
 				
 		result = torch.autograd.gradcheck(self.a2b, (backbone_angles, num_aa), eps=1e-3, atol=1e-2, rtol=0.01)
 		self.assertTrue(result)
+
+
+class TestAngles2BackboneJacobian(TestAngles2Backbone):
+	
+	def compute_jacobian(f, x, output_dims):
+		'''
+		Normal:
+			f: input_dims -> output_dims
+		Jacobian mode:
+			f: output_dims x input_dims -> output_dims x output_dims
+		'''
+		repeat_dims = tuple(output_dims) + (1,) * len(x.shape)
+		jac_x = x.detach().repeat(*repeat_dims)
+		jac_x.requires_grad_()
+		jac_y = f(jac_x)
+		
+		ml = torch.meshgrid([torch.arange(dim) for dim in output_dims])
+		index = [m.flatten() for m in ml]
+		gradient = torch.zeros(output_dims + output_dims)
+		gradient.__setitem__(tuple(index)*2, 1)
+		
+		jac_y.backward(gradient)
+			
+		return jac_x.grad.data
+
+	def runTest(self):
+		from torch.autograd.gradcheck import get_analytical_jacobian
+		import matplotlib.pyplot as plt
+		length = 120
+		batch_size = 1
+		device = 'cuda'
+		# device = 'cpu'
+		backbone_angles = torch.randn(batch_size, 3, length, dtype=torch.float, device=device).requires_grad_()
+		num_aa = torch.zeros(batch_size, dtype=torch.int, device=device).random_(int(length/2), length)		
+		output = self.a2b(backbone_angles, num_aa)
+
+		Jacobian = torch.zeros(3, length, 3*3*length, dtype=torch.float, device=device)
+		for i in range(3*3*length):
+			L = torch.zeros_like(output)
+			L[0, i] = 1.0
+			output.backward(L, retain_graph=True)
+			Jacobian[:, :, i] = backbone_angles.grad
+			backbone_angles.grad.fill_(0.0)
+
+		Jacobian = Jacobian.view(3*length, 3*3*length)
+		U, Sigma, V = Jacobian.svd()
+		plt.subplot(2, 1, 1)
+		plt.imshow(Jacobian[:,:].cpu().numpy())
+		plt.colorbar()
+
+		plt.subplot(2, 1, 2)
+		plt.plot(Sigma.cpu().numpy())
+		plt.show()
+		
+		
+
 		
 if __name__=='__main__':
 	unittest.main()

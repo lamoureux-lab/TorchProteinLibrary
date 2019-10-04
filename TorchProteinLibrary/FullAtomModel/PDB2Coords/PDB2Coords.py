@@ -124,10 +124,11 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 				y = coords[i, 3*j+1].item()
 				z = coords[i, 3*j+2].item()
 				if bfactors is None:
-					fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z))
+					bfactor = 0.1
 				else:
 					bfactor = bfactors[i, j]
-					fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor))
+				
+				fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f           %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
 			
 			if add_model:
 				fout.write("ENDMDL\n")

@@ -38,7 +38,7 @@ cPDBLoader::cPDBLoader(std::string filename) {
                 yStr = line.substr(38,8);
                 zStr = line.substr(46,8);
                 res_name = trim(line.substr(17,3));
-                chain_name = trim(line.substr(21, 1));
+                chain_name = line.substr(21, 1);
                 res_num = std::stoi(line.substr(22,4));
                 r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
                 chain_names.push_back(chain_name);
