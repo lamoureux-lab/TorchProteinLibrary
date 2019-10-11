@@ -25,6 +25,9 @@ if __name__=='__main__':
 				#RMSD
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
+				#Physics
+				'TorchProteinLibrary.Physics',
+				'TorchProteinLibrary.Physics.AtomNames2Params',
 				]
 
 	FullAtomModel = CUDAExtension('_FullAtomModel', 
@@ -106,11 +109,18 @@ if __name__=='__main__':
 
 	Physics = CUDAExtension('_Physics',
 					sources = [
-						'Layers/Physics/Coords2Eps/coords2eps_interface.cpp',
-						'Layers/Physics/main.cpp',
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
+					'Layers/Physics/Coords2Eps/coords2eps_interface.cpp',
+					'Layers/Physics/AtomNames2Params/atomnames2params_interface.cpp',
+					'Layers/Physics/main.cpp',
 					],
-					include_dirs = ['Layers/Physics',
-									'Layers/Physics/Coords2Eps'],
+					include_dirs = ['Math',
+									'Layers/Physics',
+									'Layers/Physics/Coords2Eps',
+									'Layers/Physics/AtomNames2Params'],
 					libraries = ['gomp'],
 					extra_compile_args={'cxx': ['-fopenmp'],
                                         'nvcc': ['-Xcompiler', '-fopenmp']})
@@ -118,7 +128,8 @@ if __name__=='__main__':
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
-			ext_modules=[	RMSD,
+			ext_modules=[	
+							RMSD,
 							FullAtomModel, 
 							Volume, 
 							ReducedModel,

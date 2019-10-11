@@ -161,7 +161,13 @@ void StringUtil::string2Tensor(std::string s, torch::Tensor T){
     aT[s.length()] = '\0';
 } 
 std::string StringUtil::tensor2String(torch::Tensor T){
-    return std::string(static_cast<char*>(T.data_ptr()));
+    std::string str;
+    char* aT = static_cast<char*>(T.data_ptr());
+    for(int i=0; i<T.size(0); i++){
+        if(aT[i] == 0) break;
+        str.push_back(aT[i]);
+    }
+    return str;
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
     if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S')
