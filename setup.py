@@ -28,6 +28,7 @@ if __name__=='__main__':
 				#Physics
 				'TorchProteinLibrary.Physics',
 				'TorchProteinLibrary.Physics.AtomNames2Params',
+				'TorchProteinLibrary.Physics.Coords2Eps',
 				]
 
 	FullAtomModel = CUDAExtension('_FullAtomModel', 
@@ -113,8 +114,9 @@ if __name__=='__main__':
 					'Math/cMatrix44.cpp',
 					'Math/cVector3.cpp',
 					'Math/nUtil.cpp',
-					'Layers/Physics/Coords2Eps/coords2eps_interface.cpp',
 					'Layers/Physics/AtomNames2Params/atomnames2params_interface.cpp',
+					'Layers/Physics/Coords2Eps/coords2eps_interface.cpp',
+					'Layers/Physics/Kernels.cu',
 					'Layers/Physics/main.cpp',
 					],
 					include_dirs = ['Math',
@@ -129,10 +131,10 @@ if __name__=='__main__':
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
 			ext_modules=[	
-							RMSD,
-							FullAtomModel, 
-							Volume, 
-							ReducedModel,
+							#RMSD,
+							#FullAtomModel, 
+							#Volume, 
+							#ReducedModel,
 							Physics
 						],
 			cmdclass={'build_ext': BuildExtension},

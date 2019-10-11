@@ -1,29 +1,31 @@
-#include <torch/extension.h>
 #include "coords2eps_interface.h"
 #include <iostream>
-#include <math.h>
+#include "nUtil.h"
+#include "Kernels.h"
 
-torch::Tensor test(torch::Tensor coords, torch::Tensor num_atoms){
-    torch::Tensor result = torch::zeros({30, 30, 30});
-    AT_DISPATCH_FLOATING_TYPES(coords.type(), "tmp", ([&] {
-        auto coords_a = coords.accessor<scalar_t, 2>();
-        auto num_atoms_a = num_atoms.accessor<int, 1>();
-        auto result_a = result.accessor<float, 3>();
-        std::cout<<num_atoms[0]<<std::endl;
-        
-        scalar_t resolution = 2.5;
-        for(int i=0; i<num_atoms_a[0]; i++){
-            scalar_t x = coords_a[0][3*i + 0];
-            scalar_t y = coords_a[0][3*i + 1];
-            scalar_t z = coords_a[0][3*i + 2];
-            int ix = floor(x/resolution);
-            int iy = floor(y/resolution);
-            int iz = floor(z/resolution);
-            if((ix<0)||(ix>=30)||(iy<0)||(iy>=30)||(iz<0)||(iz>=30))
-                continue;
+void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms, torch::Tensor eps, float resolution){
+    CHECK_GPU_INPUT_TYPE(coords, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(assigned_params, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(eps, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(num_atoms, torch::kInt);
+    
+    gpu_computeCoords2Volume(   coords.data<float>(), 
+                                assigned_params.data<float>(),
+                                num_atoms.data<int>(),
+                                eps.data<float>(),
+                                eps.size(0), //batch_size
+                                eps.size(1), //box_size
+                                coords.size(1), //coords_stride
+                                resolution);
+}
 
-            result_a[ix][iy][iz] = 1.0;
-        }
-    }));
-    return result;
-}   
+void Coords2Eps_backward(   torch::Tensor gradOutput, torch::Tensor gradInput, 
+                            torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms,
+                            float resolution){
+    CHECK_GPU_INPUT_TYPE(gradOutput, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(gradInput, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(coords, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(assigned_params, torch::kFloat);
+    CHECK_GPU_INPUT_TYPE(num_atoms, torch::kInt);
+    
+}

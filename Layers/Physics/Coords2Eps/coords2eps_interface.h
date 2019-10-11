@@ -1,2 +1,5 @@
 #include <torch/extension.h>
-torch::Tensor test(torch::Tensor a, torch::Tensor b);
+void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms, torch::Tensor eps, float resolution);
+void Coords2Eps_backward(   torch::Tensor gradOutput, torch::Tensor gradInput, 
+                            torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms,
+                            float resolution);
