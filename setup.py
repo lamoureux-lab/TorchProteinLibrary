@@ -28,7 +28,7 @@ if __name__=='__main__':
 				#Physics
 				'TorchProteinLibrary.Physics',
 				'TorchProteinLibrary.Physics.AtomNames2Params',
-				'TorchProteinLibrary.Physics.Coords2Eps',
+				'TorchProteinLibrary.Physics.Coords2Elec',
 				]
 
 	FullAtomModel = CUDAExtension('_FullAtomModel', 
@@ -115,17 +115,17 @@ if __name__=='__main__':
 					'Math/cVector3.cpp',
 					'Math/nUtil.cpp',
 					'Layers/Physics/AtomNames2Params/atomnames2params_interface.cpp',
-					'Layers/Physics/Coords2Eps/coords2eps_interface.cpp',
+					'Layers/Physics/Coords2Elec/coords2elec_interface.cpp',
 					'Layers/Physics/Kernels.cu',
 					'Layers/Physics/main.cpp',
 					],
 					include_dirs = ['Math',
 									'Layers/Physics',
-									'Layers/Physics/Coords2Eps',
+									'Layers/Physics/Coords2Elec',
 									'Layers/Physics/AtomNames2Params'],
 					libraries = ['gomp'],
 					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']})
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++11']})
 
 	
 	setup(	name='TorchProteinLibrary',

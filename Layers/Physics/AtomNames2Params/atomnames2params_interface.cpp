@@ -30,9 +30,7 @@ std::map<int, assignment_indexes> AtomNames2Params_forward(   torch::Tensor resn
     }
     
     int batch_size = resnames.size(0);
-    auto num_atoms_acc = num_atoms.accessor<int, 1>();
-    
-    
+    auto num_atoms_acc = num_atoms.accessor<int, 1>();  
     
     #pragma omp parallel for shared(type_dict, assign_dict)
     for(int i=0; i<batch_size; i++){
