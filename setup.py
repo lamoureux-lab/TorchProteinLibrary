@@ -29,6 +29,7 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Physics',
 				'TorchProteinLibrary.Physics.AtomNames2Params',
 				'TorchProteinLibrary.Physics.Coords2Elec',
+				'TorchProteinLibrary.Physics.Coords2Stress',
 				]
 
 	FullAtomModel = CUDAExtension('_FullAtomModel', 
