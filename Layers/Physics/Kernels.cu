@@ -12,9 +12,8 @@
 
 
 __global__ void partialSumFaces(    float* coords, float* assigned_params, int num_atoms, float* volume, 
-                                    int box_size, float res, float stern_size){
+                                    int box_size, float res, float ion_size, float wat_size, float asigma, uint d){
 
-    int d = 2;
     int vol_index = threadIdx.x;
 	float *single_volume = volume + vol_index * box_size*box_size*box_size;
 
@@ -24,15 +23,18 @@ __global__ void partialSumFaces(    float* coords, float* assigned_params, int n
     switch(vol_index){
         case 0:
             shift_cell_x = 0.5;
+            add_sigma = wat_size;
             break;
         case 1:
             shift_cell_y = 0.5;
+            add_sigma = wat_size;
             break;
         case 2:
             shift_cell_z = 0.5;
+            add_sigma = wat_size;
             break;
         case 3:
-            add_sigma = stern_size;
+            add_sigma = ion_size;
             break;
     }
     long cell_idx;
@@ -43,7 +45,7 @@ __global__ void partialSumFaces(    float* coords, float* assigned_params, int n
 
 
 	for(int idx = 0; idx<num_atoms; idx++){
-        float sigma = assigned_params[idx] + add_sigma;
+        float sigma = asigma*(assigned_params[idx] + add_sigma);
 		x = coords[3*idx + 0];
 		y = coords[3*idx + 1];
 		z = coords[3*idx + 2];
@@ -88,8 +90,9 @@ void gpu_computePartialSumFaces(	float *coords,
                                     float *volume,
                                     int box_size,
                                     float res,
-                                    float stern_size){
-	partialSumFaces<<<1, 4>>>(coords, assigned_params, num_atoms, volume, box_size, res, stern_size);
+                                    float ion_size, float wat_size, float asigma,
+                                    uint d){
+	partialSumFaces<<<1, 4>>>(coords, assigned_params, num_atoms, volume, box_size, res, ion_size, wat_size, asigma, d);
 }
 
 void gpu_computeSumCells(	float *coords,
@@ -141,48 +144,48 @@ void gpu_computePhi( float *Q, float *Eps, float *Phi, int box_size, float res, 
     
     //Lower diagonals
     thrust::transform(  ei_begin, ei_begin + vol_size - surf_size, A.values.column(0).begin() + surf_size, 
-                        A.values.column(0).begin() + surf_size, saxpy_functor(-1.0/res*res));
+                        A.values.column(0).begin() + surf_size, saxpy_functor(-res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(1).begin() + box_size, 
-                        A.values.column(1).begin() + box_size, saxpy_functor(-1.0/res*res));
+                        A.values.column(1).begin() + box_size, saxpy_functor(-res));
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(2).begin() + 1, 
-                        A.values.column(2).begin() + 1, saxpy_functor(-1.0/res*res));
+                        A.values.column(2).begin() + 1, saxpy_functor(-res));
 
     //Upper diagonals
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(4).begin(), 
-                        A.values.column(4).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(4).begin(), saxpy_functor(-res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(5).begin(), 
-                        A.values.column(5).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(5).begin(), saxpy_functor(-res));
     thrust::transform(ei_begin, ei_begin + vol_size - surf_size, A.values.column(6).begin(), 
-                        A.values.column(6).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(6).begin(), saxpy_functor(-res));
     
     //Diagonal
     thrust::transform(ei_begin, ei_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     thrust::transform(ej_begin, ej_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     thrust::transform(ek_begin, ek_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     
     //diagonal shifted
     thrust::transform(ei_begin, ei_begin + vol_size - surf_size, A.values.column(3).begin() + surf_size, 
-                        A.values.column(3).begin() + surf_size, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + surf_size, saxpy_functor(res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(3).begin() + box_size,
-                        A.values.column(3).begin() + box_size, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + box_size, saxpy_functor(res));
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(3).begin() + 1,
-                        A.values.column(3).begin() + 1, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + 1, saxpy_functor(res));
     
     //ionic term
     thrust::transform(lambda_begin, lambda_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(kappa02));
+                        A.values.column(3).begin(), saxpy_functor(kappa02*res*res*res));
 
     //charge
-    thrust::transform(q_begin, q_begin + vol_size, q.begin(), q.begin(), saxpy_functor(1.0/res*res*res));
+    thrust::transform(q_begin, q_begin + vol_size, q.begin(), q.begin(), saxpy_functor(1.0));
 
-    cusp::monitor<float> monitor(q, 1000, 1e-3, 0.0, true);
+    cusp::monitor<float> monitor(q, 1000, 1e-3, 0.0, false);
     monitor.set_verbose();
     cusp::precond::diagonal<float, cusp::device_memory> M(A);
     cusp::krylov::cg(A, phi, q, monitor);
-    monitor.print();
+    // monitor.print();
 
     thrust::copy(phi.begin(), phi.end(), Phi);
 

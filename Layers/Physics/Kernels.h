@@ -5,7 +5,8 @@ void gpu_computePartialSumFaces(	float *coords,
                                     float *volume,
                                     int box_size,
                                     float res,
-                                    float stern_size);
+                                    float ion_size, float wat_size, float asigma,
+                                    uint d);
 
 void gpu_computeSumCells(	float *coords,
                             float *assigned_params,

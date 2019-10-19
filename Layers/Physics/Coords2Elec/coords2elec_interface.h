@@ -1,6 +1,6 @@
 #include <torch/extension.h>
 void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms, torch::Tensor eps, 
-                        float resolution, float stern_size);
+                        float resolution, float ion_size, float wat_size, float asigma, int d);
 void Coords2Eps_backward(   torch::Tensor gradOutput, torch::Tensor gradInput, 
                             torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms,
                             float resolution);

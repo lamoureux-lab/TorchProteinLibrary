@@ -4,7 +4,7 @@
 #include "Kernels.h"
 
 void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms, torch::Tensor eps, 
-                        float resolution, float stern_size){
+                        float resolution, float ion_size, float wat_size, float asigma, int d){
     CHECK_GPU_INPUT_TYPE(coords, torch::kFloat);
     CHECK_GPU_INPUT_TYPE(assigned_params, torch::kFloat);
     CHECK_GPU_INPUT_TYPE(eps, torch::kFloat);
@@ -22,7 +22,8 @@ void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, tor
                                     num_atoms[i].item().toInt(),
                                     single_eps.data<float>(),
                                     single_eps.size(1), //box_size
-                                    resolution, stern_size);
+                                    resolution, 
+                                    ion_size, wat_size, asigma, d);
     }
     
 }

@@ -9,7 +9,7 @@ import numpy as np
 
 class Coords2EpsFunction(Function):
 	@staticmethod
-	def forward(ctx, coords, assigned_params, num_atoms, box_size, resolution, stern_size):
+	def forward(ctx, coords, assigned_params, num_atoms, box_size, resolution, ion_size, wat_size, asigma, d):
 		coords = coords.contiguous()
 		assigned_params = assigned_params.contiguous()
 		num_atoms = num_atoms.contiguous()
@@ -18,7 +18,7 @@ class Coords2EpsFunction(Function):
 
 		batch_size = coords.size(0)
 		rho_sum = torch.zeros(batch_size, 4, box_size, box_size, box_size, dtype=torch.float, device='cuda')
-		_Physics.Coords2Eps_forward(coords, assigned_params, num_atoms, rho_sum, resolution, stern_size)
+		_Physics.Coords2Eps_forward(coords, assigned_params, num_atoms, rho_sum, resolution, ion_size, wat_size, asigma, d)
 
 		return rho_sum
 
@@ -32,7 +32,7 @@ class Coords2EpsFunction(Function):
 		
 		_Physics.Coords2Eps_backward(gradOutput, gradInput, coords, assigned_params, num_atoms)
 		
-		return gradInput, None, None, None, None, None
+		return gradInput, None, None, None, None, None, None, None, None
 
 class Coords2QFunction(Function):
 	@staticmethod
@@ -84,21 +84,29 @@ class QEps2PhiFunction(Function):
 
 
 class Coords2Elec(Module):
-	def __init__(self, box_size=80, resolution=1.0, eps_in=6.5, eps_out=79.0, stern_size=1.0, kappa02=0.8486, charge_conv=7046.52):
+	def __init__(self, box_size=80, resolution=1.0, 
+						eps_in=6.5, eps_out=79.0, 
+						ion_size=1.0, wat_size=1.4, asigma=2.0, 
+						debye_length=0.8486, charge_conv=7046.52, d=2):
 		super(Coords2Elec, self).__init__()
 		self.eps_in = eps_in
 		self.eps_out = eps_out
 		self.box_size = box_size
 		self.resolution = resolution
-		self.stern_size = stern_size
-		self.kappa02 = kappa02
+		self.ion_size = ion_size
+		self.wat_size = wat_size
+		self.asigma = asigma
+		self.debye_length = debye_length
 		self.charge_conv = charge_conv
+		self.d = d
 				
 	def forward(self, coords, assigned_params, num_atoms):
-		rho_sum = Coords2EpsFunction.apply(coords, assigned_params[:,:,1], num_atoms, self.box_size, self.resolution, self.stern_size)
-		eps = torch.exp(-rho_sum)*(self.eps_out - self.eps_in) + self.eps_in
+		rho_sum = Coords2EpsFunction.apply(coords, assigned_params[:,:,1], num_atoms, self.box_size, self.resolution, 
+											self.ion_size, self.wat_size, self.asigma, self.d)
+		# eps = torch.exp(-rho_sum)*(self.eps_out - self.eps_in) + self.eps_in
+		eps = rho_sum*(self.eps_in - self.eps_out) + self.eps_out
 		q = Coords2QFunction.apply(coords, assigned_params[:,:,0], num_atoms, self.box_size, self.resolution)
 		q = q*(self.charge_conv)
-		phi = QEps2PhiFunction.apply(q, eps, self.resolution, self.kappa02)
+		phi = QEps2PhiFunction.apply(q, eps, self.resolution, self.debye_length)
 
 		return q, eps, phi
