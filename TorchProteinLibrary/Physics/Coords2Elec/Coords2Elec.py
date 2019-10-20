@@ -17,7 +17,7 @@ class Coords2EpsFunction(Function):
 		ctx.resolution = resolution
 
 		batch_size = coords.size(0)
-		rho_sum = torch.zeros(batch_size, 4, box_size, box_size, box_size, dtype=torch.float, device='cuda')
+		rho_sum = torch.ones(batch_size, 4, box_size, box_size, box_size, dtype=torch.float, device='cuda')
 		_Physics.Coords2Eps_forward(coords, assigned_params, num_atoms, rho_sum, resolution, ion_size, wat_size, asigma, d)
 
 		return rho_sum
@@ -87,7 +87,7 @@ class Coords2Elec(Module):
 	def __init__(self, box_size=80, resolution=1.0, 
 						eps_in=6.5, eps_out=79.0, 
 						ion_size=1.0, wat_size=1.4, asigma=2.0, 
-						debye_length=0.8486, charge_conv=7046.52, d=2):
+						kappa02=0.106, charge_conv=7046.52, d=2):
 		super(Coords2Elec, self).__init__()
 		self.eps_in = eps_in
 		self.eps_out = eps_out
@@ -96,17 +96,22 @@ class Coords2Elec(Module):
 		self.ion_size = ion_size
 		self.wat_size = wat_size
 		self.asigma = asigma
-		self.debye_length = debye_length
+		self.kappa02 = kappa02
 		self.charge_conv = charge_conv
 		self.d = d
 				
 	def forward(self, coords, assigned_params, num_atoms):
-		rho_sum = Coords2EpsFunction.apply(coords, assigned_params[:,:,1], num_atoms, self.box_size, self.resolution, 
+		#Dielectric constant and salt
+		rho_sum = Coords2EpsFunction.apply(	coords, assigned_params[:,:,1], num_atoms, 
+											self.box_size, self.resolution, 
 											self.ion_size, self.wat_size, self.asigma, self.d)
-		# eps = torch.exp(-rho_sum)*(self.eps_out - self.eps_in) + self.eps_in
-		eps = rho_sum*(self.eps_in - self.eps_out) + self.eps_out
-		q = Coords2QFunction.apply(coords, assigned_params[:,:,0], num_atoms, self.box_size, self.resolution)
+		eps = (1.0-rho_sum)*(self.eps_in - self.eps_out) + self.eps_out
+		
+		#Charge density
+		q = Coords2QFunction.apply(	coords, assigned_params[:,:,0], num_atoms, 
+									self.box_size, self.resolution)
 		q = q*(self.charge_conv)
-		phi = QEps2PhiFunction.apply(q, eps, self.resolution, self.debye_length)
+		
+		phi = QEps2PhiFunction.apply(q, eps, self.resolution, self.kappa02)
 
 		return q, eps, phi

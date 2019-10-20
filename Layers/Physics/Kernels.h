@@ -15,5 +15,5 @@ void gpu_computeSumCells(	float *coords,
                             int box_size,
                             float res);
 
-void gpu_computePhi(    float *Q, float *Eps, float *Phi, int box_size, 
+void gpu_computePhi(    float *Q, float *Eps, float *Phi, size_t box_size, 
                         float res, float kappa02);

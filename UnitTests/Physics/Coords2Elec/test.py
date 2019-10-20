@@ -38,13 +38,13 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
 			"prbrad":0.0,
 			"ionrad":0.0,
 			"salt":0.0,
-			"sigma":1.0,
+			"sigma":1.1,
 			"maxc":0.0001
 		},
 		"int_params":{
 			"gsize":61,
 			"bndcon":1,
-			"nonit":0,
+			"nonit":1,
 			"gaussian":1,
 			"linit":800,
 		}
@@ -94,6 +94,7 @@ N     VAL      10.000
 	def runTest(self):
 		self.writeFiles(params=self.delphiParams)
 		self.runDelphi(params=self.delphiParams)
+
 		Delphi, spatial_dim, res = cube2numpy(file_path = "phimap.txt")
 		Eps, spatial_dim, res = cube2numpy(file_path = "epsmap.txt")
 		box_size = spatial_dim*res
@@ -105,10 +106,10 @@ N     VAL      10.000
                   				eps_out = 80.0,
                   				ion_size = 0.0,
 								wat_size = 0.0,
-								asigma = 1.0,
-                  				debye_length = 0.0, #0.8486,
-                  				charge_conv = 7046.52,#6987.0,
-								d = 7)
+								asigma = 1.1,
+                  				kappa02 = 0.0,
+                  				charge_conv = 7046.52,
+								d = 9)
 
 		prot = self.p2c(["single_atom/born.pdb"])
 		prot_center = self.get_center(prot[0], prot[-1])
@@ -118,20 +119,20 @@ N     VAL      10.000
 		q, eps, phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float), 
 								params.to(device='cuda', dtype=torch.float),
 								prot[-1].to(device='cuda'))
-		
+		delphi_phi = torch.from_numpy(Delphi).clamp(0.0, 100.0).numpy()
 		this_eps = eps[0,0,:,:,:].to(device='cpu').numpy()
-		this_phi = phi[0,:,:,:].to(device='cpu').numpy()
+		this_phi = phi[0,:,:,:].to(device='cpu').clamp(0.0, 100.0).numpy()
 		
 		
-		p = pv.Plotter(point_smoothing=True)
-		p.add_volume(Delphi, cmap="viridis", opacity="linear")
-		p.add_volume(this_phi, cmap="viridis", opacity="linear")
-		p.show()
+		# p = pv.Plotter(point_smoothing=True)
+		# p.add_volume(Delphi, cmap="viridis", opacity="linear")
+		# p.add_volume(this_phi, cmap="viridis", opacity="linear")
+		# p.show()
 
 		f = plt.figure()
 		plt.subplot(121)
 		plt.plot(this_phi[:,int(spatial_dim/2),int(spatial_dim/2)], label='Our algorithm')
-		plt.plot(Delphi[:,int(spatial_dim/2),int(spatial_dim/2)], label='Delphi')
+		plt.plot(delphi_phi[:,int(spatial_dim/2),int(spatial_dim/2)], label='Delphi')
 		plt.legend()
 		plt.subplot(122)
 		plt.plot(this_eps[:,int(spatial_dim/2),int(spatial_dim/2)], label='Our algorithm')
