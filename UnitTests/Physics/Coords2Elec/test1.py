@@ -41,7 +41,7 @@ c2e = Coords2Elec(box_size = spatial_dim, #must be spatial_dim
 
 box_center = torch.tensor([[box_size/2.0, box_size/2.0, box_size/2.0]], dtype=torch.double, device='cpu')
 coords, chain_names, resnames, resnums, anames, num_atoms = p2c([pdb_file_path])
-print(coords, num_atoms)
+
 params = a2p(resnames, anames, num_atoms, elec_params.types, elec_params.params)
 center = get_center(coords, num_atoms)
 ce_coords = translate(coords, -center + box_center, num_atoms)
