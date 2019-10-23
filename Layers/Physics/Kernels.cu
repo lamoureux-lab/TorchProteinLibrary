@@ -12,9 +12,8 @@
 
 
 __global__ void partialSumFaces(    float* coords, float* assigned_params, int num_atoms, float* volume, 
-                                    int box_size, float res, float stern_size){
+                                    int box_size, float res, float ion_size, float wat_size, float asigma, uint d){
 
-    int d = 2;
     int vol_index = threadIdx.x;
 	float *single_volume = volume + vol_index * box_size*box_size*box_size;
 
@@ -24,15 +23,18 @@ __global__ void partialSumFaces(    float* coords, float* assigned_params, int n
     switch(vol_index){
         case 0:
             shift_cell_x = 0.5;
+            add_sigma = wat_size;
             break;
         case 1:
             shift_cell_y = 0.5;
+            add_sigma = wat_size;
             break;
         case 2:
             shift_cell_z = 0.5;
+            add_sigma = wat_size;
             break;
         case 3:
-            add_sigma = stern_size;
+            add_sigma = ion_size;
             break;
     }
     long cell_idx;
@@ -43,7 +45,8 @@ __global__ void partialSumFaces(    float* coords, float* assigned_params, int n
 
 
 	for(int idx = 0; idx<num_atoms; idx++){
-        float sigma = assigned_params[idx] + add_sigma;
+        float sigma2 = asigma*(assigned_params[idx] + add_sigma);
+        sigma2 *= sigma2;
 		x = coords[3*idx + 0];
 		y = coords[3*idx + 1];
 		z = coords[3*idx + 2];
@@ -56,11 +59,11 @@ __global__ void partialSumFaces(    float* coords, float* assigned_params, int n
 				for(int k=z_i-d; k<=(z_i+d);k++){
 					if( (i>=0 && i<box_size) && (j>=0 && j<box_size) && (k>=0 && k<box_size) ){
 						cell_idx = k + j*box_size + i*box_size*box_size;
-						cell_x = i*res + shift_cell_x;
-                        cell_y = j*res + shift_cell_y;
-                        cell_z = k*res + shift_cell_z;
+						cell_x = i*res + shift_cell_x*res;
+                        cell_y = j*res + shift_cell_y*res;
+                        cell_z = k*res + shift_cell_z*res;
                         r2 = (x-cell_x)*(x-cell_x) + (y-cell_y)*(y-cell_y) + (z-cell_z)*(z-cell_z);
-						single_volume[cell_idx] += exp(-r2/(sigma*sigma));
+						single_volume[cell_idx] *= 1.0 - exp(-r2/sigma2);
 					}
 				}
 			}
@@ -88,8 +91,9 @@ void gpu_computePartialSumFaces(	float *coords,
                                     float *volume,
                                     int box_size,
                                     float res,
-                                    float stern_size){
-	partialSumFaces<<<1, 4>>>(coords, assigned_params, num_atoms, volume, box_size, res, stern_size);
+                                    float ion_size, float wat_size, float asigma,
+                                    uint d){
+	partialSumFaces<<<1, 4>>>(coords, assigned_params, num_atoms, volume, box_size, res, ion_size, wat_size, asigma, d);
 }
 
 void gpu_computeSumCells(	float *coords,
@@ -113,8 +117,30 @@ struct saxpy_functor
     }
 };
 
+struct fill_functor
+{
+    const size_t surf_size, box_size;
+    const float val;
+    fill_functor(size_t _surf_size, size_t _box_size, float _val)
+    :surf_size(_surf_size), box_size(_box_size), val(_val){}
 
-void gpu_computePhi( float *Q, float *Eps, float *Phi, int box_size, float res, float kappa02){
+    __host__ __device__
+    float operator()(const size_t& idx, const float& old_val) const
+    { 
+        int x = floor(idx/surf_size);
+        int y = floor((idx - x*surf_size)/box_size);
+        int z = idx - x*surf_size - y*box_size;
+        
+        if( (x==0||x==(box_size-1)) || (y==0||y==(box_size-1)) || (z==0||z==(box_size-1))){
+            return val;
+        }else{
+            return old_val;
+        }
+    }
+};
+
+
+void gpu_computePhi( float *Q, float *Eps, float *Phi, size_t box_size, float res, float kappa02){
     size_t surf_size = box_size*box_size; 
     size_t vol_size = box_size*box_size*box_size;
     size_t num_nonzero = 7*vol_size - 2*surf_size - 2*box_size - 2;
@@ -140,49 +166,63 @@ void gpu_computePhi( float *Q, float *Eps, float *Phi, int box_size, float res, 
     thrust::device_ptr<float> Phi_begin(Phi);
     
     //Lower diagonals
-    thrust::transform(  ei_begin, ei_begin + vol_size - surf_size, A.values.column(0).begin() + surf_size, 
-                        A.values.column(0).begin() + surf_size, saxpy_functor(-1.0/res*res));
+    thrust::transform(ei_begin, ei_begin + vol_size - surf_size, A.values.column(0).begin() + surf_size, 
+                        A.values.column(0).begin() + surf_size, saxpy_functor(-res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(1).begin() + box_size, 
-                        A.values.column(1).begin() + box_size, saxpy_functor(-1.0/res*res));
+                        A.values.column(1).begin() + box_size, saxpy_functor(-res));
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(2).begin() + 1, 
-                        A.values.column(2).begin() + 1, saxpy_functor(-1.0/res*res));
+                        A.values.column(2).begin() + 1, saxpy_functor(-res));
 
     //Upper diagonals
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(4).begin(), 
-                        A.values.column(4).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(4).begin(), saxpy_functor(-res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(5).begin(), 
-                        A.values.column(5).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(5).begin(), saxpy_functor(-res));
     thrust::transform(ei_begin, ei_begin + vol_size - surf_size, A.values.column(6).begin(), 
-                        A.values.column(6).begin(), saxpy_functor(-1.0/res*res));
+                        A.values.column(6).begin(), saxpy_functor(-res));
     
     //Diagonal
     thrust::transform(ei_begin, ei_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     thrust::transform(ej_begin, ej_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     thrust::transform(ek_begin, ek_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin(), saxpy_functor(res));
     
     //diagonal shifted
     thrust::transform(ei_begin, ei_begin + vol_size - surf_size, A.values.column(3).begin() + surf_size, 
-                        A.values.column(3).begin() + surf_size, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + surf_size, saxpy_functor(res));
     thrust::transform(ej_begin, ej_begin + vol_size - box_size, A.values.column(3).begin() + box_size,
-                        A.values.column(3).begin() + box_size, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + box_size, saxpy_functor(res));
     thrust::transform(ek_begin, ek_begin + vol_size - 1, A.values.column(3).begin() + 1,
-                        A.values.column(3).begin() + 1, saxpy_functor(1.0/res*res));
+                        A.values.column(3).begin() + 1, saxpy_functor(res));
     
     //ionic term
     thrust::transform(lambda_begin, lambda_begin + vol_size, A.values.column(3).begin(), 
-                        A.values.column(3).begin(), saxpy_functor(kappa02));
+                        A.values.column(3).begin(), saxpy_functor(kappa02*res*res*res));
+
+    //boundary conditions (A_bound = 1)
+    thrust::counting_iterator<size_t> first(0);
+    thrust::counting_iterator<size_t> last(vol_size);
+    thrust::transform(first, last, A.values.column(3).begin(), A.values.column(3).begin(), fill_functor(surf_size, box_size, 1.0f));
+    
+    thrust::transform(first, last, A.values.column(0).begin(), A.values.column(0).begin(), fill_functor(surf_size, box_size, 0.0f));
+    thrust::transform(first, last, A.values.column(1).begin(), A.values.column(1).begin(), fill_functor(surf_size, box_size, 0.0f));
+    thrust::transform(first, last, A.values.column(2).begin(), A.values.column(2).begin(), fill_functor(surf_size, box_size, 0.0f));
+    
+    thrust::transform(first, last, A.values.column(4).begin(), A.values.column(4).begin(), fill_functor(surf_size, box_size, 0.0f));
+    thrust::transform(first, last, A.values.column(5).begin(), A.values.column(5).begin(), fill_functor(surf_size, box_size, 0.0f));
+    thrust::transform(first, last, A.values.column(6).begin(), A.values.column(6).begin(), fill_functor(surf_size, box_size, 0.0f));
+    
 
     //charge
-    thrust::transform(q_begin, q_begin + vol_size, q.begin(), q.begin(), saxpy_functor(1.0/res*res*res));
+    thrust::transform(q_begin, q_begin + vol_size, q.begin(), q.begin(), saxpy_functor(1.0));
 
-    cusp::monitor<float> monitor(q, 1000, 1e-3, 0.0, true);
-    monitor.set_verbose();
+    cusp::monitor<float> monitor(q, 1000, 1e-3, 0.0, false);
+    // monitor.set_verbose();
     cusp::precond::diagonal<float, cusp::device_memory> M(A);
     cusp::krylov::cg(A, phi, q, monitor);
-    monitor.print();
+    // monitor.print();
 
     thrust::copy(phi.begin(), phi.end(), Phi);
 

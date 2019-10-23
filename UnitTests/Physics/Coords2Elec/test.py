@@ -7,15 +7,13 @@ from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
 from TorchProteinLibrary.FullAtomModel import CoordsTranslate, Coords2Center
 from TorchProteinLibrary.Physics import AtomNames2Params, ElectrostaticParameters, Coords2Elec
 import _Volume
-# reads .cube Delphi's output and converts to np array
-from read_cube import cube2numpy
+from read_cube import cube2numpy # reads .cube Delphi's output and converts to np array
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from AtomNames2Params import TestAtomNames2Params
 
 import pyvista as pv
 import matplotlib.pylab as plt
-
 
 class TestCoords2EpsSingleAtom(unittest.TestCase):
     device = 'cuda'
