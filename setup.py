@@ -125,7 +125,8 @@ if __name__=='__main__':
 									'Layers/Physics',
 									'Layers/Physics/Coords2Elec',
 									'Layers/Physics/Coords2Stress',
-									'Layers/Physics/AtomNames2Params'],
+									'Layers/Physics/AtomNames2Params',
+									'cusplibrary'],
 					libraries = ['gomp'],
 					extra_compile_args={'cxx': ['-fopenmp'],
                                         'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++11']})
@@ -134,10 +135,10 @@ if __name__=='__main__':
 	setup(	name='TorchProteinLibrary',
 			version="0.1",
 			ext_modules=[	
-							#RMSD,
-							#FullAtomModel, 
-							#Volume, 
-							#ReducedModel,
+							RMSD,
+							FullAtomModel, 
+							Volume, 
+							ReducedModel,
 							Physics
 						],
 			cmdclass={'build_ext': BuildExtension},
