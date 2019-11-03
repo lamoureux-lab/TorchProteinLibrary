@@ -19,17 +19,17 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
     device = 'cuda'
     dtype = torch.float
     msg = "Testing dielectric constant on a single atom"
-    #delphiPath = "/home/lupoglaz/Programs/Delphi/Delphicpp_Linux/delphi_v77/bin/delphicpp_release"
-    delphiPath = "/home/talatnt/Projects/Research/Delphi/Delphicpp_v8.4.2_Linux/Release/delphicpp_release"
+    delphiPath = "/home/lupoglaz/Programs/Delphi/Delphicpp_Linux/delphi_v77/bin/delphicpp_release"
+    # delphiPath = "/home/talatnt/Projects/Research/Delphi/Delphicpp_v8.4.2_Linux/Release/delphicpp_release"
     delphiParams = {
         "input_files": {
             "pdb": "born.pdb",
             "siz": "born.siz",
             "crg": "born.crg",
         },
-           "output_files": {
-            "phi": ["phimap.cube", "cube"],
-            "eps": ["epsmap.cube", "cube"],  # modified to avoid override
+        "output_files": {
+            "phi": "phimap.cube",
+            "eps": "epsmap.cube",
         },
         "float_params": {
             "scale": 2.0,
@@ -52,11 +52,11 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
 
     pdb_file = """ATOM      1  N   VAL D  10       0.000   0.000   0.000"""
     siz_file = """atom__res_radius_
-        N     VAL   3.0          
-        """
+N     VAL   3.0          
+"""
     crg_file = """atom__resnumbc_charge_
-        N     VAL      10.000            
-        """
+N     VAL      10.000            
+"""
 
     def writeFiles(self, params):
         with open(params["input_files"]["pdb"], 'w') as fout:
@@ -69,16 +69,9 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
     def runDelphi(self, params):
         with open("params.txt", 'w') as fout:
             for key in params["input_files"]:
-                fout.write('in(%s,file="%s")\n' %
-                           (key, params["input_files"][key]))
+                fout.write('in(%s,file="%s")\n'%(key, params["input_files"][key]))  
             for key in params["output_files"]:
-                fout.write('out(%s,file="%s", format="%s")\n' % 
-                           (key, params["output_files"][key][0],
-                            params["output_files"][key][1]))
-              
-            # for key in params["output_files"]:
-            #     fout.write('out(%s,file="%s")\n' %   # modified in to out
-            #                (key, params["output_files"][key]))
+                fout.write('out(%s,file="%s",format=cube)\n'%(key, params["output_files"][key]))
             for key in params["float_params"]:
                 fout.write("%s=%f\n" % (key, params["float_params"][key]))
             for key in params["int_params"]:
@@ -103,15 +96,13 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
         self.writeFiles(params=self.delphiParams)
         self.runDelphi(params=self.delphiParams)
 
-        Delphi, spatial_dim, res = cube2numpy(file_path="phimap.cube")
-        Eps, spatial_dim, res = cube2numpy(file_path="epsmap.cube")
-        EpsT, spatial_dim, res = cube2numpy(file_path="tal.cube")
+        Delphi, spatial_dim, res = cube2numpy(file_path="phimap.txt")
+        Eps, spatial_dim, res = cube2numpy(file_path="epsmap.txt")
         
         box_size = spatial_dim*res
-        box_center = torch.tensor(
-            [[box_size/2.0, box_size/2.0, box_size/2.0]], dtype=torch.double, device='cpu')
+        box_center = torch.tensor([[box_size/2.0, box_size/2.0, box_size/2.0]], dtype=torch.double, device='cpu')
 
-        self.c2e = Coords2Elec(	box_size=spatial_dim,  # must be spatial_dim
+        self.c2e = Coords2Elec(	box_size=spatial_dim,
                                 resolution=res,
                                 eps_in=2.0,
                                 eps_out=80.0,
@@ -124,19 +115,16 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
 
         prot = self.p2c(["single_atom/born.pdb"])
         prot_center = self.get_center(prot[0], prot[-1])
-        coords_ce = self.translate(
-            prot[0], -prot_center + box_center, prot[-1])
+        coords_ce = self.translate(prot[0], -prot_center + box_center, prot[-1])
 
-        params = self.a2p(prot[2], prot[4], prot[-1],
-                          self.elec_params.types, self.elec_params.params)
+        params = self.a2p(prot[2], prot[4], prot[-1], self.elec_params.types, self.elec_params.params)
         q, eps, phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float),
                                 params.to(device='cuda', dtype=torch.float),
                                 prot[-1].to(device='cuda'))
-        #delphi_phi = torch.from_numpy(Delphi).clamp(0.0, 100.0).numpy()
-        delphi_phi = Delphi#.clip(0.0, 100.0)
+        
+        delphi_phi = torch.from_numpy(Delphi).clamp(0.0, 100.0).numpy()
         this_eps = eps[0, 0, :, :, :].to(device='cpu').numpy()
-        #this_phi = phi[0, :, :, :].to(device='cpu').clamp(0.0, 100.0).numpy()
-        this_phi = phi[0, :, :, :].to(device='cpu')#.clamp(0.0, 100.0).numpy()
+        this_phi = phi[0, :, :, :].to(device='cpu').clamp(0.0, 100.0).numpy()
 
         # p = pv.Plotter(point_smoothing=True)
         # p.add_volume(Delphi, cmap="viridis", opacity="linear")
@@ -145,22 +133,13 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
 
         f = plt.figure()
         plt.subplot(121, title=r'$\phi$')
-        plt.plot(this_phi[:, int(spatial_dim/2),
-                          int(spatial_dim/2)], label='Our algorithm')
-        plt.plot(EpsT[:, int(spatial_dim/2),
-                          int(spatial_dim/2)], label='SOR algorithm')
-
-        
-        plt.plot(delphi_phi[:, int(spatial_dim/2),
-                            int(spatial_dim/2)], label='Delphi') 
-        
+        plt.plot(this_phi[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
+        plt.plot(delphi_phi[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
         plt.legend(loc="best")
 
         plt.subplot(122, title=r'$\epsilon$')
-        plt.plot(this_eps[:, int(spatial_dim/2),
-                          int(spatial_dim/2)], label='Our algorithm')
-        plt.plot(Eps[:, int(spatial_dim/2),
-                     int(spatial_dim/2)], label='Delphi')
+        plt.plot(this_eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
+        plt.plot(Eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
         plt.legend()
         plt.show()
 

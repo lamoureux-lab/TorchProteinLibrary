@@ -35,21 +35,33 @@ class Coords2Stress(Module):
 		super(Coords2Stress, self).__init__()
 		self.sigma2 = 1.0
 			
-	def get_distance_mat(self, coords, num_atoms):
+	def get_sep_mat(self, coords, num_atoms):
 		batch_size = coords.size(0)
 		max_num_atoms = int(coords.size(1)/3)
 		
-
-		dist_mats = []
+		sep_mats = []
 		for i in range(batch_size):
 			num_at = num_atoms[i].item()
 			this_coords = coords[i,:num_at*3].view(num_at, 3).contiguous()
 			sep_mat = this_coords.unsqueeze(dim=1) - this_coords.unsqueeze(dim=0)
-			dist_mat = torch.sqrt((sep_mat*sep_mat).sum(dim=2))
-			dist_mat_pad = F.pad(dist_mat, (0, max_num_atoms - num_at, 0, max_num_atoms - num_at), 'constant', 0.0)
-			dist_mats.append(dist_mat_pad)
-		dist_mats = torch.stack(dist_mats, dim=0)
-		return dist_mats
+			sep_mat_pad = F.pad(sep_mat, (0, 3*max_num_atoms - 3*num_at, 0, 3*max_num_atoms - 3*num_at), 'constant', 0.0)
+			sep_mats.append(sep_mat_pad)
+		sep_mats = torch.stack(sep_mats, dim=0)
+		return sep_mats
+
+	def get_corr_mat(self, coords, num_atoms):
+		batch_size = coords.size(0)
+		max_num_atoms = int(coords.size(1)/3)
+
+		corr_mats = []
+		for i in range(batch_size):
+			num_at = num_atoms[i].item()
+			this_coords = coords[i,:num_at*3].contiguous()
+			sep_mat = this_coords.unsqueeze(dim=1) - this_coords.unsqueeze(dim=0)
+			corr_mat_pad = F.pad(sep_mat, (0, 3*max_num_atoms - 3*num_at, 0, 3*max_num_atoms - 3*num_at), 'constant', 0.0)
+			corr_mats.append(corr_mat_pad)
+		corr_mats = torch.stack(corr_mats, dim=0)
+		return corr_mats
 	
 	def make_kirchoff(self, dist_mat, num_atoms):
 		batch_size = dist_mat.size(0)
@@ -62,9 +74,13 @@ class Coords2Stress(Module):
 		return dist_mat
 
 	def forward(self, coords, num_atoms):
-		dist_mat = self.get_distance_mat(coords, num_atoms)
-		dist_mat = -torch.exp(-dist_mat/self.sigma2)
-		kirchoff = self.make_kirchoff(dist_mat, num_atoms)
+		sep_mat = self.get_sep_mat(coords, num_atoms)
+		
+		# dist_mat = -torch.exp(-dist_mat/self.sigma2)
+		# kirchoff = self.make_kirchoff(dist_mat, num_atoms)
+
+
+
 		return kirchoff
 
 		
