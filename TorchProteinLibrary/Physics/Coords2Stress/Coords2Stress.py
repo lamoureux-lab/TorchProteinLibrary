@@ -8,17 +8,20 @@ import math
 import numpy as np
 
 class Coords2StressFunction(Function):
+	
 	@staticmethod
-	def forward(ctx, coords, num_atoms, box_size, resolution):
+	def forward(ctx, coords, vectors, num_atoms, box_size, resolution):
 		coords = coords.contiguous()
 		num_atoms = num_atoms.contiguous()
 		ctx.save_for_backward(coords, num_atoms)
 		ctx.resolution = resolution
 
 		batch_size = coords.size(0)
-		
+		volume = torch.zeros(batch_size, 3, box_size, box_size, box_size, dtype=torch.float, device='cuda')
 
-		return None
+		_Physics.Coords2Stress_forward(coords, vectors, num_atoms, volume, resolution)
+
+		return volume
 
 	@staticmethod
 	def backward(ctx, gradOutput):
@@ -30,10 +33,12 @@ class Coords2StressFunction(Function):
 						
 		return None, None, None, None
 
-class Coords2Stress(nn.Module):
+class Coords2Stress(Module):
 	def __init__(self, box_size=80, resolution=1.0):
 		super(Coords2Stress, self).__init__()
 		self.sigma2 = 1.0
+		self.box_size = box_size
+		self.resolution = resolution
 			
 	def get_sep_mat(self, coords, num_atoms):
 		"""
@@ -114,8 +119,12 @@ class Coords2Stress(nn.Module):
 		sep_mat = self.get_sep_mat(coords, num_atoms)
 		hessian = self.get_hessian(sep_mat, num_atoms)
 		displacements = self.get_displacements(hessian, num_atoms)
+		volume = Coords2StressFunction.apply(coords.to(device='cuda'), 
+											displacements.to(device='cuda'), 
+											num_atoms.to(device='cuda'), 
+											self.box_size, self.resolution)
 		
-		return hessian, displacements
+		return hessian, displacements, volume
 
 		
 		

@@ -1,4 +1,4 @@
-#include <Kernels.h>
+#include <KernelsElectrostatics.h>
 #include <stdio.h>
 
 #include <cusp/dia_matrix.h>

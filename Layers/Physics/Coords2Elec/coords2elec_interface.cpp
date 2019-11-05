@@ -1,7 +1,7 @@
 #include "coords2elec_interface.h"
 #include <iostream>
 #include "nUtil.h"
-#include "Kernels.h"
+#include "KernelsElectrostatics.h"
 
 void Coords2Eps_forward(torch::Tensor coords, torch::Tensor assigned_params, torch::Tensor num_atoms, torch::Tensor eps, 
                         float resolution, float ion_size, float wat_size, float asigma, int d){
