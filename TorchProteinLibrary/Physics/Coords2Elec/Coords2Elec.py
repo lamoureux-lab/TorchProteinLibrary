@@ -3,6 +3,7 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn.modules.module import Module
+from torch.nn.functional import conv3d
 import _Physics
 import math
 import numpy as np
@@ -99,6 +100,17 @@ class Coords2Elec(Module):
 		self.kappa02 = kappa02
 		self.charge_conv = charge_conv
 		self.d = d
+
+		self.grad_filt = torch.zeros(3,1,3,3,3, dtype=torch.float, device='cuda')
+		#grad x
+		self.grad_filt[0,0,2,:,:] = 0.5
+		self.grad_filt[0,0,0,:,:] = -0.5
+		#grad y
+		self.grad_filt[1,0,:,2,:] = 0.5
+		self.grad_filt[1,0,:,0,:] = -0.5
+		#grad z
+		self.grad_filt[2,0,:,:,2] = 0.5
+		self.grad_filt[2,0,:,:,0] = -0.5
 				
 	def forward(self, coords, assigned_params, num_atoms):
 		#Dielectric constant and salt
@@ -115,3 +127,9 @@ class Coords2Elec(Module):
 		phi = QEps2PhiFunction.apply(q, eps, self.resolution, self.kappa02)
 
 		return q, eps, phi
+
+	def computeEnergy(self, phi, eps):
+		E = conv3d(phi, self.grad_filt)
+		eps_av = (eps.sum(dim=1)/4.0).unsqueeze(dim=1)
+		U = (0.5*E*E*eps_av).sum()
+		return U
