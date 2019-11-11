@@ -51,18 +51,19 @@ class TestCoords2EpsUBI(unittest.TestCase):
 								asigma=1.1,
 								kappa02=0.0,
 								charge_conv=7046.52,
-								d=2)
+								d=7)
 
 		prot = self.p2c(["protein/1brs.pdb"])
 		prot_center = self.get_center(prot[0], prot[-1])
 		coords_ce = self.translate(prot[0], -prot_center + box_center, prot[-1])
 
 		params = self.a2p(prot[2], prot[4], prot[-1], self.elec_params.types, self.elec_params.params)
+		# with torch.autograd.profiler.profile(use_cuda=True) as prof:
 		q, eps, phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float),
 								params.to(device='cuda', dtype=torch.float),
 								prot[-1].to(device='cuda'))
+		# print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 		
-				
 		this_eps = eps[0, 0, :, :, :].to(device='cpu').numpy()
 		this_phi = phi[0, :, :, :].to(device='cpu').clamp(-300.0, 300.0).numpy()
 
