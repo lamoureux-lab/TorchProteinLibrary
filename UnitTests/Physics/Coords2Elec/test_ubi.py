@@ -12,7 +12,9 @@ from read_cube import cube2numpy # reads .cube Delphi's output and converts to n
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from AtomNames2Params import TestAtomNames2Params
 
-import pyvista as pv
+from TorchProteinLibrary.Utils import VtkPlotter, VolumeField
+
+# import pyvista as pv
 import matplotlib.pylab as plt
 
 # from test import TestCoords2EpsSingleAtom
@@ -67,11 +69,6 @@ class TestCoords2EpsUBI(unittest.TestCase):
 		this_eps = eps[0, 0, :, :, :].to(device='cpu').numpy()
 		this_phi = phi[0, :, :, :].to(device='cpu').clamp(-300.0, 300.0).numpy()
 
-		p = pv.Plotter(point_smoothing=True)
-		# p.add_volume(Delphi, cmap="viridis", opacity="linear")
-		p.add_volume(np.abs(this_phi), cmap="viridis", opacity="linear")
-		p.show()
-
 		f = plt.figure()
 		plt.subplot(121, title=r'$\phi$')
 		plt.plot(this_phi[:, int(self.box_size/2), int(self.box_size/2)], label='Our algorithm')
@@ -83,6 +80,10 @@ class TestCoords2EpsUBI(unittest.TestCase):
 		# plt.plot(Eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
 		plt.legend()
 		plt.show()
+
+		p = VtkPlotter()
+		p.add(VolumeField(phi.to(device='cpu')).plot_scalar(contour_value=20.0))
+		p.show()
 
 if __name__ == '__main__':
 	unittest.main()

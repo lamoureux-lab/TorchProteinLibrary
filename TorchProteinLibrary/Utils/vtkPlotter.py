@@ -1,7 +1,7 @@
 import vtk
 
 class VtkPlotter:
-	def __init__(self, window_size=(800, 640), window_name='VtkPlotter'):
+	def __init__(self, window_size=(1024, 768), window_name='VtkPlotter'):
 		self.ren = vtk.vtkRenderer()
 		self.renWin = vtk.vtkRenderWindow()
 		self.renWin.AddRenderer(self.ren)

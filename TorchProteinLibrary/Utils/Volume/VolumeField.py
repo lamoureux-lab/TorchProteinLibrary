@@ -10,9 +10,8 @@ class FieldType(enum.Enum):
 
 class VolumeField():
 	
-
 	def __init__(self, T, resolution=1.0):
-		self.T = T
+		self.T = T.transpose(1,2).transpose(2,3).transpose(1,2).contiguous()
 		self.resolution = resolution
 		self.ftype = None
 		if self.T.dim() != 4:
@@ -32,7 +31,8 @@ class VolumeField():
 		vol = vtk.vtkStructuredPoints()
 		vol.SetDimensions(self.T.size(1),self.T.size(2),self.T.size(3))
 		vol.SetOrigin(0,0,0)
-		vol.SetSpacing(1.0/self.resolution, 1.0/self.resolution, 1.0/self.resolution)
+		# vol.SetOrigin(self.T.size(1)*self.resolution/2.0, self.T.size(2)*self.resolution/2.0,self.T.size(3)*self.resolution/2.0)
+		vol.SetSpacing(self.resolution, self.resolution, self.resolution)
 
 		scalars = vtk.vtkDoubleArray()
 		scalars.SetNumberOfComponents(1)
@@ -53,6 +53,7 @@ class VolumeField():
 		actor = vtk.vtkActor()
 		actor.SetMapper(volMapper)
 		actor.GetProperty().EdgeVisibilityOn()
+		actor.GetProperty().SetOpacity(0.3)
 				
 		return actor
 
@@ -61,22 +62,35 @@ class VolumeField():
 		vol = vtk.vtkStructuredPoints()
 		vol.SetDimensions(self.T.size(1),self.T.size(2),self.T.size(3))
 		vol.SetOrigin(0,0,0)
-		vol.SetSpacing(1.0/self.resolution, 1.0/self.resolution, 1.0/self.resolution)
+		# vol.SetSpacing(1.0/self.resolution, 1.0/self.resolution, 1.0/self.resolution)
+		# vol.SetOrigin(self.T.size(1)*self.resolution/2.0, self.T.size(2)*self.resolution/2.0,self.T.size(3)*self.resolution/2.0)
+		vol.SetSpacing(self.resolution, self.resolution, self.resolution)
 
 		vectors = vtk.vtkDoubleArray()
 		vectors.SetNumberOfComponents(3)
 		vectors.SetNumberOfTuples(self.T.size(1)*self.T.size(2)*self.T.size(3))
 		flat_tensor = self.T.view(3, self.T.size(1)*self.T.size(2)*self.T.size(3))
 		for i in range(flat_tensor.size(1)):
-			vectors.InsertTuple(i, [flat_tensor[0,i].item(),flat_tensor[1,i].item(),flat_tensor[2,i].item()] )
+			vectors.InsertTuple(i, [flat_tensor[0,i].item(), flat_tensor[1,i].item(), flat_tensor[2,i].item()] )
 		vol.GetPointData().SetVectors(vectors)
+		
+		arrowSource = vtk.vtkArrowSource()
 
-		hedgehog = vtk.vtkHedgeHog()
-		hedgehog.SetInputData(vol)
-		hedgehog.SetScaleFactor(1.0)
+		glyph = vtk.vtkGlyph3D()
+		glyph.SetInputData(vol)
+		glyph.SetSourceConnection(arrowSource.GetOutputPort())
+
+		glyph.SetVectorModeToUseVector()
+		glyph.SetColorModeToColorByVector()
+		glyph.SetScaleModeToScaleByVector()
+		
+		glyph.ScalingOn()
+		glyph.OrientOn()
+		
+		glyph.Update()
 
 		sgridMapper = vtk.vtkPolyDataMapper()
-		sgridMapper.SetInputConnection(hedgehog.GetOutputPort())
+		sgridMapper.SetInputConnection(glyph.GetOutputPort())
 		sgridActor = vtk.vtkActor()
 		sgridActor.SetMapper(sgridMapper)
 
@@ -99,15 +113,15 @@ if __name__=='__main__':
 				z = float(k)*res - float(box_size)*res/2.0
 				scalar_field[0,i,j,k] = torch.sqrt(torch.tensor([x*x + y*y +z*z]))
 				d2 = scalar_field[0,i,j,k]*scalar_field[0,i,j,k]
-				vector_field[0,i,j,k] = torch.tensor([x])/d2
-				vector_field[1,i,j,k] = torch.tensor([y])/d2
-				vector_field[1,i,j,k] = torch.tensor([z])/d2
-	# field = VolumeField(scalar_field)
-	field = VolumeField(vector_field)
+				vector_field[0,i,j,k] = torch.tensor([x])/(d2)
+				vector_field[1,i,j,k] = torch.tensor([y])/(d2)
+				vector_field[2,i,j,k] = torch.tensor([z])/(d2)
+	scalar_field = VolumeField(scalar_field)
+	vector_field = VolumeField(vector_field)
 	
 
 	# field.vtk_plot()
 	plt = VtkPlotter()
-	# plt.add(field.plot_scalar())
-	plt.add(field.plot_vector())
+	plt.add(scalar_field.plot_scalar())
+	plt.add(vector_field.plot_vector())
 	plt.show()

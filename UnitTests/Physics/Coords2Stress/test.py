@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from AtomNames2Params import TestAtomNames2Params
 
 import matplotlib.pylab as plt
-import pyvista as pv
+from TorchProteinLibrary.Utils import VtkPlotter, VolumeField, ProteinStructure
 
 class TestCoords2Stress(unittest.TestCase):
 	device = 'cpu'
@@ -61,6 +61,7 @@ class TestCoords2Stress_forward(TestCoords2Stress):
 
 		prot_center = self.get_center(self.coords, self.num_atoms)
 		coords_ce = self.translate(self.coords, -prot_center + self.box_center, self.num_atoms)
+		# coords_zero = self.translate(self.coords, -prot_center, self.num_atoms)
 
 		anm = pd.ANM('p38 ANM analysis')
 		anm.buildHessian(atoms)
@@ -70,14 +71,15 @@ class TestCoords2Stress_forward(TestCoords2Stress):
 		print(anm.getCovariance())
 		
 		dist_mat, dr, vol = self.coords2stress(coords_ce, self.num_atoms)
-		vol = torch.sqrt((vol*vol).sum(dim=1))
-		print(dr)
+		print(torch.max(vol), torch.min(vol), vol.size())
 		
-		p = pv.Plotter(point_smoothing=True)
-		p.add_volume(torch.abs(vol[0,:,:,:]).cpu().numpy(), cmap="viridis", opacity="linear")
+		struct = ProteinStructure(coords_ce, None, None, None, None, self.num_atoms)
+
+		p = VtkPlotter()
+		p.add(VolumeField(vol[0,:,:,:,:].to(device='cpu'), resolution=self.resolution).plot_vector())
+		p.add(struct.vtk_plot())
 		p.show()
-		
-		
+				
 		f = plt.figure(figsize=(15,5))
 		plt.subplot(1,3,1)
 		plt.imshow(dist_mat[0,:,:].numpy())

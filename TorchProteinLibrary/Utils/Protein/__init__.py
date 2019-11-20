@@ -1,1 +1,1 @@
-from .ProteinStructure import *
+from .ProteinStructure import ProteinStructure

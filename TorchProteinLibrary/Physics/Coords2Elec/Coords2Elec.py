@@ -117,7 +117,9 @@ class Coords2Elec(Module):
 		rho_sum = Coords2EpsFunction.apply(	coords, assigned_params[:,:,1], num_atoms, 
 											self.box_size, self.resolution, 
 											self.ion_size, self.wat_size, self.asigma, self.d)
-		eps = (1.0-rho_sum)*(self.eps_in - self.eps_out) + self.eps_out
+		eps = (1.0-rho_sum[:,:3,:,:,:])*(self.eps_in - self.eps_out) + self.eps_out
+		lmbd = (1.0 - rho_sum[:,3,:,:,:]).unsqueeze(dim=1)
+		eps = torch.cat([eps, lmbd], dim=1)
 		
 		#Charge density
 		q = Coords2QFunction.apply(	coords, assigned_params[:,:,0], num_atoms, 
@@ -130,6 +132,6 @@ class Coords2Elec(Module):
 
 	def computeEnergy(self, phi, eps):
 		E = conv3d(phi, self.grad_filt)
-		eps_av = (eps.sum(dim=1)/4.0).unsqueeze(dim=1)
+		eps_av = (eps[:,:3,:,:,:].sum(dim=1)/4.0).unsqueeze(dim=1)
 		U = (0.5*E*E*eps_av).sum()
 		return U
