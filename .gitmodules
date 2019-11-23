@@ -1,3 +1,4 @@
 [submodule "cusplibrary"]
 	path = cusplibrary
-	url = https://github.com/cusplibrary/cusplibrary.git
+	url = https://github.com/lupoglaz/cusplibrary.git
+	branch = develop
