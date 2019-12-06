@@ -124,7 +124,7 @@ class ProteinStructure:
 			axis.legend()
 			plt.show()
 
-	def vtk_plot(self):
+	def plot_tube(self):
 		import vtk
 		colors = vtk.vtkNamedColors()
 		colors.SetColor("BkgColor", 0.9, 0.9, 0.9, 1.0)
@@ -140,14 +140,21 @@ class ProteinStructure:
 		for i in range(N):
 			polyLine.GetPointIds().SetId(i, i)
 		
+		print(polyLine)
+		
 		cells = vtk.vtkCellArray()
 		cells.InsertNextCell(polyLine)
 		polyData = vtk.vtkPolyData()
 		polyData.SetPoints(points)
 		polyData.SetLines(cells)
 
+		tubeFilter = vtk.vtkTubeFilter()
+		tubeFilter.SetInputData(polyData)
+		tubeFilter.SetRadius(1.0)
+		tubeFilter.SetNumberOfSides(16)
+
 		mapper = vtk.vtkPolyDataMapper()
-		mapper.SetInputData(polyData)
+		mapper.SetInputConnection(tubeFilter.GetOutputPort())
 		
 		actor = vtk.vtkActor()
 		actor.SetMapper(mapper)
@@ -155,6 +162,106 @@ class ProteinStructure:
 		actor.GetProperty().SetLineWidth(5)
 		
 		return actor
+
+	def plot_atoms(self, colors=None):
+		import vtk
+		
+		N = self.numatoms[0].item()
+		points = vtk.vtkPoints()
+		points.SetNumberOfPoints(N)
+		for i in range(N):
+			points.SetPoint(i, self.coords[0,3*i+0].item(), self.coords[0,3*i+1].item(), self.coords[0,3*i+2].item())
+
+		bonds = vtk.vtkCellArray()
+		this_coords = self.coords.view(N, 3)
+		sep_mat = this_coords.unsqueeze(dim=1) - this_coords.unsqueeze(dim=0)
+		dist2_mat = (sep_mat*sep_mat).sum(dim=2)
+
+		for i in range(N):
+			for j in range(N):
+				if i >= j: continue
+				if dist2_mat[i,j].item() < 3.0:
+					bond = vtk.vtkLine()
+					bond.GetPointIds().SetId(0, i)
+					bond.GetPointIds().SetId(1, j)
+					bonds.InsertNextCell(bond)
+		
+		atom_colors = vtk.vtkUnsignedCharArray()
+		atom_colors.SetName('Colors')
+		atom_colors.SetNumberOfComponents(3)
+		atoms = vtk.vtkCellArray()
+		
+		for i in range(N):
+			vertex = vtk.vtkVertex()
+			vertex.GetPointIds().SetId(0, i)
+			atoms.InsertNextCell(vertex)
+			if colors is None:
+				if self.atomnames[0,i,0].item() == ord('C'):
+					atom_colors.InsertNextTuple3(100, 200, 100)
+				elif self.atomnames[0,i,0].item() == ord('N'):
+					atom_colors.InsertNextTuple3(100, 100, 200)
+				elif self.atomnames[0,i,0].item() == ord('O'):
+					atom_colors.InsertNextTuple3(200, 100, 100)
+				else:
+					atom_colors.InsertNextTuple3(200, 200, 200)
+			else:
+				atom_colors.InsertNextTuple3(colors[i,0].item(), colors[i,1].item(), colors[i,2].item())
+			
+		polyData = vtk.vtkPolyData()
+		polyData.SetPoints(points)
+		polyData.SetVerts(atoms)
+		polyData.SetLines(bonds)
+		polyData.GetPointData().SetScalars(atom_colors)
+		# polyData.AddArray(atom_colors)
+		
+		# Bonds actor
+		tubeFilter = vtk.vtkTubeFilter()
+		tubeFilter.SetInputData(polyData)
+		tubeFilter.SetRadius(0.3)
+		tubeFilter.SetNumberOfSides(3)	
+				
+		mapper_bonds = vtk.vtkPolyDataMapper()
+		mapper_bonds.SetInputConnection(tubeFilter.GetOutputPort())
+		
+		actor_bonds = vtk.vtkLODActor()
+		actor_bonds.SetMapper(mapper_bonds)
+		actor_bonds.GetProperty().SetRepresentationToSurface()
+		actor_bonds.GetProperty().SetInterpolationToGouraud()
+		actor_bonds.GetProperty().SetAmbient(0.15)
+		actor_bonds.GetProperty().SetDiffuse(0.85)
+		actor_bonds.GetProperty().SetSpecular(0.1)
+		actor_bonds.GetProperty().SetSpecularPower(30)
+		actor_bonds.GetProperty().SetSpecularColor(1, 1, 1)
+		actor_bonds.GetProperty().SetDiffuseColor(1.0000, 0.8941, 0.70981)
+		
+		# Atoms actor
+		sphere = vtk.vtkSphereSource()
+		sphere.SetCenter(0,0,0)
+		sphere.SetRadius(2.0)
+
+		glyph = vtk.vtkGlyph3D()
+		glyph.SetInputData(polyData)
+		glyph.SetOrient(1)
+		glyph.SetColorMode(1)
+		glyph.SetScaleMode(2)
+		glyph.SetScaleFactor(0.25)
+		glyph.SetSourceConnection(sphere.GetOutputPort())
+
+		mapper_atoms = vtk.vtkPolyDataMapper()
+		mapper_atoms.SetInputConnection(glyph.GetOutputPort())
+				
+		actor_atoms = vtk.vtkLODActor()
+		actor_atoms.SetMapper(mapper_atoms)
+		actor_atoms.GetProperty().SetRepresentationToSurface()
+		actor_atoms.GetProperty().SetInterpolationToGouraud()
+		actor_atoms.GetProperty().SetAmbient(0.15)
+		actor_atoms.GetProperty().SetDiffuse(0.85)
+		actor_atoms.GetProperty().SetSpecular(0.1)
+		actor_atoms.GetProperty().SetSpecularPower(30)
+		actor_atoms.GetProperty().SetSpecularColor(1, 1, 1)
+		actor_atoms.SetNumberOfCloudPoints(30000)
+		
+		return actor_bonds, actor_atoms
 
 
 def unite_proteins(receptor, ligand):
@@ -177,8 +284,11 @@ if __name__=='__main__':
 	from Utils import VtkPlotter
 	p2c = PDB2CoordsUnordered()
 	prot = ProteinStructure(*p2c(["1brs.pdb"]))
+	atoms_plot = prot.plot_atoms()
 	prot = ProteinStructure(*prot.select_CA())
+	backbone_plot = prot.plot_tube()
 	
 	plt = VtkPlotter()
-	plt.add(prot.vtk_plot())
+	plt.add(atoms_plot)
+	plt.add(backbone_plot)
 	plt.show()

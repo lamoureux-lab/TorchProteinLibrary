@@ -24,6 +24,10 @@ class VtkPlotter:
 		self.iren.Start()
 
 	def add(self, actor, color="Peacock"):
-		colors = vtk.vtkNamedColors()
-		actor.GetProperty().SetColor(colors.GetColor3d(color))
-		self.ren.AddActor(actor)
+		# colors = vtk.vtkNamedColors()
+		# actor.GetProperty().SetColor(colors.GetColor3d(color))
+		if isinstance(actor, tuple):
+			for sub_actor in actor:
+				self.ren.AddActor(sub_actor)
+		else:
+			self.ren.AddActor(actor)

@@ -79,14 +79,11 @@ class VolumeField():
 		glyph = vtk.vtkGlyph3D()
 		glyph.SetInputData(vol)
 		glyph.SetSourceConnection(arrowSource.GetOutputPort())
-
 		glyph.SetVectorModeToUseVector()
 		glyph.SetColorModeToColorByVector()
 		glyph.SetScaleModeToScaleByVector()
-		
 		glyph.ScalingOn()
 		glyph.OrientOn()
-		
 		glyph.Update()
 
 		sgridMapper = vtk.vtkPolyDataMapper()
