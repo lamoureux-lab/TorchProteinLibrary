@@ -12,7 +12,7 @@ from read_cube import cube2numpy # reads .cube Delphi's output and converts to n
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from AtomNames2Params import TestAtomNames2Params
 
-from TorchProteinLibrary.Utils import VtkPlotter, VolumeField
+from TorchProteinLibrary.Utils import VtkPlotter, VolumeField, ProteinStructure
 
 # import pyvista as pv
 import matplotlib.pylab as plt
@@ -79,10 +79,20 @@ class TestCoords2EpsUBI(unittest.TestCase):
 		plt.plot(this_eps[:, int(self.box_size/2), int(self.box_size/2)], label='Our algorithm')
 		# plt.plot(Eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
 		plt.legend()
-		plt.show()
+		# plt.show()
+
+		coords, chains, resnames, resnums, atomnames, numatoms = prot
+
+		p2c = PDB2CoordsUnordered()
+		prot = ProteinStructure(coords_ce, chains, resnames, resnums, atomnames, numatoms)
+		atoms_plot = prot.plot_atoms()
+		prot = ProteinStructure(*prot.select_CA())
+		backbone_plot = prot.plot_tube()
 
 		p = VtkPlotter()
-		p.add(VolumeField(phi.to(device='cpu')).plot_scalar(contour_value=20.0))
+		p.add(atoms_plot)
+		p.add(backbone_plot)
+		p.add(VolumeField(phi.to(device='cpu'), resolution=self.res).plot_scalar(contour_value=2.5))
 		p.show()
 
 if __name__ == '__main__':

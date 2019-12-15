@@ -47,7 +47,7 @@ class TestCoords2Stress(unittest.TestCase):
 class TestCoords2Stress_forward(TestCoords2Stress):
 
 	def runTest(self):
-		pdb = pd.parsePDB('1ubi.pdb')
+		pdb = pd.parsePDB('1aqb.pdb')
 		atoms = pdb.select('protein and calpha')
 
 		self.coords = torch.randn(1, len(atoms)*3, dtype=torch.float, device=self.device)
@@ -67,35 +67,57 @@ class TestCoords2Stress_forward(TestCoords2Stress):
 		anm.buildHessian(atoms)
 				
 		anm.calcModes(n_modes=1)
-		print(anm.getEigvals())
-		print(anm.getCovariance())
+		# print(anm.getEigvecs())
+		# prody_dr = 3.0*(anm.getEigvals()[0])*anm.getEigvecs()
+		prody_dr = anm.getEigvecs()
+
 		
-		dist_mat, dr, vol = self.coords2stress(coords_ce, self.num_atoms)
-		print(torch.max(vol), torch.min(vol), vol.size())
+		# pytorch_hessian = torch.from_numpy(anm.getHessian()).unsqueeze(dim=0)#.cuda()
 		
+		
+		hessian, dr, vol, lam = self.coords2stress(coords_ce, self.num_atoms)
+		dr = dr.view(self.num_atoms[0].item(), 3)
+		dr2 = (dr*dr).sum(dim=1)/3.0
 		struct = ProteinStructure(coords_ce, None, None, None, None, self.num_atoms)
 
-		p = VtkPlotter()
-		p.add(VolumeField(vol[0,:,:,:,:].to(device='cpu'), resolution=self.resolution).plot_vector())
-		p.add(struct.vtk_plot())
-		p.show()
-				
-		f = plt.figure(figsize=(15,5))
-		plt.subplot(1,3,1)
-		plt.imshow(dist_mat[0,:,:].numpy())
-		plt.colorbar()
-
-		plt.subplot(1,3,2)
-		plt.imshow(anm.getHessian())
-		plt.colorbar()
-
-		plt.subplot(1,3,3)
-		plt.imshow(dist_mat[0,:,:].numpy() - anm.getHessian())
-		plt.colorbar()
-
-		plt.tight_layout()
+		print(anm.getEigvals()[0])
+		print(lam)
 		
+		# p = VtkPlotter()
+		# p.add(VolumeField(vol[0,:,:,:,:].to(device='cpu'), resolution=self.resolution).plot_vector())
+		# p.add(struct.plot_tube())
+		# p.show()
+
+		print(dr.view(self.num_atoms[0].item()*3))
+		print(prody_dr)
+
+		f = plt.figure(figsize=(10,5))
+		plt.plot(dr[:,0].numpy(), label='X')
+		plt.plot(dr[:,1].numpy(), label='Y')
+		plt.plot(dr[:,2].numpy(), label='Z')
+		plt.ylim(-0.1, 0.1)
+		plt.legend()
+		# plt.plot(dr2.numpy())
+		# plt.plot(prody_dr)
 		plt.show()
+		
+				
+		# f = plt.figure(figsize=(15,5))
+		# plt.subplot(1,3,1)
+		# plt.imshow(hessian[0,:,:].numpy())
+		# plt.colorbar()
+
+		# plt.subplot(1,3,2)
+		# plt.imshow(anm.getHessian())
+		# plt.colorbar()
+
+		# plt.subplot(1,3,3)
+		# plt.imshow(hessian[0,:,:].numpy() - anm.getHessian())
+		# plt.colorbar()
+
+		# plt.tight_layout()
+		
+		# plt.show()
 
 
 if __name__=='__main__':

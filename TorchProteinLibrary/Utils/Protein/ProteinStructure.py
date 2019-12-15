@@ -140,7 +140,7 @@ class ProteinStructure:
 		for i in range(N):
 			polyLine.GetPointIds().SetId(i, i)
 		
-		print(polyLine)
+		# print(polyLine)
 		
 		cells = vtk.vtkCellArray()
 		cells.InsertNextCell(polyLine)

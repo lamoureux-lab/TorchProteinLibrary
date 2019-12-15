@@ -71,7 +71,8 @@ class Coords2Stress(Module):
 		dist_mat = dist_mat.unsqueeze(dim=3).unsqueeze(dim=4)
 		dist2_mat = dist_mat*dist_mat
 		hessian = (sep_mat.unsqueeze(dim=3)) * (sep_mat.unsqueeze(dim=4))
-		hessian = -hessian * torch.exp(-dist2_mat/(cutoff*cutoff)) / dist2_mat
+		# hessian = -hessian * torch.exp(-dist2_mat/(cutoff*cutoff)) / dist2_mat
+		hessian = -hessian * torch.lt(dist_mat, 15.0).to(dtype=torch.float) / dist2_mat
 
 		for i in range(batch_size):
 			num_at = num_atoms[i].item()
@@ -81,7 +82,26 @@ class Coords2Stress(Module):
 		hessian = hessian.transpose(2,3).contiguous()	
 		return hessian.view(batch_size,max_num_atoms*3,max_num_atoms*3).contiguous()
 
-	def get_displacements(self, hessian, num_atoms):
+	def get_bfactors(self, hessian, num_atoms):
+		batch_size = hessian.size(0)
+		max_num_coords = hessian.size(1)
+
+		bfactors = []
+		for i in range(batch_size):
+			num_coords = 3*num_atoms[i].item()
+			Hinv = torch.pinverse(hessian[i,:num_coords, :num_coords], rcond=1E-8)
+			bfactor = torch.einsum('ii->i', Hinv)
+
+			bfactor = F.pad(bfactor, (0, max_num_coords - num_coords), 'constant', 0.0)
+			bfactors.append(bfactor)
+
+		bfactors = torch.stack(bfactors, dim=0)
+
+		return bfactors
+
+
+
+	def get_modes(self, hessian, num_atoms):
 		"""
 		Computes larges eigenvector and returns 3*eigvec*eigval. This corresponds to
 		the displacements of atoms in [kBT/gamma] units
@@ -93,23 +113,20 @@ class Coords2Stress(Module):
 		eigvecs, eigvals = [], []
 		for i in range(batch_size):
 			num_coords = 3*num_atoms[i].item()
-			eigval, eigvec = torch.symeig(hessian[i,:num_coords, :num_coords], eigenvectors=True)
-			
-			if (torch.abs(eigval[-1]) > torch.abs(eigval[0])):
-				eigvec = eigvec[-1,:]
-				eigval = eigval[-1]
-			else:
-				eigvec = eigvec[0,:]
-				eigval = eigval[0]
-			
+			eigval, eigvec = torch.symeig(hessian[i,:num_coords, :num_coords].to(dtype=torch.double), eigenvectors=True)
+				
+			j = 6 #3N-6 DOF, other eigenvalues are zero and meaningless
+			eigvec = eigvec[:,j].to(dtype=torch.float32)
+			eigval = eigval[j].to(dtype=torch.float32)
+	
 			eigvals.append(eigval)
 			eigvec = F.pad(eigvec, (0, max_num_coords - num_coords), 'constant', 0.0)
 			eigvecs.append(eigvec)
 
 		eigvecs = torch.stack(eigvecs, dim=0)
 		eigvals = torch.stack(eigvals, dim=0)
-
-		return 3*eigvecs*eigvals
+				
+		return eigvecs, eigvals
 
 
 	def forward(self, coords, num_atoms):
@@ -118,13 +135,22 @@ class Coords2Stress(Module):
 
 		sep_mat = self.get_sep_mat(coords, num_atoms)
 		hessian = self.get_hessian(sep_mat, num_atoms)
-		displacements = self.get_displacements(hessian, num_atoms)
+		displacements, lambdas = self.get_modes(hessian, num_atoms)
+		# displacements = self.get_bfactors(hessian, num_atoms)
 		volume = Coords2StressFunction.apply(coords.to(device='cuda'), 
-											displacements.to(device='cuda'), 
+											displacements.to(device='cuda')*50.0, 
 											num_atoms.to(device='cuda'), 
 											self.box_size, self.resolution)
 		
-		return hessian, displacements, volume
+		return hessian, displacements, volume, lambdas
 
+	def test(self, hessian, num_atoms):
+		displacements = self.get_displacements(hessian, num_atoms)
+		# volume = Coords2StressFunction.apply(coords.to(device='cuda'), 
+		# 									displacements.to(device='cuda'), 
+		# 									num_atoms.to(device='cuda'), 
+		# 									self.box_size, self.resolution)
+		
+		return hessian, displacements#, volume
 		
 		
