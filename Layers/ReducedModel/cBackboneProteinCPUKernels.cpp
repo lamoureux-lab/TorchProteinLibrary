@@ -3,22 +3,22 @@
 #include <cVector3.h>
 #include <cMatrix44.h>
 
-#define R_CA_C 1.525
-#define R_C_N 1.330
-#define R_N_CA 1.460
-
-#define CA_C_N (M_PI - 2.1186)
-#define C_N_CA (M_PI - 1.9391)
-#define N_CA_C (M_PI - 2.061)
-
 template <typename T>
-void cpu_computeCoordinatesBackbone(    T *angles, 
+void cpu_computeCoordinatesBackbone(    T *angles,
+                                        T *param,
                                         T *atoms, 
                                         T *A, 
                                         int *length, 
                                         int batch_size, 
                                         int angles_stride){
     int atoms_stride = 3*angles_stride;
+
+    T R_CA_C = param[0]; //#define R_CA_C 1.525
+    T R_C_N = param[1]; //#define R_C_N 1.330
+    T R_N_CA = param[2]; //#define R_N_CA 1.460
+    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
+    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
+    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
     
     for(int batch_idx=0; batch_idx<batch_size; batch_idx++){
         int num_angles = length[batch_idx];
@@ -65,12 +65,19 @@ void device_singleAngleAtom(T *d_angle, //pointer to the angle stride
                             T *d_A, //pointer to the atom transformation matrix batch
                             int angle_k, //angle index (phi:0, psi:1, omega:2)
                             int angle_idx, //angle index
-                            int atom_idx //atom index
+                            int atom_idx, //atom index
+                            T *param
 ){
 /*
 Computes derivative of atom "atom_idx" coordinates with respect to {phi, psi, omega}[angle_k] with the index "angle_idx".
 */
-    
+    T R_CA_C = param[0]; //#define R_CA_C 1.525
+    T R_C_N = param[1]; //#define R_C_N 1.330
+    T R_N_CA = param[2]; //#define R_N_CA 1.460
+    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
+    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
+    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+
     T bond_angles[] = {C_N_CA, N_CA_C, CA_C_N};
     T bond_lengths[] = {R_N_CA, R_CA_C, R_C_N};
     cVector3<T> zero; zero.setZero();
@@ -91,7 +98,8 @@ Computes derivative of atom "atom_idx" coordinates with respect to {phi, psi, om
 }
 
 template <typename T>
-void cpu_computeDerivativesBackbone(    T *angles,  
+void cpu_computeDerivativesBackbone(    T *angles,
+                                        T *param,
                                         T *dR_dangle,   
                                         T *A,       
                                         int *length,
@@ -109,7 +117,7 @@ void cpu_computeDerivativesBackbone(    T *angles,
                 for(int angle_k=0; angle_k<3; angle_k++){                
                     device_singleAngleAtom<T>( angles + (3*batch_idx+angle_k)*angles_stride, 
                                             dR_dangle + (3*batch_idx+angle_k) * (atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
-                                            d_A, angle_k, angle_idx, atom_idx);
+                                            d_A, angle_k, angle_idx, atom_idx, param);
                 }
             }
         }
@@ -144,14 +152,14 @@ void cpu_backwardFromCoordsBackbone(    T *gradInput,
     }
 };
 
-template void cpu_computeCoordinatesBackbone<float>( float*, float*, float*, int*, int, int);
-template void cpu_computeCoordinatesBackbone<double>( double*, double*, double*, int*, int, int);
+template void cpu_computeCoordinatesBackbone<float>( float*, float*, float*, float*, int*, int, int);
+template void cpu_computeCoordinatesBackbone<double>( double*, double*, double*, double*, int*, int, int);
 
-template void device_singleAngleAtom<float>( float*, float*, float*, int, int, int);
-template void device_singleAngleAtom<double>( double*, double*, double*, int, int, int);
+template void device_singleAngleAtom<float>( float*, float*, float*, int, int, int, float*);
+template void device_singleAngleAtom<double>( double*, double*, double*, int, int, int, double*);
 
-template void cpu_computeDerivativesBackbone<float>( float*, float*, float*, int*, int, int);
-template void cpu_computeDerivativesBackbone<double>( double*, double*, double*, int*, int, int);
+template void cpu_computeDerivativesBackbone<float>( float*, float*, float*, float*, int*, int, int);
+template void cpu_computeDerivativesBackbone<double>( double*, double*, double*, double*, int*, int, int);
 
 template void cpu_backwardFromCoordsBackbone<float>( float*, float*, float*, int*, int, int);
 template void cpu_backwardFromCoordsBackbone<double>( double*, double*, double*, int*, int, int);

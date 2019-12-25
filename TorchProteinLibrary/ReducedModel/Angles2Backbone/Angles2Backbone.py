@@ -10,8 +10,8 @@ class Angles2BackboneGPUFunction(Function):
 	Backbone angles -> backbone coordinates function
 	"""
 	@staticmethod
-	def forward(ctx, input_angles, angles_length):
-		ctx.save_for_backward(input_angles, angles_length)
+	def forward(ctx, input_angles, param, angles_length):
+		ctx.save_for_backward(input_angles, param, angles_length)
 		batch_size = input_angles.size(0)
 		angles_max_length = input_angles.size(2)
 		atoms_max_length = 3*angles_max_length
@@ -22,7 +22,7 @@ class Angles2BackboneGPUFunction(Function):
 		else:
 			raise Exception('Angles2BackboneFunction: ', 'Incorrect input size:', input_angles.size()) 
 
-		_ReducedModel.Angles2BackboneGPU_forward( input_angles, output_coords_gpu, angles_length, ctx.A)
+		_ReducedModel.Angles2BackboneGPU_forward( input_angles, param, output_coords_gpu, angles_length, ctx.A)
 													
 		if math.isnan(output_coords_gpu.sum()):
 			raise(Exception('Angles2BackboneFunction: forward Nan'))
@@ -31,7 +31,7 @@ class Angles2BackboneGPUFunction(Function):
 			
 	@staticmethod
 	def backward(ctx, gradOutput):
-		input_angles, angles_length = ctx.saved_tensors
+		input_angles, param, angles_length = ctx.saved_tensors
 		batch_size = input_angles.size(0)
 		angles_max_length = input_angles.size(2)
 		atoms_max_length = 3*angles_max_length
@@ -44,19 +44,19 @@ class Angles2BackboneGPUFunction(Function):
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
 			
-		_ReducedModel.Angles2BackboneGPU_backward(gradInput_gpu, gradOutput, input_angles, angles_length, ctx.A, dr_dangle)
+		_ReducedModel.Angles2BackboneGPU_backward(gradInput_gpu, gradParam, gradOutput, input_angles, param, angles_length, ctx.A, dr_dangle)
 		
 		if math.isnan(torch.sum(gradInput_gpu)):
 			raise(Exception('Angles2BackboneFunction: backward Nan'))		
 		
-		return gradInput_gpu, None, None
+		return gradInput_gpu, gradParam, None
 
 class Angles2BackboneCPUFunction(Function):
 	"""
 	Backbone angles -> backbone coordinates function
 	"""
 	@staticmethod
-	def forward(ctx, input, angles_length):
+	def forward(ctx, input, param, angles_length):
 		ctx.angles_max_length = input.size(2)
 		ctx.atoms_max_length = 3*ctx.angles_max_length
 		if len(input.size())==3:
@@ -65,19 +65,19 @@ class Angles2BackboneCPUFunction(Function):
 			ctx.A = torch.zeros(batch_size, 16*ctx.atoms_max_length, dtype=torch.double, device='cpu')
 		else:
 			raise Exception('Angles2BackboneFunction: ', 'Incorrect input size:', input.size()) 
-
-		_ReducedModel.Angles2BackboneCPU_forward( input, output_coords_cpu, angles_length, ctx.A)
+		
+		_ReducedModel.Angles2BackboneCPU_forward( input, param, output_coords_cpu, angles_length, ctx.A)
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('Angles2BackboneFunction: output_coords_cpu forward Nan'))
 
-		ctx.save_for_backward(input, angles_length)
+		ctx.save_for_backward(input, param, angles_length)
 		return output_coords_cpu
 			
 	@staticmethod
 	def backward(ctx, gradOutput_cpu):
 		gradOutput_cpu = gradOutput_cpu.contiguous()
-		input_angles, angles_length = ctx.saved_tensors
+		input_angles, param, angles_length = ctx.saved_tensors
 		if len(input_angles.size()) == 3:
 			batch_size = input_angles.size(0)
 			gradInput_cpu = torch.zeros(batch_size, 3, ctx.angles_max_length, dtype=torch.double, device='cpu')
@@ -85,20 +85,40 @@ class Angles2BackboneCPUFunction(Function):
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
 		
-		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradOutput_cpu, input_angles, angles_length, ctx.A, dr_dangle)
+		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradParam_cpu, gradOutput_cpu, input_angles, param, angles_length, ctx.A, dr_dangle)
 		
 		if math.isnan(torch.sum(gradInput_cpu)):
 			raise(Exception('Angles2BackboneFunction: gradInput_cpu backward Nan'))		
 		
-		return gradInput_cpu, None, None
+		return gradInput_cpu, gradParam_cpu, None
 
 
 class Angles2Backbone(Module):
 	def __init__(self):
 		super(Angles2Backbone, self).__init__()
-				
+		self.param = torch.nn.Parameter(torch.zeros(6, dtype=torch.double, device='cpu'))
+		self._fill_default_params()
+
+	def _fill_default_params(self):
+		self.param2idx = {
+			'R_CA_C': 0,
+			'R_C_N': 1,
+			'R_N_CA': 2,
+			'CA_C_N': 3,
+			'C_N_CA': 4,
+			'N_CA_C': 5
+		}
+		self.idx2param = {v: k for k, v in self.param2idx.items()}
+
+		self.param.data[self.param2idx['R_CA_C']] =  1.525
+		self.param.data[self.param2idx['R_C_N']] =  1.330
+		self.param.data[self.param2idx['R_N_CA']] =  1.460
+		self.param.data[self.param2idx['CA_C_N']] =  math.pi - 2.1186
+		self.param.data[self.param2idx['C_N_CA']] =  math.pi - 1.9391
+		self.param.data[self.param2idx['N_CA_C']] =  math.pi - 2.061
+
 	def forward(self, input, angles_length):
 		if input.is_cuda:
-			return Angles2BackboneGPUFunction.apply(input, angles_length)
+			return Angles2BackboneGPUFunction.apply(input, self.param, angles_length)
 		else:
-			return Angles2BackboneCPUFunction.apply(input, angles_length)
+			return Angles2BackboneCPUFunction.apply(input, self.param, angles_length)

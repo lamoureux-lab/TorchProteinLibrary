@@ -2,13 +2,15 @@
 #define REAL float
 template <typename T>
 void gpu_computeCoordinatesBackbone(T *angles, 
+									T *param,
                                     T *dr, 
                                     T *dR_dangle, 
                                     int *length, 
                                     int batch_size, 
                                     int angles_stride);
 template <typename T>
-void gpu_computeDerivativesBackbone(T *angles,  
+void gpu_computeDerivativesBackbone(T *angles, 
+									T *param,
 									T *atoms,   
 									T *A,       
 									int *length,

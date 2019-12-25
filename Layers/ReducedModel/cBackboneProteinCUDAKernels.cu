@@ -4,11 +4,18 @@
 #define WARP_SIZE 32
 
 template <typename T>
-__global__ void computeCoordinatesBackbone( T *angles, T *atoms, T *A, int *length, int angles_stride){
+__global__ void computeCoordinatesBackbone( T *angles, T *param, T *atoms, T *A, int *length, int angles_stride){
 	uint batch_idx = threadIdx.x;
     int atoms_stride = 3*angles_stride;
     int num_angles = length[batch_idx];
     int num_atoms = 3*length[batch_idx];
+
+	T R_CA_C = param[0]; //#define R_CA_C 1.525
+    T R_C_N = param[1]; //#define R_C_N 1.330
+    T R_N_CA = param[2]; //#define R_N_CA 1.460
+    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
+    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
+    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
 	// printf("angles_stride=%d, batch_idx=%d, num_atoms=%d, num_angles=%d\n",angles_stride, batch_idx,num_atoms,num_angles);
 
 	T *d_atoms = atoms + batch_idx*(atoms_stride)*3;
@@ -39,6 +46,7 @@ __global__ void computeCoordinatesBackbone( T *angles, T *atoms, T *A, int *leng
 		// printf("batch_idx=%d, i=%d, x=%f, y=%f, z=%f\n", batch_idx, i, *(d_atoms + 3*i), *(d_atoms + 3*i+1), *(d_atoms + 3*i+2));
 	}
 }
+/*
 template <typename T>
 __global__ void computeGradientsOptimizedBackboneOmega(T *angles, T *dR_dangle, T *A, int *length, int angles_stride){
 	
@@ -81,6 +89,7 @@ __global__ void computeGradientsOptimizedBackboneOmega(T *angles, T *dR_dangle, 
 	}
 	
 }
+*/
 template <typename T>
 __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle stride
 										T *dR_dAngle, //pointer to the gradient
@@ -89,8 +98,16 @@ __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle strid
 										int angle_k, //angle index (phi:0, psi:1, omega:2)
 										int angle_idx, //angle index
 										int angle_widx, //angle index in the warp
-										int atom_idx //atom index
+										int atom_idx, //atom index
+										T *param
 ){
+	T R_CA_C = param[0]; //#define R_CA_C 1.525
+    T R_C_N = param[1]; //#define R_C_N 1.330
+    T R_N_CA = param[2]; //#define R_N_CA 1.460
+    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
+    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
+    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+
 	T tmp1[16], tmp2[16], tmp3[16];
 	T B[16], Ar_inv[16];
 	T bond_angles[] = {C_N_CA, N_CA_C, CA_C_N};
@@ -110,7 +127,7 @@ __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle strid
 	}
 }
 template <typename T>
-__global__ void computeGradientsOptimizedBackbone( T *angles, T *dR_dangle, T *A, int *length, int angles_stride){
+__global__ void computeGradientsOptimizedBackbone( T *angles, T *param, T *dR_dangle, T *A, int *length, int angles_stride){
 	uint batch_idx = blockIdx.x;
 	uint atom_idx = blockIdx.y;
 	uint angle_widx = threadIdx.x;
@@ -139,7 +156,7 @@ __global__ void computeGradientsOptimizedBackbone( T *angles, T *dR_dangle, T *A
 								dR_dangle + (3*batch_idx + angle_k) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3 + atom_idx*3,
 								d_A,
 								s_A,
-								angle_k, angle_idx, angle_widx, atom_idx);
+								angle_k, angle_idx, angle_widx, atom_idx, param);
 	}
 	
 }
@@ -162,14 +179,14 @@ __global__ void backwardFromCoordinatesBackbone(T *angles, T *dr, T *dR_dangle, 
 	}
 }
 template <typename T>
-void gpu_computeCoordinatesBackbone(T *angles, T *atoms, T *A, int *length, int batch_size, int angles_stride){
-	computeCoordinatesBackbone<<<1, batch_size>>>(angles, atoms, A, length, angles_stride);
+void gpu_computeCoordinatesBackbone(T *angles, T *param, T *atoms, T *A, int *length, int batch_size, int angles_stride){
+	computeCoordinatesBackbone<<<1, batch_size>>>(angles, param, atoms, A, length, angles_stride);
 }
 
 template <typename T>
-void gpu_computeDerivativesBackbone(T *angles, T *dR_dangle, T *A, int *length, int batch_size, int angles_stride){
+void gpu_computeDerivativesBackbone(T *angles, T *param, T *dR_dangle, T *A, int *length, int batch_size, int angles_stride){
 	dim3 batch_angles_dim_special(batch_size, 3*angles_stride, angles_stride/WARP_SIZE + 1);
-	computeGradientsOptimizedBackbone<<<batch_angles_dim_special, WARP_SIZE>>>(angles, dR_dangle, A, length, angles_stride);
+	computeGradientsOptimizedBackbone<<<batch_angles_dim_special, WARP_SIZE>>>(angles, param, dR_dangle, A, length, angles_stride);
 }
 template <typename T>
 void gpu_backwardFromCoordsBackbone(T *angles, T *dr, T *dR_dangle, int *length, int batch_size, int angles_stride){
@@ -177,10 +194,10 @@ void gpu_backwardFromCoordsBackbone(T *angles, T *dr, T *dR_dangle, int *length,
 	backwardFromCoordinatesBackbone<<<batch_angles_dim_special, angles_stride>>>(angles, dr, dR_dangle, length, angles_stride);
 }
 
-template void gpu_computeCoordinatesBackbone<float>(float*, float*, float*, int*, int, int);
-template void gpu_computeDerivativesBackbone<float>(float*, float*, float*, int*, int, int);
+template void gpu_computeCoordinatesBackbone<float>(float*, float*, float*, float*, int*, int, int);
+template void gpu_computeDerivativesBackbone<float>(float*, float*, float*, float*, int*, int, int);
 template void gpu_backwardFromCoordsBackbone<float>(float*, float*, float*, int*, int, int);
 
-template void gpu_computeCoordinatesBackbone<double>(double*, double*, double*, int*, int, int);
-template void gpu_computeDerivativesBackbone<double>(double*, double*, double*, int*, int, int);
+template void gpu_computeCoordinatesBackbone<double>(double*, double*, double*, double*, int*, int, int);
+template void gpu_computeDerivativesBackbone<double>(double*, double*, double*, double*, int*, int, int);
 template void gpu_backwardFromCoordsBackbone<double>(double*, double*, double*, int*, int, int);

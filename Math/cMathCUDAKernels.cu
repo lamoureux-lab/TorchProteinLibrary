@@ -5,13 +5,13 @@
 #define KAPPA3 (3.14159 -2.1186)
 #define OMEGACIS -3.1318
 
-#define R_CA_C 1.525
-#define R_C_N 1.330
-#define R_N_CA 1.460
+// #define R_CA_C 1.525
+// #define R_C_N 1.330
+// #define R_N_CA 1.460
 
-#define CA_C_N (M_PI - 2.1186)
-#define C_N_CA (M_PI - 1.9391)
-#define N_CA_C  (M_PI - 2.061)
+// #define CA_C_N (M_PI - 2.1186)
+// #define C_N_CA (M_PI - 1.9391)
+// #define N_CA_C  (M_PI - 2.061)
 
 template <typename T>
 __device__ void getRotationMatrix(T *d_data, T alpha, T beta, T R){
@@ -66,6 +66,7 @@ __device__ void getRotationMatrixDihedralDPsi(T *d_data, T a, T b, T R){
 	d_data[8]=0;  		d_data[9]=cos(a)*cos(b);	d_data[10]=-sin(a)*cos(b);	d_data[11]=0;
 	d_data[12]=0;		d_data[13]=0.0;				d_data[14]=0.0;				d_data[15]=0;
 }
+/*
 template <typename T>
 __device__ void getRotationMatrixCalpha(T *d_data, T phi, T psi, bool first){
 	// getRotationMatrixDihedral(d_data, 0.0, psi);
@@ -102,6 +103,7 @@ __device__ void getRotationMatrixCalphaDPsi(T *d_data, T phi, T psi){
 	mat44Mul(B, C, D);
 	mat44Mul(D, A, d_data);	
 }
+*/
 
 template <typename T>
 __device__ void getIdentityMatrix44(T *d_data){
