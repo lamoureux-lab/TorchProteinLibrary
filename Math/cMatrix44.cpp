@@ -58,6 +58,21 @@ template <typename T> void cMatrix44<T>::setDihedralDphi(const T phi, const T ps
 	m[12]=0;	m[13]=0.0;					m[14]=0.0;					m[15]=0;
 }
 
+template <typename T> void cMatrix44<T>::setDihedralDpsi(const T phi, const T psi, const T R){
+	m[0]=-sin(psi); 	m[1]=sin(phi)*cos(psi);		m[2]=cos(phi)*cos(psi);		m[3]=-R*sin(psi);
+	m[4]=0;				m[5]=0.0; 					m[6]=0.0;					m[7]=0;
+	m[8]=-cos(psi);  	m[9]=-sin(phi)*sin(psi);	m[10]=-cos(phi)*sin(psi);	m[11]=-R*cos(psi);
+	m[12]=0;			m[13]=0.0;					m[14]=0.0;					m[15]=0;
+}
+
+template <typename T> void cMatrix44<T>::setDihedralDr(const T phi, const T psi, const T R){
+	m[0]=0; 	m[1]=0.0;		m[2]=0.0;	m[3]=cos(psi);
+	m[4]=0;		m[5]=0.0; 		m[6]=0.0;	m[7]=0;
+	m[8]=0;  	m[9]=0.0;		m[10]=0.0;	m[11]=-sin(psi);
+	m[12]=0;	m[13]=0.0;		m[14]=0.0;	m[15]=0;
+}
+
+
 template <typename T> void cMatrix44<T>::setRx(const T angle){
 	m[0]=1;    	m[1]=0;	        	m[2]=0;            m[3]=0;
 	m[4]=0;		m[5]=cos(angle);	m[6]=-sin(angle);  m[7]=0;

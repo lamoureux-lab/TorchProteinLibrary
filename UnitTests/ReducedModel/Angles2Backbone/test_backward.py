@@ -15,10 +15,10 @@ import torch.optim as optim
 
 from TorchProteinLibrary.ReducedModel import Angles2Backbone as Angles2Coords
 
-def test_gradient(device = 'cuda'):
+def test_gradient(device = 'cpu', dtype=torch.double):
 	L=65
-	x0 = torch.zeros(1, 3, L, dtype=torch.float, device=device).normal_().requires_grad_()
-	x1 = torch.zeros(1, 3, L, dtype=torch.float, device=device).normal_()
+	x0 = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_().requires_grad_()
+	x1 = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_()
 	length = torch.zeros(1, dtype=torch.int, device=device).fill_(L)
 	
 	model = Angles2Coords()
@@ -29,7 +29,7 @@ def test_gradient(device = 'cuda'):
 	
 	
 	with torch.no_grad():
-		back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.float, device='cpu').copy_(x0.grad)
+		back_grad_x0 = torch.zeros(x0.grad.size(), dtype=dtype, device='cpu').copy_(x0.grad)
 		grads = [[],[],[]]
 		for a in range(0,3):
 			for i in range(0,L):
@@ -95,4 +95,4 @@ if __name__=='__main__':
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
 	test_gradient('cpu')
-	test_gradient_batch('cpu')
+	# test_gradient_batch('cpu')

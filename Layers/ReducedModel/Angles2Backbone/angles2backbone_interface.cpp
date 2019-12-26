@@ -97,7 +97,8 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
                                 torch::Tensor param,
                                 torch::Tensor angles_length, 
                                 torch::Tensor A,   
-                                torch::Tensor dr_dangle
+                                torch::Tensor dr_dangle,
+                                torch::Tensor dr_dparam
                             ){
     CHECK_CPU_INPUT(gradInput);
     CHECK_CPU_INPUT(gradParam);
@@ -105,6 +106,7 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
     CHECK_CPU_INPUT(input_angles);
     CHECK_CPU_INPUT(param);
     CHECK_CPU_INPUT(dr_dangle);
+    CHECK_CPU_INPUT(dr_dparam);
     CHECK_CPU_INPUT(A);
     CHECK_CPU_INPUT_TYPE(angles_length, torch::kInt);
     if(gradOutput.ndimension() != 2){
@@ -125,4 +127,20 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));
+    // std::cout<<"deriv"<<std::endl;
+    cpu_computeDerivativesParam<double>( input_angles.data<double>(),
+                                        param.data<double>(),
+                                        dr_dparam.data<double>(),
+                                        A.data<double>(),
+                                        angles_length.data<int>(),
+                                        input_angles.size(0),
+                                        input_angles.size(2));
+    // std::cout<<"reduce"<<std::endl;
+    cpu_backwardFromCoordsParam<double>( gradParam.data<double>(),
+                                            gradOutput.data<double>(),
+                                            dr_dparam.data<double>(),
+                                            angles_length.data<int>(),
+                                            input_angles.size(0),
+                                            input_angles.size(2));
+    // std::cout<<"end"<<std::endl;
 }

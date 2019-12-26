@@ -81,11 +81,14 @@ class Angles2BackboneCPUFunction(Function):
 		if len(input_angles.size()) == 3:
 			batch_size = input_angles.size(0)
 			gradInput_cpu = torch.zeros(batch_size, 3, ctx.angles_max_length, dtype=torch.double, device='cpu')
+			gradParam_cpu = torch.zeros(6, dtype=torch.double, device='cpu')
 			dr_dangle = torch.zeros(batch_size, 3, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.double, device='cpu')
+			dr_dparam = torch.zeros(batch_size, 6, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.double, device='cpu')
 		else:
 			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
 		
-		_ReducedModel.Angles2BackboneCPU_backward(gradInput_cpu, gradParam_cpu, gradOutput_cpu, input_angles, param, angles_length, ctx.A, dr_dangle)
+		_ReducedModel.Angles2BackboneCPU_backward(	gradInput_cpu, gradParam_cpu, gradOutput_cpu, input_angles, param, angles_length, 
+													ctx.A, dr_dangle, dr_dparam)
 		
 		if math.isnan(torch.sum(gradInput_cpu)):
 			raise(Exception('Angles2BackboneFunction: gradInput_cpu backward Nan'))		
@@ -101,12 +104,12 @@ class Angles2Backbone(Module):
 
 	def _fill_default_params(self):
 		self.param2idx = {
-			'R_CA_C': 0,
-			'R_C_N': 1,
-			'R_N_CA': 2,
-			'CA_C_N': 3,
-			'C_N_CA': 4,
-			'N_CA_C': 5
+			'R_N_CA': 0,
+			'C_N_CA': 1,
+			'R_CA_C': 2,
+			'N_CA_C': 3,
+			'R_C_N': 4,
+			'CA_C_N': 5
 		}
 		self.idx2param = {v: k for k, v in self.param2idx.items()}
 

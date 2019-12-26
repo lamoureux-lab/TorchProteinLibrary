@@ -7,6 +7,8 @@ import unittest
 from TorchProteinLibrary.FullAtomModel.Angles2Coords import Angles2Coords
 from TorchProteinLibrary.ReducedModel.Angles2Backbone import Angles2Backbone
 
+from TorchProteinLibrary.ReducedModel.Angles2Backbone.Angles2Backbone import Angles2BackboneCPUFunction
+
 class TestAngles2Backbone(unittest.TestCase):
 	device = 'cpu'
 	dtype = torch.double
@@ -90,19 +92,22 @@ class TestAngles2BackboneForwardGPU(TestAngles2BackboneForwardCPU):
 	rtol=0.001
 	msg = "Testing Angles2Backbone Forward GPU"
 
-# class TestAngles2BackboneBackwardCPU(TestAngles2Backbone):
-# 	eps = 1e-3
-# 	atol = 1e-2
-# 	rtol = 0.01
-# 	length = 8
-# 	batch_size = 8
-		
-# 	def runTest(self):
-# 		backbone_angles = torch.randn(self.batch_size, 3, self.length, dtype=self.dtype, device=self.device).requires_grad_()
-# 		num_aa = torch.zeros(self.batch_size, dtype=torch.int, device=self.device).random_(int(self.length/2), self.length)
-				
-# 		result = torch.autograd.gradcheck(self.a2b, (backbone_angles, num_aa), eps=self.eps, atol=self.atol, rtol=self.rtol)
-# 		self.assertTrue(result)
+class TestAngles2BackboneBackwardCPU(TestAngles2Backbone):
+	eps = 1e-3
+	atol = 1e-2
+	rtol = 0.01
+	device = 'cpu'
+	dtype = torch.double
+	length = 8
+	batch_size = 8
+	msg = "Testing Angles2Backbone Backward CPU"
+
+	def runTest(self):
+		backbone_angles = torch.randn(self.batch_size, 3, self.length, dtype=self.dtype, device=self.device).requires_grad_()
+		num_aa = torch.zeros(self.batch_size, dtype=torch.int, device=self.device).random_(int(self.length/2), self.length)
+
+		result = torch.autograd.gradcheck(self.a2b, (backbone_angles, num_aa), eps=self.eps, atol=self.atol, rtol=self.rtol)
+		self.assertTrue(result)
 
 
 # class TestAngles2BackboneJacobian(TestAngles2Backbone):

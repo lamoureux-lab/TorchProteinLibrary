@@ -10,12 +10,12 @@ __global__ void computeCoordinatesBackbone( T *angles, T *param, T *atoms, T *A,
     int num_angles = length[batch_idx];
     int num_atoms = 3*length[batch_idx];
 
-	T R_CA_C = param[0]; //#define R_CA_C 1.525
-    T R_C_N = param[1]; //#define R_C_N 1.330
-    T R_N_CA = param[2]; //#define R_N_CA 1.460
-    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
-    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
-    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+	T R_N_CA = param[0];
+    T C_N_CA = param[1];
+    T R_CA_C = param[2];
+    T N_CA_C = param[3];
+    T R_C_N = param[4];
+    T CA_C_N = param[5];
 	// printf("angles_stride=%d, batch_idx=%d, num_atoms=%d, num_angles=%d\n",angles_stride, batch_idx,num_atoms,num_angles);
 
 	T *d_atoms = atoms + batch_idx*(atoms_stride)*3;
@@ -92,7 +92,8 @@ __global__ void computeGradientsOptimizedBackboneOmega(T *angles, T *dR_dangle, 
 */
 template <typename T>
 __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle stride
-										T *dR_dAngle, //pointer to the gradient
+										T *dR_dAngle, //pointer to the gradient of angles
+										// T *dR_dParam, //pointer to the gradient of parameters
 										T *d_A, //pointer to the atom transformation matrix batch
 										T *d_A_warp, //shared pointer to the atom transformation matrix
 										int angle_k, //angle index (phi:0, psi:1, omega:2)
@@ -101,12 +102,12 @@ __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle strid
 										int atom_idx, //atom index
 										T *param
 ){
-	T R_CA_C = param[0]; //#define R_CA_C 1.525
-    T R_C_N = param[1]; //#define R_C_N 1.330
-    T R_N_CA = param[2]; //#define R_N_CA 1.460
-    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
-    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
-    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+	T R_N_CA = param[0];
+    T C_N_CA = param[1];
+    T R_CA_C = param[2];
+    T N_CA_C = param[3];
+    T R_C_N = param[4];
+    T CA_C_N = param[5];
 
 	T tmp1[16], tmp2[16], tmp3[16];
 	T B[16], Ar_inv[16];

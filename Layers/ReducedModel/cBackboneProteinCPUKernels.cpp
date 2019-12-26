@@ -13,12 +13,12 @@ void cpu_computeCoordinatesBackbone(    T *angles,
                                         int angles_stride){
     int atoms_stride = 3*angles_stride;
 
-    T R_CA_C = param[0]; //#define R_CA_C 1.525
-    T R_C_N = param[1]; //#define R_C_N 1.330
-    T R_N_CA = param[2]; //#define R_N_CA 1.460
-    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
-    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
-    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+    T R_N_CA = param[0];
+    T C_N_CA = param[1];
+    T R_CA_C = param[2];
+    T N_CA_C = param[3];
+    T R_C_N = param[4];
+    T CA_C_N = param[5];
     
     for(int batch_idx=0; batch_idx<batch_size; batch_idx++){
         int num_angles = length[batch_idx];
@@ -71,12 +71,12 @@ void device_singleAngleAtom(T *d_angle, //pointer to the angle stride
 /*
 Computes derivative of atom "atom_idx" coordinates with respect to {phi, psi, omega}[angle_k] with the index "angle_idx".
 */
-    T R_CA_C = param[0]; //#define R_CA_C 1.525
-    T R_C_N = param[1]; //#define R_C_N 1.330
-    T R_N_CA = param[2]; //#define R_N_CA 1.460
-    T CA_C_N = param[3]; //#define CA_C_N (M_PI - 2.1186)
-    T C_N_CA = param[4]; //#define C_N_CA (M_PI - 1.9391)
-    T N_CA_C = param[5]; //#define N_CA_C (M_PI - 2.061)
+    T R_N_CA = param[0];
+    T C_N_CA = param[1];
+    T R_CA_C = param[2];
+    T N_CA_C = param[3];
+    T R_C_N = param[4];
+    T CA_C_N = param[5];
 
     T bond_angles[] = {C_N_CA, N_CA_C, CA_C_N};
     T bond_lengths[] = {R_N_CA, R_CA_C, R_C_N};
@@ -95,6 +95,7 @@ Computes derivative of atom "atom_idx" coordinates with respect to {phi, psi, om
         
         grad = (Al * B * Ar_inv * Aj) * zero;
     }
+
 }
 
 template <typename T>
@@ -114,7 +115,8 @@ void cpu_computeDerivativesBackbone(    T *angles,
 
         for(int atom_idx=0; atom_idx<num_atoms; atom_idx++){
             for(int angle_idx=0; angle_idx<num_angles; angle_idx++){               	            
-                for(int angle_k=0; angle_k<3; angle_k++){                
+                for(int angle_k=0; angle_k<3; angle_k++){        
+                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
                     device_singleAngleAtom<T>( angles + (3*batch_idx+angle_k)*angles_stride, 
                                             dR_dangle + (3*batch_idx+angle_k) * (atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
                                             d_A, angle_k, angle_idx, atom_idx, param);
@@ -152,6 +154,109 @@ void cpu_backwardFromCoordsBackbone(    T *gradInput,
     }
 };
 
+
+
+template <typename T>
+void device_singleParamAtom(T *d_angle, //pointer to the angle stride
+                            T *dR_dParamR, //pointer to the gradient
+                            T *dR_dParamPsi, //pointer to the gradient
+                            T *d_A, //pointer to the atom transformation matrix batch
+                            int angle_k, //angle index (phi:0, psi:1, omega:2)
+                            int angle_idx, //angle index
+                            int atom_idx, //atom index
+                            T *param
+){
+/*
+Computes derivative of atom "atom_idx" coordinates with respect to parameter in the matrix with the index "angle_idx".
+*/
+    T R_N_CA = param[0];
+    T C_N_CA = param[1];
+    T R_CA_C = param[2];
+    T N_CA_C = param[3];
+    T R_C_N = param[4];
+    T CA_C_N = param[5];
+
+    T bond_angles[] = {C_N_CA, N_CA_C, CA_C_N};
+    T bond_lengths[] = {R_N_CA, R_CA_C, R_C_N};
+    cVector3<T> zero; zero.setZero();
+    cVector3<T> gradR(dR_dParamR);
+    cVector3<T> gradPsi(dR_dParamPsi);
+    if( (3*angle_idx+angle_k) > atom_idx){
+        gradR.setZero();
+        gradPsi.setZero();
+    }else{
+        // std::cout<<"a"<<std::endl;
+        cMatrix44<T> Br, Bpsi, Ar_inv;
+        cMatrix44<T> Al(d_A + (3*angle_idx + angle_k)*16), Ar(d_A + (3*angle_idx + angle_k + 1)*16);
+        // std::cout<<"b"<<std::endl;
+        Br.setDihedralDr(d_angle[angle_idx], bond_angles[angle_k], bond_lengths[angle_k]);
+        Bpsi.setDihedralDpsi(d_angle[angle_idx], bond_angles[angle_k], bond_lengths[angle_k]);
+        Ar_inv = invertTransform44(Ar);
+        cMatrix44<T> Aj(d_A + atom_idx*16);
+        // std::cout<<"c"<<std::endl;
+        gradR = (Al * Br * Ar_inv * Aj) * zero;
+        gradPsi = (Al * Bpsi * Ar_inv * Aj) * zero;
+        // std::cout<<"d"<<std::endl;
+    }
+
+}
+
+template <typename T>
+void cpu_computeDerivativesParam(T *angles,
+                                T *param,
+                                T *dR_dparam,   
+                                T *A,       
+                                int *length,
+                                int batch_size,
+                                int angles_stride){
+
+    int atoms_stride = 3*angles_stride;
+    for(int batch_idx=0; batch_idx<batch_size; batch_idx++){
+        int num_angles = length[batch_idx];
+        int num_atoms = 3*num_angles;
+        T *d_A = A + batch_idx * atoms_stride * 16;
+
+        for(int atom_idx=0; atom_idx<num_atoms; atom_idx++){
+            for(int angle_idx=0; angle_idx<num_angles; angle_idx++){               	            
+                for(int angle_k=0; angle_k<3; angle_k++){
+                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
+                    device_singleParamAtom<T>( angles + (3*batch_idx+angle_k)*angles_stride, 
+                                            dR_dparam + (6*batch_idx+2*angle_k)*(atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
+                                            dR_dparam + (6*batch_idx+2*angle_k+1)*(atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
+                                            d_A, angle_k, angle_idx, atom_idx, param);
+                }
+            }
+        }
+    }
+};
+
+template <typename T>
+void cpu_backwardFromCoordsParam(   T *gradParam,
+                                    T *gradOutput,
+                                    T *dR_dparam,
+                                    int *length,
+                                    int batch_size,
+                                    int angles_stride){
+    
+    int atoms_stride = 3*angles_stride;
+    for(int param_k=0; param_k<6; param_k++){
+        int angle_k = int(param_k/2);
+        for(int batch_idx=0; batch_idx<batch_size; batch_idx++){
+            int num_angles = length[batch_idx];
+            int num_atoms = 3*num_angles;
+            for(int angle_idx=0; angle_idx<num_angles; angle_idx++){
+                T *dR_dParam = dR_dparam + (6*batch_idx+param_k)*(atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
+                for(int atom_idx=3*angle_idx; atom_idx<num_atoms; atom_idx++){
+                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
+                    cVector3<T> dr(gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx);
+                    cVector3<T> dr_dangle(dR_dParam + atom_idx*3);
+                    gradParam[param_k] += dr | dr_dangle;
+                }
+            }
+        }
+    }
+};
+
 template void cpu_computeCoordinatesBackbone<float>( float*, float*, float*, float*, int*, int, int);
 template void cpu_computeCoordinatesBackbone<double>( double*, double*, double*, double*, int*, int, int);
 
@@ -163,3 +268,9 @@ template void cpu_computeDerivativesBackbone<double>( double*, double*, double*,
 
 template void cpu_backwardFromCoordsBackbone<float>( float*, float*, float*, int*, int, int);
 template void cpu_backwardFromCoordsBackbone<double>( double*, double*, double*, int*, int, int);
+
+template void cpu_computeDerivativesParam<float>( float*, float*, float*, float*, int*, int, int);
+template void cpu_computeDerivativesParam<double>( double*, double*, double*, double*, int*, int, int);
+
+template void cpu_backwardFromCoordsParam<float>( float*, float*, float*, int*, int, int);
+template void cpu_backwardFromCoordsParam<double>( double*, double*, double*, int*, int, int);
