@@ -34,7 +34,8 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
                                 torch::Tensor param, 
                                 torch::Tensor angles_length, 
                                 torch::Tensor A,   
-                                torch::Tensor dr_dangle
+                                torch::Tensor dr_dangle,
+                                torch::Tensor dr_dparam
                             ){
     CHECK_GPU_INPUT(gradInput);
     CHECK_GPU_INPUT(gradParam);
@@ -42,6 +43,7 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
     CHECK_GPU_INPUT(input_angles);
     CHECK_GPU_INPUT(param);
     CHECK_GPU_INPUT(dr_dangle);
+    CHECK_GPU_INPUT(dr_dparam);
     CHECK_GPU_INPUT(A);
     CHECK_GPU_INPUT_TYPE(angles_length, torch::kInt);
     if(gradOutput.ndimension() != 2){
@@ -56,6 +58,21 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
                                     input_angles.size(2));
     
     gpu_backwardFromCoordsBackbone<float>( gradInput.data<float>(),
+                                    gradOutput.data<float>(),
+                                    dr_dangle.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
+    
+    gpu_computeDerivativesParam<float>( input_angles.data<float>(),
+                                    param.data<float>(),
+                                    dr_dparam.data<float>(),
+                                    A.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
+    
+    gpu_backwardFromCoordsParam<float>( gradParam.data<float>(),
                                     gradOutput.data<float>(),
                                     dr_dangle.data<float>(),
                                     angles_length.data<int>(),

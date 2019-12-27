@@ -15,84 +15,46 @@ import torch.optim as optim
 
 from TorchProteinLibrary.ReducedModel import Angles2Backbone as Angles2Coords
 
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+torch.manual_seed(3)
+np.random.seed(3)
+
 def test_gradient(device = 'cpu', dtype=torch.double):
 	L=65
-	x0 = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_().requires_grad_()
-	x1 = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_()
+	angles = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_()
 	length = torch.zeros(1, dtype=torch.int, device=device).fill_(L)
 	
 	model = Angles2Coords()
+	param_x0 = model.get_default_parameters().to(device=device, dtype=dtype).requires_grad_()
+	param_x1 = model.get_default_parameters().to(device=device, dtype=dtype).requires_grad_()
 		
-	basis_x0 = model(x0, length)
-	err_x0 = basis_x0.sum()
-	err_x0.backward()
-	
-	
+	y0 = model(angles, param_x0, length)
+	err_y0 = y0.sum()
+	err_y0.backward()
+		
 	with torch.no_grad():
-		back_grad_x0 = torch.zeros(x0.grad.size(), dtype=dtype, device='cpu').copy_(x0.grad)
-		grads = [[],[],[]]
-		for a in range(0,3):
-			for i in range(0,L):
-				dx = 0.0001
-				x1.copy_(x0.data)
-				x1[0,a,i]+=dx
-				basis_x1 = model(x1, length)
-				err_x1 = basis_x1.sum()
-				derr_dangles = (err_x1-err_x0)/(dx)
-				grads[a].append(derr_dangles.item())
-	
+		back_grad_x0 = torch.zeros(param_x0.grad.size(), dtype=dtype, device='cpu').copy_(param_x0.grad)
+		grads = []
+		for i in range(0,6):
+			dx = 0.0001
+			param_x1.copy_(param_x0.data)
+			param_x1[i]+=dx
+			y1 = model(angles, param_x1, length)
+			err_y1 = y1.sum()
+			derr_dangles = (err_y1-err_y0)/(dx)
+			grads.append(derr_dangles.item())
+
 	fig = plt.figure()
-	plt.plot(grads[0],'-r', label = 'num phi')
-	plt.plot(grads[1],'-g', label = 'num psi')
-	plt.plot(grads[2],'-b', label = 'num omega')
-	plt.plot(back_grad_x0[0,0,:].numpy(),'--ro', label = 'an phi')
-	plt.plot(back_grad_x0[0,1,:].numpy(),'--go', label = 'an psi')
-	plt.plot(back_grad_x0[0,2,:].numpy(),'--bo', label = 'an omega')
+	
+	plt.plot(back_grad_x0.numpy(),'--bo', label = 'an grad')
+	plt.plot(grads,'-r', label = 'num grad')
 	
 	plt.legend()
-	plt.savefig('TestFig/angles2backbone_gradients.png')
-
-def test_gradient_batch(device='cuda'):
-	L=65
-	batch_size = 10
-	x0 = torch.zeros(batch_size, 3, L, dtype=torch.float, device=device).normal_().requires_grad_()
-	x1 = torch.zeros(batch_size, 3, L, dtype=torch.float, device=device).normal_()
-	length = torch.zeros(batch_size, dtype=torch.int, device=device).fill_(L)
-		
-	model = Angles2Coords()
-
-	basis_x0 = model(x0, length)
-	err_x0 = basis_x0.sum()
-	err_x0.backward()
-		
-	with torch.no_grad():
-		back_grad_x0 = torch.zeros(x0.grad.size(), dtype=torch.float, device='cpu').copy_(x0.grad)
-		for b in range(0,batch_size):
-			grads = [[],[],[]]
-			for a in range(0,3):
-				for i in range(0,L):
-					dx = 0.0001
-					x1.copy_(x0)
-					x1[b,a,i]+=dx
-					basis_x1 = model(x1, length)
-					err_x1 = basis_x1.sum()
-					derr_dangles = (err_x1-err_x0)/(dx)
-					grads[a].append(derr_dangles.item())
-
-			fig = plt.figure()
-			plt.plot(grads[0],'-r', label = 'num alpha')
-			plt.plot(grads[1],'-g', label = 'num beta')
-			plt.plot(grads[2],'-b', label = 'num omega')
-			plt.plot(back_grad_x0[b,0,:].numpy(),'--ro', label = 'an alpha')
-			plt.plot(back_grad_x0[b,1,:].numpy(),'--go', label = 'an beta')
-			plt.plot(back_grad_x0[b,2,:].numpy(),'--bo', label = 'an omega')
-			plt.legend()
-			plt.savefig('TestFig/angles2backbone_gradients_batch%d.png'%b)
-			plt.clf()
-
+	plt.savefig('TestFig/angles2backbone_param_gradients.png')
 
 if __name__=='__main__':
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
 	test_gradient('cpu')
-	# test_gradient_batch('cpu')
+	

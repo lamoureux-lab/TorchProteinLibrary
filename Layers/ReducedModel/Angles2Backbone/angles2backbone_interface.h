@@ -11,10 +11,11 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
                                 torch::Tensor gradParam,
                                 torch::Tensor gradOutput,
                                 torch::Tensor input_angles, 
-                                torch::Tensor param,
+                                torch::Tensor param, 
                                 torch::Tensor angles_length, 
                                 torch::Tensor A,   
-                                torch::Tensor dr_dangle
+                                torch::Tensor dr_dangle,
+                                torch::Tensor dr_dparam
                             );
 
 int Angles2BackboneCPU_forward(torch::Tensor input_angles, 

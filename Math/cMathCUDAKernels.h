@@ -16,6 +16,12 @@ __device__ void getRotationMatrixDihedral(T *d_data, T psi, T kappa, T R);
 template <typename T>
 __device__ void getRotationMatrixDihedralDPsi(T *d_data, T psi, T kappa, T R);
 template <typename T>
+__device__ void getRotationMatrixDihedralDr(T *d_data, T psi, T kappa, T R);
+template <typename T>
+__device__ void getRotationMatrixDihedralDkappa(T *d_data, T psi, T kappa, T R);
+
+
+template <typename T>
 __device__ void getRotationMatrixCalpha(T *d_data, T phi, T psi, bool first);
 template <typename T>
 __device__ void getRotationMatrixCalphaDPhi(T *d_data, T phi, T psi, bool first);

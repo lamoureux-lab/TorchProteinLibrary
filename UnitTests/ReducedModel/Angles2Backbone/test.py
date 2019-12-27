@@ -48,7 +48,9 @@ class TestAngles2BackboneForwardCPU(TestAngles2Backbone):
 	def runTest(self):
 		backbone_angles = torch.randn(self.batch_size, 3, self.length, dtype=self.dtype, device=self.device)
 		num_aa = torch.zeros(self.batch_size, dtype=torch.int, device=self.device).random_(int(self.length/2), self.length)
-		coords_backbone = self.a2b(backbone_angles, num_aa)
+		param = self.a2b.get_default_parameters().to(device=self.device, dtype=self.dtype)
+
+		coords_backbone = self.a2b(backbone_angles, param, num_aa)
 		coords_backbone = coords_backbone.detach().cpu().view(self.batch_size, 3*self.length, 3).numpy()
 		
 		sequences = [''.join(['G' for i in range(num_aa[j].item())]) for j in range(self.batch_size)]
@@ -98,17 +100,25 @@ class TestAngles2BackboneBackwardCPU(TestAngles2Backbone):
 	rtol = 0.01
 	device = 'cpu'
 	dtype = torch.double
-	length = 8
+	length = 32
 	batch_size = 8
 	msg = "Testing Angles2Backbone Backward CPU"
 
 	def runTest(self):
 		backbone_angles = torch.randn(self.batch_size, 3, self.length, dtype=self.dtype, device=self.device).requires_grad_()
 		num_aa = torch.zeros(self.batch_size, dtype=torch.int, device=self.device).random_(int(self.length/2), self.length)
+		param = self.a2b.get_default_parameters().to(device=self.device, dtype=self.dtype).requires_grad_()
 
-		result = torch.autograd.gradcheck(self.a2b, (backbone_angles, num_aa), eps=self.eps, atol=self.atol, rtol=self.rtol)
+		result = torch.autograd.gradcheck(self.a2b, (backbone_angles, param, num_aa), eps=self.eps, atol=self.atol, rtol=self.rtol)
 		self.assertTrue(result)
 
+class TestAngles2BackboneBackwardGPU(TestAngles2BackboneBackwardCPU):
+	eps = 1e-3
+	atol = 1e-2
+	rtol = 0.01
+	device = 'cuda'
+	dtype = torch.float
+	msg = "Testing Angles2Backbone Backward GPU"
 
 # class TestAngles2BackboneJacobian(TestAngles2Backbone):
 	

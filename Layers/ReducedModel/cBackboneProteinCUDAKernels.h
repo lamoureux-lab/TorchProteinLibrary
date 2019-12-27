@@ -23,3 +23,9 @@ void gpu_backwardFromCoordsBackbone(T *angles,
 									int *length,
 									int batch_size,
 									int angles_stride);
+
+template <typename T>
+void gpu_computeDerivativesParam(T *angles, T *param, T *dR_dparam, T *A, int *length, int batch_size, int angles_stride);
+
+template <typename T>
+void gpu_backwardFromCoordsParam(T *gradParam, T *dr, T *dR_dparam, int *length, int batch_size, int angles_stride);

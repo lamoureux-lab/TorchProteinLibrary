@@ -82,7 +82,7 @@ Computes derivative of atom "atom_idx" coordinates with respect to {phi, psi, om
     T bond_lengths[] = {R_N_CA, R_CA_C, R_C_N};
     cVector3<T> zero; zero.setZero();
     cVector3<T> grad(dR_dAngle);
-    if( (3*angle_idx+angle_k) > atom_idx){
+    if( (3*angle_idx+angle_k+1) > atom_idx){
         grad.setZero();
     }else{
         
@@ -181,7 +181,7 @@ Computes derivative of atom "atom_idx" coordinates with respect to parameter in 
     cVector3<T> zero; zero.setZero();
     cVector3<T> gradR(dR_dParamR);
     cVector3<T> gradPsi(dR_dParamPsi);
-    if( (3*angle_idx+angle_k) > atom_idx){
+    if( (3*angle_idx+angle_k+1) > atom_idx){
         gradR.setZero();
         gradPsi.setZero();
     }else{
@@ -196,7 +196,8 @@ Computes derivative of atom "atom_idx" coordinates with respect to parameter in 
         // std::cout<<"c"<<std::endl;
         gradR = (Al * Br * Ar_inv * Aj) * zero;
         gradPsi = (Al * Bpsi * Ar_inv * Aj) * zero;
-        // std::cout<<"d"<<std::endl;
+        // std::cout<<atom_idx<<","<<angle_idx<<","<<angle_k<<":"<<gradR<<" , "<<gradPsi<<std::endl;
+        // Ar.print();
     }
 
 }
@@ -240,7 +241,6 @@ void cpu_backwardFromCoordsParam(   T *gradParam,
     
     int atoms_stride = 3*angles_stride;
     for(int param_k=0; param_k<6; param_k++){
-        int angle_k = int(param_k/2);
         for(int batch_idx=0; batch_idx<batch_size; batch_idx++){
             int num_angles = length[batch_idx];
             int num_atoms = 3*num_angles;

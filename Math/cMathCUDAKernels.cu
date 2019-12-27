@@ -66,6 +66,20 @@ __device__ void getRotationMatrixDihedralDPsi(T *d_data, T a, T b, T R){
 	d_data[8]=0;  		d_data[9]=cos(a)*cos(b);	d_data[10]=-sin(a)*cos(b);	d_data[11]=0;
 	d_data[12]=0;		d_data[13]=0.0;				d_data[14]=0.0;				d_data[15]=0;
 }
+template <typename T>
+__device__ void getRotationMatrixDihedralDkappa(T *d_data, T a, T b, T R){
+	d_data[0]=-sin(b); 		d_data[1]=sin(a)*cos(b);	d_data[2]=cos(a)*cos(b);	d_data[3]=-R*sin(b);
+	d_data[4]=0;			d_data[5]=0.0; 				d_data[6]=0.0;				d_data[7]=0;
+	d_data[8]=-cos(b);  	d_data[9]=-sin(a)*sin(b);	d_data[10]=-cos(a)*sin(b);	d_data[11]=-R*cos(b);
+	d_data[12]=0;			d_data[13]=0.0;				d_data[14]=0.0;				d_data[15]=0;
+}
+template <typename T>
+__device__ void getRotationMatrixDihedralDr(T *d_data, T a, T b, T R){
+	d_data[0]=0; 		d_data[1]=0;	d_data[2]=0;	d_data[3]=cos(b);
+	d_data[4]=0;		d_data[5]=0; 	d_data[6]=0;	d_data[7]=0;
+	d_data[8]=0;  		d_data[9]=0;	d_data[10]=0;	d_data[11]=-sin(b);
+	d_data[12]=0;		d_data[13]=0;	d_data[14]=0;	d_data[15]=0;
+}
 /*
 template <typename T>
 __device__ void getRotationMatrixCalpha(T *d_data, T phi, T psi, bool first){
