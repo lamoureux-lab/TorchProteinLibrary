@@ -74,7 +74,7 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
     
     gpu_backwardFromCoordsParam<float>( gradParam.data<float>(),
                                     gradOutput.data<float>(),
-                                    dr_dangle.data<float>(),
+                                    dr_dparam.data<float>(),
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));

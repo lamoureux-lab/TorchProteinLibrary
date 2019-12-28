@@ -196,8 +196,10 @@ Computes derivative of atom "atom_idx" coordinates with respect to parameter in 
         // std::cout<<"c"<<std::endl;
         gradR = (Al * Br * Ar_inv * Aj) * zero;
         gradPsi = (Al * Bpsi * Ar_inv * Aj) * zero;
-        // std::cout<<atom_idx<<","<<angle_idx<<","<<angle_k<<":"<<gradR<<" , "<<gradPsi<<std::endl;
-        // Ar.print();
+        // std::cout<<angle_idx<<","<<angle_k<<","<<atom_idx<<":"<<gradR<<" , "<<gradPsi<<std::endl;
+        // "%f %f %f\n%f %f %f\n%f %f %f\n", tmp1r[0], tmp1r[1], tmp1r[2], tmp1r[4], tmp1r[5], tmp1r[6], tmp1r[8], tmp1r[9], tmp1r[10]);
+        // std::cout<<atom_idx*16<<std::endl;
+        // Aj.print();
     }
 
 }
@@ -220,7 +222,7 @@ void cpu_computeDerivativesParam(T *angles,
         for(int atom_idx=0; atom_idx<num_atoms; atom_idx++){
             for(int angle_idx=0; angle_idx<num_angles; angle_idx++){               	            
                 for(int angle_k=0; angle_k<3; angle_k++){
-                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
+                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<","<<(6*batch_idx+2*angle_k)*(atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3<<"\n";
                     device_singleParamAtom<T>( angles + (3*batch_idx+angle_k)*angles_stride, 
                                             dR_dparam + (6*batch_idx+2*angle_k)*(atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
                                             dR_dparam + (6*batch_idx+2*angle_k+1)*(atoms_stride*angles_stride*3) + angle_idx*(atoms_stride*3) + atom_idx*3,
@@ -247,10 +249,12 @@ void cpu_backwardFromCoordsParam(   T *gradParam,
             for(int angle_idx=0; angle_idx<num_angles; angle_idx++){
                 T *dR_dParam = dR_dparam + (6*batch_idx+param_k)*(atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
                 for(int atom_idx=3*angle_idx; atom_idx<num_atoms; atom_idx++){
-                    // std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
+                    
+
                     cVector3<T> dr(gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx);
                     cVector3<T> dr_dangle(dR_dParam + atom_idx*3);
                     gradParam[param_k] += dr | dr_dangle;
+                    // std::cout<<param_k<<","<<atom_idx<<":"<<dr_dangle<<","<<dr<<","<<(6*batch_idx+param_k)*(atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3+atom_idx*3<<","<<batch_idx*atoms_stride*3 + 3*atom_idx<<"\n";
                 }
             }
         }

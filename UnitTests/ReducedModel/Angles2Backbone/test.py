@@ -87,17 +87,15 @@ class TestAngles2BackboneForwardGPU(TestAngles2BackboneForwardCPU):
 	device = 'cuda'
 	dtype = torch.float32
 	places = 5
-	batch_size = 16
-	length = 32
-	eps=1e-03 
-	atol=1e-02 
-	rtol=0.001
+	eps=1e-02
+	atol=1e-03 
+	rtol=0.01
 	msg = "Testing Angles2Backbone Forward GPU"
 
 class TestAngles2BackboneBackwardCPU(TestAngles2Backbone):
-	eps = 1e-3
-	atol = 1e-2
-	rtol = 0.01
+	eps = 1e-6
+	atol = 1e-5
+	rtol = 0.001
 	device = 'cpu'
 	dtype = torch.double
 	length = 32
@@ -117,7 +115,11 @@ class TestAngles2BackboneBackwardGPU(TestAngles2BackboneBackwardCPU):
 	atol = 1e-2
 	rtol = 0.01
 	device = 'cuda'
-	dtype = torch.float
+	dtype = torch.float32
+	length = 8
+	# length = 16
+	# length = 32
+	batch_size = 8
 	msg = "Testing Angles2Backbone Backward GPU"
 
 # class TestAngles2BackboneJacobian(TestAngles2Backbone):

@@ -70,7 +70,7 @@ __device__ void device_singleAngleAtom(	T *d_angle, //pointer to the angle strid
 	T bond_angles[] = {C_N_CA, N_CA_C, CA_C_N};
     T bond_lengths[] = {R_N_CA, R_CA_C, R_C_N};
 
-	if( (3*angle_idx+angle_k) > atom_idx){
+	if( (3*angle_idx+angle_k+1) > atom_idx){
         setVec3<T>(dR_dAngle, 0, 0, 0);
     }else{
         getRotationMatrixDihedralDPsi<T>(B, d_angle[angle_idx], bond_angles[angle_k], bond_lengths[angle_k]);
@@ -193,6 +193,12 @@ __device__ void device_singleParamAtom(	T *d_angle, //pointer to the angle strid
         mat44Zero3Mul<T>(tmp3, dR_dParamR);
 		mat44Mul<T>(tmp1psi, tmp2, tmp3);
 		mat44Zero3Mul<T>(tmp3, dR_dParamPsi);
+		// printf("%d %d %d: (%f %f %f), (%f %f %f)\n", angle_idx, angle_k, atom_idx, *(dR_dParamR), *(dR_dParamR+1), *(dR_dParamR+2),
+		// 		*(dR_dParamPsi), *(dR_dParamPsi+1), *(dR_dParamPsi+2));
+		
+		// T *A = d_A_warp + (3*angle_widx + angle_k)*16;
+		// T *A = d_A + atom_idx*16;
+		// printf("%d:\n%f %f %f\n%f %f %f\n%f %f %f\n",atom_idx*16, A[0], A[1], A[2], A[4], A[5], A[6], A[8], A[9], A[10]);
 	}
 }
 template <typename T>
@@ -221,6 +227,8 @@ __global__ void computeGradientsOptimizedParam( T *angles, T *param, T *dR_dpara
 	if(angle_idx>=angles_stride)return;
 
 	for(int angle_k=0; angle_k<3; angle_k++){
+		// printf("%d, %d, %d, %d: %d\n",batch_idx, atom_idx, angle_idx, angle_k,
+		//  (6*batch_idx + 2*angle_k) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3 + atom_idx*3);
 		device_singleParamAtom<T>(	angles + (3*batch_idx + angle_k) * angles_stride,
 									dR_dparam + (6*batch_idx + 2*angle_k) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3 + atom_idx*3,
 									dR_dparam + (6*batch_idx + 2*angle_k+1) * (atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3 + atom_idx*3,
@@ -231,7 +239,7 @@ __global__ void computeGradientsOptimizedParam( T *angles, T *param, T *dR_dpara
 	
 }
 template <typename T>
-__global__ void backwardFromCoordinatesParam(T *gradParam, T *dr, T *dR_dparam, int *length, int angles_stride, int batch_size){
+__global__ void backwardFromCoordinatesParam(T *gradParam, T *gradOutput, T *dR_dparam, int *length, int angles_stride, int batch_size){
 	
 	int param_k = threadIdx.x;
 	int atoms_stride = 3*angles_stride;
@@ -242,7 +250,9 @@ __global__ void backwardFromCoordinatesParam(T *gradParam, T *dr, T *dR_dparam, 
 			T *dR_dParam = dR_dparam + (6*batch_idx + param_k)*(atoms_stride*angles_stride*3) + angle_idx*atoms_stride*3;
 			for(int atom_idx=3*angle_idx; atom_idx<num_atoms; atom_idx++){
 				// std::cout<<batch_idx<<","<<atom_idx<<","<<angle_idx<<","<<angle_k<<"\n";
-				gradParam[param_k] += vec3Mul<T>(dr + batch_idx*atoms_stride*3 + 3*atom_idx, dR_dParam + 3*atom_idx);
+				// T* dr_dangle = dR_dParam + 3*atom_idx;
+				// T* _dr = gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx;
+				gradParam[param_k] += vec3Mul<T>(gradOutput + batch_idx*atoms_stride*3 + 3*atom_idx, dR_dParam + 3*atom_idx);
 			}
 		}
 	}

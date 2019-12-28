@@ -24,7 +24,7 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 	eps=1e-06
 	atol=1e-05
 	rtol=0.001
-	msg = "Visualizing Angles2Backbone"
+	msg = "Visualizing Angles2Backbone CPU"
 
 	def _plot_coords(coords, filename):
 		if not os.path.exists("TestFig"):
@@ -154,10 +154,13 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 		anim = animation.FuncAnimation(fig, update_plot,
                                     frames=300, interval=20, blit=True)
 		ax.legend()
-		anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
+		# anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
 		plt.show()
 
-
+class VisualTestAngles2Backbone(VisualTestAngles2Backbone):
+	device = 'cuda'
+	dtype = torch.float32
+	msg = "Visualizing Angles2Backbone CUDA"
 		
 if __name__=='__main__':
 	unittest.main()

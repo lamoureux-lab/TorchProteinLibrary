@@ -20,9 +20,12 @@ torch.backends.cudnn.benchmark = False
 torch.manual_seed(3)
 np.random.seed(3)
 
-def test_gradient(device = 'cpu', dtype=torch.double):
-	L=65
-	angles = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_()
+def test_gradient(device = 'cpu', dtype=torch.double, angles=None):
+	L=1
+	if angles is None:
+		angles = torch.zeros(1, 3, L, dtype=dtype, device=device).normal_()
+	else:
+		angles = angles.to(dtype=dtype, device=device)
 	length = torch.zeros(1, dtype=torch.int, device=device).fill_(L)
 	
 	model = Angles2Coords()
@@ -56,5 +59,7 @@ def test_gradient(device = 'cpu', dtype=torch.double):
 if __name__=='__main__':
 	if not os.path.exists('TestFig'):
 		os.mkdir('TestFig')
-	test_gradient('cpu')
+	angles = torch.zeros(1, 3, 1).normal_()
+	test_gradient('cpu', torch.double, angles=angles)
+	test_gradient('cuda', torch.float32, angles=angles)
 	
