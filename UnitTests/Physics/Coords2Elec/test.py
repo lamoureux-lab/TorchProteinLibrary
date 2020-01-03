@@ -15,10 +15,10 @@ from AtomNames2Params import TestAtomNames2Params
 import pyvista as pv
 import matplotlib.pylab as plt
 
-class TestCoords2EpsSingleAtom(unittest.TestCase):
+class TestCoords2ElecDefault(unittest.TestCase):
 	device = 'cuda'
 	dtype = torch.float
-	msg = "Testing dielectric constant on a single atom"
+	msg = "Testing electrostatics on a single atom vs default delphi"
 	delphiPath = "/home/lupoglaz/Programs/Delphi/Delphicpp_Linux/delphi_v77/bin/delphicpp_release"
 	# delphiPath = "/home/talatnt/Projects/Research/Delphi/Delphicpp_v8.4.2_Linux/Release/delphicpp_release"
 	delphiParams = {
@@ -37,8 +37,8 @@ class TestCoords2EpsSingleAtom(unittest.TestCase):
 			"exdi": 80.0,
 			"prbrad": 0.0,
 			"ionrad": 0.0,
-			"salt": 0.0,
-			"sigma": 1.1,
+			"salt": 0.1,
+			"sigma": 1.0,
 			"maxc": 0.0001
 		},
 		"int_params": {
@@ -83,33 +83,34 @@ N     VAL      10.000
 
 		self.translate = CoordsTranslate()
 		self.get_center = Coords2Center()
-		box_size = 60
-		res = 0.5
 
-		self.c2e = Coords2Elec(box_size=box_size, resolution=res)
 		self.p2c = PDB2CoordsUnordered()
 		self.get_center = Coords2Center()
 		self.elec_params = ElectrostaticParameters('single_atom', type='born')
 		self.a2p = AtomNames2Params()
 
-	def runTest(self):
-		self.writeFiles(params=self.delphiParams)
-		self.runDelphi(params=self.delphiParams)
 
-		Delphi, spatial_dim, res = cube2numpy(file_path="phimap.txt")
-		Eps, spatial_dim, res = cube2numpy(file_path="epsmap.txt")
+	def compare_electrostatics(self, delphi_params):
+		self.writeFiles(params=delphi_params)
+		self.runDelphi(params=delphi_params)
+
+		delphi_phi, spatial_dim, res = cube2numpy(file_path="phimap.cube")
+		delphi_eps, spatial_dim, res = cube2numpy(file_path="epsmap.cube")
 		
-		box_size = spatial_dim*res
+		spatial_dim = delphi_params['int_params']['gsize']
+		res = 1.0/delphi_params['float_params']['scale']
+		
+		box_size = res*spatial_dim
 		box_center = torch.tensor([[box_size/2.0, box_size/2.0, box_size/2.0]], dtype=torch.double, device='cpu')
 
 		self.c2e = Coords2Elec(	box_size=spatial_dim,
 								resolution=res,
 								eps_in=2.0,
 								eps_out=80.0,
-								ion_size=0.0,
-								wat_size=0.0,
-								asigma=1.1,
-								kappa02=0.0,
+								ion_size=delphi_params['float_params']['ionrad'],
+								wat_size=delphi_params['float_params']['prbrad'],
+								asigma=delphi_params['float_params']['sigma'],
+								kappa02=8.48*delphi_params['float_params']['salt'],
 								charge_conv=7046.52,
 								d=13)
 
@@ -118,19 +119,29 @@ N     VAL      10.000
 		coords_ce = self.translate(prot[0], -prot_center + box_center, prot[-1])
 
 		params = self.a2p(prot[2], prot[4], prot[-1], self.elec_params.types, self.elec_params.params)
-		q, eps, phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float),
+		q, this_eps, this_phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float),
 								params.to(device='cuda', dtype=torch.float),
 								prot[-1].to(device='cuda'))
+
+		delphi_phi = torch.from_numpy(delphi_phi).clamp(0.0, 100.0)
+		this_phi = this_phi[0, :, :, :].clamp(0.0, 100.0).to(device='cpu')
+		av_err_phi = torch.mean(torch.abs(delphi_phi - this_phi))
+
+		this_eps = this_eps[0, 0, :, :, :].to(device='cpu')
+		delphi_eps = torch.from_numpy(delphi_eps)
+		av_err_eps = torch.mean(torch.abs(delphi_eps - this_eps))
+				
+		return av_err_phi, av_err_eps, delphi_phi.numpy(), delphi_eps.numpy(), this_phi.numpy(), this_eps.numpy()
+
+
+	def runTest(self):
 		
-		delphi_phi = torch.from_numpy(Delphi).clamp(0.0, 100.0).numpy()
-		this_eps = eps[0, 0, :, :, :].to(device='cpu').numpy()
-		this_phi = phi[0, :, :, :].to(device='cpu').clamp(0.0, 100.0).numpy()
-
-		# p = pv.Plotter(point_smoothing=True)
-		# p.add_volume(Delphi, cmap="viridis", opacity="linear")
-		# p.add_volume(this_phi, cmap="viridis", opacity="linear")
-		# p.show()
-
+		#Default parameters:
+		err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps = self.compare_electrostatics(self.delphiParams)
+		print('Phi error:', err_phi, 'Eps error:', err_eps)
+		
+		spatial_dim = self.delphiParams['int_params']['gsize']
+		
 		f = plt.figure()
 		plt.subplot(121, title=r'$\phi$')
 		plt.plot(this_phi[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
@@ -139,9 +150,46 @@ N     VAL      10.000
 
 		plt.subplot(122, title=r'$\epsilon$')
 		plt.plot(this_eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
-		plt.plot(Eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
+		plt.plot(delphi_eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
 		plt.legend()
-		plt.show()
+		plt.savefig(os.path.join('TestFig', 'default.png'))
+		
+
+class TestCoords2ElecParam(TestCoords2ElecDefault):
+	msg = "Testing electrostatics on a single atom using different parameters vs delphi"
+	paramVariation = {
+		"float_params": {
+			"scale": 2.0,
+			"indi": 2.0,
+			"exdi": 80.0,
+			"prbrad": [ x/5.0 for x in range(10)],
+			"ionrad": [ x/5.0 for x in range(10)],
+			"salt": [ x/2.0 for x in range(20)],
+			"sigma": 1.0,
+			"maxc": 0.0001
+		}
+	}
+	def runTest(self):
+		
+		#Default parameters:
+		for param_type in self.paramVariation.keys():
+			for param_name in self.paramVariation[param_type].keys():
+				if isinstance(self.paramVariation[param_type][param_name], list):
+					f = plt.figure()
+					plt.title(param_name)
+					errs_phi = []
+					errs_eps = []
+					for param in self.paramVariation[param_type][param_name]:
+						var_param = self.delphiParams.copy()
+						var_param[param_type][param_name] = param
+						err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps = self.compare_electrostatics(var_param)
+						errs_eps.append(err_eps)
+						errs_phi.append(err_phi)
+					plt.plot(self.paramVariation[param_type][param_name], errs_phi, label = 'Errors phi')
+					plt.plot(self.paramVariation[param_type][param_name], errs_eps, label = 'Errors eps')
+					plt.legend(loc="best")
+					plt.savefig(os.path.join('TestFig', param_name+'.png'))
+					# plt.show()
 
 
 if __name__ == '__main__':

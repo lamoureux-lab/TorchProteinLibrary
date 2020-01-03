@@ -113,12 +113,22 @@ if __name__=='__main__':
 				vector_field[0,i,j,k] = torch.tensor([x])/(d2)
 				vector_field[1,i,j,k] = torch.tensor([y])/(d2)
 				vector_field[2,i,j,k] = torch.tensor([z])/(d2)
-	scalar_field = VolumeField(scalar_field)
-	vector_field = VolumeField(vector_field)
+	# scalar_field = VolumeField(scalar_field)
+	# vector_field = VolumeField(vector_field)
 	
 
 	# field.vtk_plot()
-	plt = VtkPlotter()
-	plt.add(scalar_field.plot_scalar())
-	plt.add(vector_field.plot_vector())
-	plt.show()
+	# plt = VtkPlotter()
+	# plt.add(scalar_field.plot_scalar())
+	# plt.add(vector_field.plot_vector())
+	# plt.show()
+	
+	from vtkplotter import show, Text, Volume
+
+	# generate an isosurface the volume for each thresholds
+	ts = [1.0, 3.0, 5.0, 6.0]
+
+	# Use c=None to use the default vtk color map. isos is of type Actor
+	isos = Volume(scalar_field.squeeze().numpy()).isosurface(threshold=ts)
+
+	show(isos, Text(__doc__))
