@@ -80,7 +80,8 @@ __global__ void sumCells(   float* coords, float* assigned_params, int num_atoms
 		int x_i = floor(x/res);
 		int y_i = floor(y/res);
 		int z_i = floor(z/res);
-        int cell_idx = x_i + y_i*box_size + z_i*box_size*box_size;
+        int cell_idx = z_i + y_i*box_size + x_i*box_size*box_size;
+        // printf("%f, %f, %f, %d, %f\n", x, y, z, cell_idx, assigned_params[idx]);
 		volume[cell_idx] += assigned_params[idx];
 	}
 }

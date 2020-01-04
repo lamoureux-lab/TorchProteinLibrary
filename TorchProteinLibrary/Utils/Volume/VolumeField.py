@@ -31,9 +31,9 @@ class VolumeField():
 
 	def get_actor(self, **kwargs):
 		if self.ftype == FieldType.scalar:
-			return self.get_scalar_actor(kwargs)
+			return self.get_scalar_actor(**kwargs)
 		elif self.ftype == FieldType.vector:
-			return self.get_vector_actor(kwargs)
+			return self.get_vector_actor(**kwargs)
 
 	def get_scalar_actor(self, **kwargs):
 		vol = vtkplotter.Volume(

@@ -350,6 +350,34 @@ class ElectrostaticParameters:
 				data[(resname, atomname)] = param
 
 		return data
+
+	def saveTinker(self, path):
+		print(self.param_dict)
+		
+		with open(path+'.crg', 'w') as fout:
+			fout.write('atom__resnumbc_charge_\n')
+			curr_res = None
+			for res_name, atom_name in self.param_dict.keys():
+				if curr_res is None:
+					curr_res = res_name
+				if curr_res != res_name:
+					fout.write('\n')
+					curr_res = res_name
+				charge = self.param_dict[(res_name, atom_name)][0]
+				fout.write('%-6s%-6s   %.4f\n'%(atom_name, res_name, charge))
+		
+		with open(path+'.siz', 'w') as fout:
+			fout.write('atom__res_radius_\n')
+			curr_res = None
+			for res_name, atom_name in self.param_dict.keys():
+				if curr_res is None:
+					curr_res = res_name
+				if curr_res != res_name:
+					fout.write('\n')
+					curr_res = res_name
+				size = self.param_dict[(res_name, atom_name)][1]
+				fout.write('%-6s%-6s%.4f\n'%(atom_name, res_name, size))
+
 	
 
 if __name__=='__main__':

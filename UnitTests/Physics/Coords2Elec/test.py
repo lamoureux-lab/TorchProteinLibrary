@@ -50,7 +50,9 @@ class TestCoords2ElecDefault(unittest.TestCase):
 		}
 	}
 
-	pdb_file = """ATOM      1  N   VAL D  10       0.000   0.000   0.000"""
+	# pdb_file = """ATOM      1  N   VAL D  10       0.000   0.000   0.000"""
+	pdb_file = """ATOM      1  N   VAL D  10       -5.000   0.000   0.000
+ATOM      2  N   VAL D  10       5.000   0.000   0.000"""
 	siz_file = """atom__res_radius_
 N     VAL   3.0          
 """
@@ -114,7 +116,7 @@ N     VAL      10.000
 								charge_conv=7046.52,
 								d=13)
 
-		prot = self.p2c(["single_atom/born.pdb"])
+		prot = self.p2c([delphi_params["input_files"]["pdb"]])
 		prot_center = self.get_center(prot[0], prot[-1])
 		coords_ce = self.translate(prot[0], -prot_center + box_center, prot[-1])
 
@@ -130,66 +132,72 @@ N     VAL      10.000
 		this_eps = this_eps[0, 0, :, :, :].to(device='cpu')
 		delphi_eps = torch.from_numpy(delphi_eps)
 		av_err_eps = torch.mean(torch.abs(delphi_eps - this_eps))
+
+		this_q = q[0,:,:,:].sum(dim=2).sum(dim=1).to(device='cpu')
 				
-		return av_err_phi, av_err_eps, delphi_phi.numpy(), delphi_eps.numpy(), this_phi.numpy(), this_eps.numpy()
+		return av_err_phi, av_err_eps, delphi_phi.numpy(), delphi_eps.numpy(), this_phi.numpy(), this_eps.numpy(), this_q.numpy()
 
 
 	def runTest(self):
 		
 		#Default parameters:
-		err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps = self.compare_electrostatics(self.delphiParams)
+		err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps, this_q = self.compare_electrostatics(self.delphiParams)
 		print('Phi error:', err_phi, 'Eps error:', err_eps)
 		
 		spatial_dim = self.delphiParams['int_params']['gsize']
 		
 		f = plt.figure()
-		plt.subplot(121, title=r'$\phi$')
+		plt.subplot(131, title=r'$\phi$')
 		plt.plot(this_phi[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
 		plt.plot(delphi_phi[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
 		plt.legend(loc="best")
 
-		plt.subplot(122, title=r'$\epsilon$')
+		plt.subplot(132, title=r'$\epsilon$')
 		plt.plot(this_eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Our algorithm')
 		plt.plot(delphi_eps[:, int(spatial_dim/2), int(spatial_dim/2)], label='Delphi')
+		plt.legend()
+
+		plt.subplot(133, title=r'$Q$')
+		plt.plot(this_q, label='Charge')
 		plt.legend()
 		plt.savefig(os.path.join('TestFig', 'default.png'))
 		
 
-class TestCoords2ElecParam(TestCoords2ElecDefault):
-	msg = "Testing electrostatics on a single atom using different parameters vs delphi"
-	paramVariation = {
-		"float_params": {
-			"scale": 2.0,
-			"indi": 2.0,
-			"exdi": 80.0,
-			"prbrad": [ x/5.0 for x in range(10)],
-			"ionrad": [ x/5.0 for x in range(10)],
-			"salt": [ x/2.0 for x in range(20)],
-			"sigma": 1.0,
-			"maxc": 0.0001
-		}
-	}
-	def runTest(self):
+# class TestCoords2ElecParam(TestCoords2ElecDefault):
+# 	msg = "Testing electrostatics on a single atom using different parameters vs delphi"
+# 	paramVariation = {
+# 		"float_params": {
+# 			"scale": 2.0,
+# 			"indi": 2.0,
+# 			"exdi": 80.0,
+# 			"prbrad": [ x/5.0 for x in range(10)],
+# 			"ionrad": [ x/5.0 for x in range(10)],
+# 			"salt": [ x/2.0 for x in range(20)],
+# 			"sigma": 1.0,
+# 			"maxc": 0.0001
+# 		}
+# 	}
+# 	def runTest(self):
 		
-		#Default parameters:
-		for param_type in self.paramVariation.keys():
-			for param_name in self.paramVariation[param_type].keys():
-				if isinstance(self.paramVariation[param_type][param_name], list):
-					f = plt.figure()
-					plt.title(param_name)
-					errs_phi = []
-					errs_eps = []
-					for param in self.paramVariation[param_type][param_name]:
-						var_param = self.delphiParams.copy()
-						var_param[param_type][param_name] = param
-						err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps = self.compare_electrostatics(var_param)
-						errs_eps.append(err_eps)
-						errs_phi.append(err_phi)
-					plt.plot(self.paramVariation[param_type][param_name], errs_phi, label = 'Errors phi')
-					plt.plot(self.paramVariation[param_type][param_name], errs_eps, label = 'Errors eps')
-					plt.legend(loc="best")
-					plt.savefig(os.path.join('TestFig', param_name+'.png'))
-					# plt.show()
+# 		#Default parameters:
+# 		for param_type in self.paramVariation.keys():
+# 			for param_name in self.paramVariation[param_type].keys():
+# 				if isinstance(self.paramVariation[param_type][param_name], list):
+# 					f = plt.figure()
+# 					plt.title(param_name)
+# 					errs_phi = []
+# 					errs_eps = []
+# 					for param in self.paramVariation[param_type][param_name]:
+# 						var_param = self.delphiParams.copy()
+# 						var_param[param_type][param_name] = param
+# 						err_phi, err_eps, delphi_phi, delphi_eps, this_phi, this_eps = self.compare_electrostatics(var_param)
+# 						errs_eps.append(err_eps)
+# 						errs_phi.append(err_phi)
+# 					plt.plot(self.paramVariation[param_type][param_name], errs_phi, label = 'Errors phi')
+# 					plt.plot(self.paramVariation[param_type][param_name], errs_eps, label = 'Errors eps')
+# 					plt.legend(loc="best")
+# 					plt.savefig(os.path.join('TestFig', param_name+'.png'))
+# 					# plt.show()
 
 
 if __name__ == '__main__':

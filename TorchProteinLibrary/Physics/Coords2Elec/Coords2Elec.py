@@ -46,7 +46,8 @@ class Coords2QFunction(Function):
 
 		batch_size = coords.size(0)
 		q_sum = torch.zeros(batch_size, box_size, box_size, box_size, dtype=torch.float, device='cuda')
-
+		print(num_atoms)
+		print(coords)
 		_Physics.Coords2Q_forward(coords, assigned_params, num_atoms, q_sum, resolution)
 
 		return q_sum

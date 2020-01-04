@@ -3,7 +3,7 @@ import sys
 import torch
 import numpy as np
 import unittest
-from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
+from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered, writePDB
 from TorchProteinLibrary.FullAtomModel import CoordsTranslate, Coords2Center
 from TorchProteinLibrary.Physics import AtomNames2Params, ElectrostaticParameters, Coords2Elec
 import _Volume
@@ -12,7 +12,7 @@ from read_cube import cube2numpy # reads .cube Delphi's output and converts to n
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from AtomNames2Params import TestAtomNames2Params
 
-from TorchProteinLibrary.Utils import VtkPlotter, VolumeField, ProteinStructure
+from TorchProteinLibrary.Utils import VolumeField, ProteinStructure
 import vtkplotter as vtkplotter
 
 # import pyvista as pv
@@ -27,9 +27,9 @@ class TestCoords2EpsUBI(unittest.TestCase):
 	delphiPath = "/home/lupoglaz/Programs/Delphi/Delphicpp_Linux/delphi_v77/bin/delphicpp_release"
 	delphiParams = {
 		"input_files": {
-			"pdb": "data/1brs.pdb",
-			"siz": "data/amber.siz",
-			"crg": "data/amber.crg",
+			"pdb": "tmp.pdb",
+			"siz": "tmp.siz",
+			"crg": "tmp.crg",
 		},
 		"output_files": {
 			"phi": "phimap.cube",
@@ -83,6 +83,7 @@ class TestCoords2EpsUBI(unittest.TestCase):
 		self.get_center = Coords2Center()
 		self.elec_params = ElectrostaticParameters('protein', type='amber')
 		self.a2p = AtomNames2Params()
+		self.elec_params.saveTinker('tmp')
 
 	def runTest(self):
 		box_center = torch.tensor([[1.0/2.0, 1.0/2.0, 1.0/2.0]], dtype=torch.double, device='cpu') * self.res * self.box_size
@@ -96,11 +97,13 @@ class TestCoords2EpsUBI(unittest.TestCase):
 								asigma=self.delphiParams['float_params']['sigma'],
 								kappa02=8.48*self.delphiParams['float_params']['salt'],
 								charge_conv=7046.52,
-								d=7)
+								d=3)
 
-		prot = self.p2c(["protein/1brs.pdb"])
+		prot = self.p2c(["data/1brs.pdb"])
 		prot_center = self.get_center(prot[0], prot[-1])
 		coords_ce = self.translate(prot[0], -prot_center + box_center, prot[-1])
+
+		writePDB('tmp.pdb', coords_ce, prot[1], prot[2], prot[3], prot[4], prot[5])
 
 		params = self.a2p(prot[2], prot[4], prot[-1], self.elec_params.types, self.elec_params.params)
 		q, eps, phi = self.c2e(	coords_ce.to(device='cuda', dtype=torch.float),
@@ -134,19 +137,26 @@ class TestCoords2EpsUBI(unittest.TestCase):
 		backbone_plot = prot.plot_tube()
 		
 		delphi_phi = torch.from_numpy(delphi_phi).unsqueeze(dim=0)
+		delphi_eps = torch.from_numpy(delphi_eps).unsqueeze(dim=0)
 		
-		# vp = vtkplotter.Plotter(N=2, title='basic shapes', axes=0)
-		# vp.sharecam = True 
-		# this_iso = vtkplotter.Volume(phi.squeeze().to(device='cpu').numpy(), spacing=[self.res, self.res, self.res]).isosurface(threshold=[2.5])
-		# delphi_iso = vtkplotter.Volume(delphi_phi.squeeze().to(device='cpu').numpy(), spacing=[self.res, self.res, self.res]).isosurface(threshold=[2.5])
-		# vp.show(this_iso.alpha(0.5), at=0)
-		# vp.show(delphi_iso.alpha(0.5), at=1, interactive=1)
-		p = VtkPlotter()
-		p.add(atoms_plot)
-		p.add(backbone_plot)
-		p.add(VolumeField(phi.to(device='cpu'), resolution=self.res).plot_scalar(contour_value=1.0))
-		# p.add(VolumeField(delphi_phi, resolution=self.res).plot_scalar(contour_value=2.5))
-		p.show()
+		vp = vtkplotter.Plotter(N=4, title='basic shapes', axes=0)
+		vp.sharecam = True 
+		
+		this_iso = VolumeField(phi).get_actor(threshold=[-2,2])
+		delphi_iso = VolumeField(delphi_phi).get_actor(threshold=[-2,2])
+		this_eps = VolumeField(eps[:,0,:,:,:]).get_actor(threshold=10)
+		delphi_eps = VolumeField(delphi_phi).get_actor(threshold=10)
+
+		vp.show(this_iso, vtkplotter.Text('this phi'), at=0)
+		vp.show(delphi_iso, vtkplotter.Text('delphi phi'), at=1)
+		vp.show(this_eps, vtkplotter.Text('this eps'), at=2)
+		vp.show(delphi_eps, vtkplotter.Text('delphi eps'), at=3, interactive=1)
+		# p = VtkPlotter()
+		# p.add(atoms_plot)
+		# p.add(backbone_plot)
+		# p.add(VolumeField(phi.to(device='cpu'), resolution=self.res).plot_scalar(contour_value=1.0))
+		# # p.add(VolumeField(delphi_phi, resolution=self.res).plot_scalar(contour_value=2.5))
+		# p.show()
 
 if __name__ == '__main__':
 	unittest.main()

@@ -8,6 +8,7 @@ def cube2numpy(file_path):
     file_in = file_path
     inp = open(file_in,'r')
     cube = inp.readlines()
+    inp.close()
 
     rB = 0.529177 #Bohr radius
     res = float(cube[3].split()[1])*rB
