@@ -280,15 +280,17 @@ def unite_proteins(receptor, ligand):
 
 if __name__=='__main__':
 	from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
-	sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-	from Utils import VtkPlotter
+	
+	
 	p2c = PDB2CoordsUnordered()
 	prot = ProteinStructure(*p2c(["1brs.pdb"]))
 	atoms_plot = prot.plot_atoms()
 	prot = ProteinStructure(*prot.select_CA())
 	backbone_plot = prot.plot_tube()
-	
-	plt = VtkPlotter()
-	plt.add(atoms_plot)
-	plt.add(backbone_plot)
-	plt.show()
+
+	import vtkplotter as vp
+	v = vp.Plotter(N=2, title='basic shapes', axes=0)
+	v.sharecam = True
+	v.show(backbone_plot, at=0)
+	v.show(atoms_plot, at=1, interactive=1)
+

@@ -2,101 +2,61 @@ import os
 import sys
 import torch
 import enum
+import vtkplotter
 
 class FieldType(enum.Enum):
 	scalar = 1
 	vector = 3
-	tensor = 5
 
 class VolumeField():
 	
-	def __init__(self, T, resolution=1.0):
+	def __init__(self, T, resolution=1.0, origin=[0,0,0]):
 		self.T = T.transpose(1,2).transpose(2,3).transpose(1,2).contiguous()
 		self.resolution = resolution
+		self.origin = origin
 		self.ftype = None
+		
 		if self.T.dim() != 4:
 			raise("Too many dimensions:", self.T.ndim())
+		
+		if self.T.is_cuda:
+			self.T = self.T.cpu()
 		
 		if self.T.size(0) == 1:
 			self.ftype = FieldType.scalar
 		elif self.T.size(0) == 3:
 			self.ftype = FieldType.vector
-		elif self.T.size(0) == 5:
-			self.ftype = FieldType.tensor
 		else:
 			raise("Unknown field type:", self.T.size(0))
 
-	def plot_scalar(self, contour_value=10.0):
-		import vtk
-		vol = vtk.vtkStructuredPoints()
-		vol.SetDimensions(self.T.size(1),self.T.size(2),self.T.size(3))
-		vol.SetOrigin(0,0,0)
-		# vol.SetOrigin(self.T.size(1)*self.resolution/2.0, self.T.size(2)*self.resolution/2.0,self.T.size(3)*self.resolution/2.0)
-		vol.SetSpacing(self.resolution, self.resolution, self.resolution)
+	def get_actor(self, **kwargs):
+		if self.ftype == FieldType.scalar:
+			return self.get_scalar_actor(kwargs)
+		elif self.ftype == FieldType.vector:
+			return self.get_vector_actor(kwargs)
 
-		scalars = vtk.vtkDoubleArray()
-		scalars.SetNumberOfComponents(1)
-		scalars.SetNumberOfTuples(self.T.size(1)*self.T.size(2)*self.T.size(3))
-		flat_tensor = self.T.view(self.T.size(1)*self.T.size(2)*self.T.size(3))
-		for i in range(flat_tensor.size(0)):
-			scalars.InsertTuple1(i, flat_tensor[i].item())
-		vol.GetPointData().SetScalars(scalars)
-
-		contour = vtk.vtkContourFilter()
-		contour.SetInputData(vol)
-		contour.SetValue(0, contour_value)
-
-		volMapper = vtk.vtkPolyDataMapper()
-		volMapper.SetInputConnection(contour.GetOutputPort())
-		volMapper.ScalarVisibilityOff()
+	def get_scalar_actor(self, **kwargs):
+		vol = vtkplotter.Volume(
+					self.T[0,:,:,:].numpy(),
+					origin=self.origin,
+					spacing=[self.resolution, self.resolution, self.resolution])
+		isos = vol.isosurface(**kwargs)	
+		return isos
+	
+	def get_vector_actor(self, **kwargs):
+		x = torch.linspace(self.origin[0], self.origin[0]+(self.T.size(1)-1)*self.resolution, self.T.size(1))
+		y = torch.linspace(self.origin[1], self.origin[1]+(self.T.size(2)-1)*self.resolution, self.T.size(2))
+		z = torch.linspace(self.origin[2], self.origin[2]+(self.T.size(3)-1)*self.resolution, self.T.size(3))
 		
-		actor = vtk.vtkActor()
-		actor.SetMapper(volMapper)
-		actor.GetProperty().EdgeVisibilityOn()
-		actor.GetProperty().SetOpacity(0.3)
-				
-		return actor
-
-	def plot_vector(self):
-		import vtk
-		vol = vtk.vtkStructuredPoints()
-		vol.SetDimensions(self.T.size(1),self.T.size(2),self.T.size(3))
-		vol.SetOrigin(0,0,0)
-		# vol.SetSpacing(1.0/self.resolution, 1.0/self.resolution, 1.0/self.resolution)
-		# vol.SetOrigin(self.T.size(1)*self.resolution/2.0, self.T.size(2)*self.resolution/2.0,self.T.size(3)*self.resolution/2.0)
-		vol.SetSpacing(self.resolution, self.resolution, self.resolution)
-
-		vectors = vtk.vtkDoubleArray()
-		vectors.SetNumberOfComponents(3)
-		vectors.SetNumberOfTuples(self.T.size(1)*self.T.size(2)*self.T.size(3))
-		flat_tensor = self.T.view(3, self.T.size(1)*self.T.size(2)*self.T.size(3))
-		for i in range(flat_tensor.size(1)):
-			vectors.InsertTuple(i, [flat_tensor[0,i].item(), flat_tensor[1,i].item(), flat_tensor[2,i].item()] )
-		vol.GetPointData().SetVectors(vectors)
+		grid_x, grid_y, grid_z = torch.meshgrid(x,y,z)
+		sources = torch.stack([grid_x, grid_y, grid_z], dim=3)
+		sources = sources.view(self.T.size(1)*self.T.size(2)*self.T.size(3), 3).numpy()
+		deltas = self.T.transpose(0,3).contiguous()
+		deltas = deltas.view(self.T.size(1)*self.T.size(2)*self.T.size(3), 3).numpy()
 		
-		arrowSource = vtk.vtkArrowSource()
-
-		glyph = vtk.vtkGlyph3D()
-		glyph.SetInputData(vol)
-		glyph.SetSourceConnection(arrowSource.GetOutputPort())
-		glyph.SetVectorModeToUseVector()
-		glyph.SetColorModeToColorByVector()
-		glyph.SetScaleModeToScaleByVector()
-		glyph.ScalingOn()
-		glyph.OrientOn()
-		glyph.Update()
-
-		sgridMapper = vtk.vtkPolyDataMapper()
-		sgridMapper.SetInputConnection(glyph.GetOutputPort())
-		sgridActor = vtk.vtkActor()
-		sgridActor.SetMapper(sgridMapper)
-
-
-		return sgridActor
+		return vtkplotter.Arrows(sources, sources + deltas, **kwargs)
 
 if __name__=='__main__':
-	sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
-	from Utils import VtkPlotter
 	
 	box_size = 30
 	res = 1.0
@@ -113,22 +73,18 @@ if __name__=='__main__':
 				vector_field[0,i,j,k] = torch.tensor([x])/(d2)
 				vector_field[1,i,j,k] = torch.tensor([y])/(d2)
 				vector_field[2,i,j,k] = torch.tensor([z])/(d2)
-	# scalar_field = VolumeField(scalar_field)
-	# vector_field = VolumeField(vector_field)
+	
+	import vtkplotter as vp
+	scalar_field = VolumeField(scalar_field)
+	vector_field = VolumeField(vector_field)
+	vector = vector_field.get_actor()
+	scalar = scalar_field.get_actor(threshold=10.0)
 	
 
-	# field.vtk_plot()
-	# plt = VtkPlotter()
-	# plt.add(scalar_field.plot_scalar())
-	# plt.add(vector_field.plot_vector())
-	# plt.show()
+	vp = vtkplotter.Plotter(N=2, title='basic shapes', axes=0)
+	vp.sharecam = True
+	vp.show(scalar, at=0)
+	vp.show(vector, at=1, interactive=1)
 	
-	from vtkplotter import show, Text, Volume
 
-	# generate an isosurface the volume for each thresholds
-	ts = [1.0, 3.0, 5.0, 6.0]
-
-	# Use c=None to use the default vtk color map. isos is of type Actor
-	isos = Volume(scalar_field.squeeze().numpy()).isosurface(threshold=ts)
-
-	show(isos, Text(__doc__))
+	
