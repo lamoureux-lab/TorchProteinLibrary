@@ -31,26 +31,27 @@ class Angles2BackboneGPUFunction(Function):
 			
 	@staticmethod
 	def backward(ctx, gradOutput):
+		gradOutput = gradOutput.contiguous()
 		input_angles, param, angles_length = ctx.saved_tensors
 		batch_size = input_angles.size(0)
 		angles_max_length = input_angles.size(2)
 		atoms_max_length = 3*angles_max_length
 
-		gradOutput = gradOutput.contiguous()
-		
-		if len(input_angles.size()) == 3:
+		gradInput_gpu = None
+		gradParam_gpu = None
+		if input_angles.requires_grad:
 			gradInput_gpu = torch.zeros(batch_size, 3, angles_max_length, dtype=torch.float, device='cuda')
+			dr_dangle = torch.zeros(batch_size, 3, 3*atoms_max_length*angles_max_length, dtype=torch.float, device='cuda')	
+			_ReducedModel.Angles2BackboneGPUAngles_backward(gradInput_gpu, gradOutput, input_angles, param, angles_length, 
+														ctx.A, dr_dangle)
+		if param.requires_grad:
 			gradParam_gpu = torch.zeros(6, dtype=torch.float, device='cuda')
-			dr_dangle = torch.zeros(batch_size, 3, 3*atoms_max_length*angles_max_length, dtype=torch.float, device='cuda')
 			dr_dparam = torch.zeros(batch_size, 6, 3*atoms_max_length*angles_max_length, dtype=torch.float, device='cuda')
-		else:
-			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
-			
-		_ReducedModel.Angles2BackboneGPU_backward(	gradInput_gpu, gradParam_gpu, gradOutput, input_angles, param, angles_length, 
-													ctx.A, dr_dangle, dr_dparam)
+			_ReducedModel.Angles2BackboneGPUParam_backward(gradParam_gpu, gradOutput, input_angles, param, angles_length, 
+														ctx.A, dr_dparam)
 		
-		if math.isnan(torch.sum(gradInput_gpu)):
-			raise(Exception('Angles2BackboneFunction: backward Nan'))		
+		# if math.isnan(torch.sum(gradInput_gpu)):
+		# 	raise(Exception('Angles2BackboneFunction: backward Nan'))		
 		
 		return gradInput_gpu, gradParam_gpu, None
 
@@ -81,17 +82,23 @@ class Angles2BackboneCPUFunction(Function):
 	def backward(ctx, gradOutput_cpu):
 		gradOutput_cpu = gradOutput_cpu.contiguous()
 		input_angles, param, angles_length = ctx.saved_tensors
-		if len(input_angles.size()) == 3:
-			batch_size = input_angles.size(0)
-			gradInput_cpu = torch.zeros(batch_size, 3, ctx.angles_max_length, dtype=torch.double, device='cpu')
-			gradParam_cpu = torch.zeros(6, dtype=torch.double, device='cpu')
-			dr_dangle = torch.zeros(batch_size, 3, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.double, device='cpu')
-			dr_dparam = torch.zeros(batch_size, 6, 3*ctx.atoms_max_length*ctx.angles_max_length, dtype=torch.double, device='cpu')
-		else:
-			raise(Exception('Angles2BackboneFunction: backward size', input_angles.size()))		
+		batch_size = input_angles.size(0)
+		angles_max_length = input_angles.size(2)
+		atoms_max_length = 3*angles_max_length
 		
-		_ReducedModel.Angles2BackboneCPU_backward(	gradInput_cpu, gradParam_cpu, gradOutput_cpu, input_angles, param, angles_length, 
-													ctx.A, dr_dangle, dr_dparam)
+		gradInput_gpu = None
+		gradParam_gpu = None
+		if input_angles.requires_grad:
+			gradInput_cpu = torch.zeros(batch_size, 3, angles_max_length, dtype=torch.double, device='cpu')
+			dr_dangle = torch.zeros(batch_size, 3, 3*atoms_max_length*angles_max_length, dtype=torch.double, device='cpu')
+			_ReducedModel.Angles2BackboneCPUAngles_backward(gradInput_cpu, gradOutput_cpu, input_angles, param, angles_length, 
+														ctx.A, dr_dangle)
+		if param.requires_grad:
+			gradParam_cpu = torch.zeros(6, dtype=torch.double, device='cpu')
+			dr_dparam = torch.zeros(batch_size, 6, 3*atoms_max_length*angles_max_length, dtype=torch.double, device='cpu')
+			_ReducedModel.Angles2BackboneCPUParam_backward(gradParam_cpu, gradOutput_cpu, input_angles, param, angles_length, 
+														ctx.A, dr_dparam)
+
 		
 		# if math.isnan(torch.sum(gradInput_cpu)):
 		# 	raise(Exception('Angles2BackboneFunction: gradInput_cpu backward Nan'))		
