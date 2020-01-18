@@ -5,7 +5,7 @@ import unittest
 import torch
 from TorchProteinLibrary import FullAtomModel
 from TorchProteinLibrary.FullAtomModel import Angles2Coords, PDB2CoordsUnordered, Coords2Center, CoordsTranslate, CoordsRotate
-from TorchProteinLibrary.ReducedModel import Angles2Backbone
+from TorchProteinLibrary.ReducedModel import Angles2Backbone, backbone2dihedrals
 from TorchProteinLibrary.RMSD import Coords2RMSD
 
 from torch import optim
@@ -17,7 +17,7 @@ from matplotlib.animation import FuncAnimation
 
 
 class VisualTestAngles2Backbone(unittest.TestCase):
-	device = 'cpu'
+	device = 'cuda'
 	dtype = torch.double
 	places = 7
 	batch_size = 1
@@ -42,10 +42,10 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 		ax.set_zlim(min_xyz,max_xyz)
 		ax.legend()
 		plt.savefig('TestFig/%s'%filename)
-
+	
 	def prepare_structure(self):
 		p2c = PDB2CoordsUnordered()
-		coords_dst, chain_names, res_names_dst, res_nums_dst, atom_names_dst, num_atoms_dst = p2c(["f4TQ1_B.pdb"])
+		coords_dst, chain_names, res_names_dst, res_nums_dst, atom_names_dst, num_atoms_dst = p2c(["test/small.pdb"])#p2c(["f4TQ1_B.pdb"])
 
 		#Making a mask on CA, C, N atoms
 		is0C = torch.eq(atom_names_dst[:,:,0], 67).squeeze()
@@ -68,14 +68,17 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 		backbone_z = torch.masked_select(coords_dst[0,:,2], isSelected)[:num_backbone_atoms]
 		backbone_coords = torch.stack([backbone_x, backbone_y, backbone_z], dim=1).resize_(1, num_backbone_atoms*3).contiguous()
 
-		print(num_backbone_atoms)
-		return 	backbone_coords.to(dtype=self.dtype, device=self.device), torch.tensor([num_backbone_atoms], dtype=torch.int, device=self.device)
+
+		length = torch.tensor([num_backbone_atoms/3], dtype=torch.int, device=self.device)
+		backbone_angles = backbone2dihedrals(backbone_coords, length)
+		
+		return backbone_angles, backbone_coords.to(dtype=self.dtype, device=self.device), torch.tensor([num_backbone_atoms], dtype=torch.int, device=self.device)
 
 	def setUp(self):
 		print(self.msg)
 		self.a2b = Angles2Backbone()
 		self.rmsd = Coords2RMSD()
-		self.ref_coords, self.num_atoms = self.prepare_structure()
+		self.ref_angles, self.ref_coords, self.num_atoms = self.prepare_structure()
 
 		self.center = Coords2Center()
 		self.translate = CoordsTranslate()
@@ -83,11 +86,20 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 
 	def runTest(self):
 		num_aa = torch.zeros(1, dtype=torch.int, device=self.device).fill_( int(self.num_atoms.item()/3) )
+		
+		#Initializing angles from dihedrals
 		angles = torch.zeros(1, 3, num_aa.item(), dtype=self.dtype, device=self.device).normal_().requires_grad_()
-		param = self.a2b.get_default_parameters().to(device=self.device, dtype=self.dtype).requires_grad_()
-					
-		optimizer = optim.Adam([angles], lr = 0.05)
+		angles = self.ref_angles.to(dtype=self.dtype, device=self.device).contiguous()
+		angles.requires_grad_()
 
+		#Modifying parameters to suit our structure
+		param = self.a2b.get_default_parameters().to(device=self.device, dtype=self.dtype)
+		param = torch.tensor([1.4360, 1.0199, 1.5187, 1.1855, 1.3197, 1.0543], dtype=self.dtype, device=self.device)
+		param.requires_grad_()
+		
+		print('Init param:', param)
+		optimizer = optim.Adam([angles, param], lr = 0.05)
+		
 		loss_data = []
 		g_src = []
 		g_dst = []
@@ -99,7 +111,7 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 											self.num_atoms)
 		
 		for epoch in range(300):
-			print('step', epoch)
+			# print('step', epoch)
 			optimizer.zero_grad()
 			coords_src = self.a2b(angles, param, num_aa)
 			L = self.rmsd(coords_src, backbone_coords, self.num_atoms)
@@ -122,7 +134,8 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 			
 				g_src.append(rc_src)
 				g_dst.append(c_dst)
-
+		
+		print('Optimized param:', param)
 		fig = plt.figure()
 		plt.title("Backbone fitting")
 		plt.plot(loss_data)
@@ -154,8 +167,8 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 		anim = animation.FuncAnimation(fig, update_plot,
                                     frames=300, interval=20, blit=True)
 		ax.legend()
-		# anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
-		plt.show()
+		anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
+		# plt.show()
 
 class VisualTestAngles2Backbone(VisualTestAngles2Backbone):
 	device = 'cuda'
