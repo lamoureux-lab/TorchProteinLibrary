@@ -1,10 +1,11 @@
 from setuptools import setup
 from torch.utils.cpp_extension import CppExtension, BuildExtension, CUDAExtension
 import os
+import sys
 import sysconfig
 
 if __name__=='__main__':
-	
+	os.system('export TORCH_CUDA_ARCH_LIST="5.2;6.0;6.1;6.2;7.0;7.5"')
 	Packages = ['TorchProteinLibrary', 
 				#FullAtomModel
 				'TorchProteinLibrary.FullAtomModel', 
