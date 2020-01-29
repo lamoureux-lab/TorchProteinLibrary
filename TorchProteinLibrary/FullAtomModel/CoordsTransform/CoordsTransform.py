@@ -66,11 +66,12 @@ class CoordsTranslateFunction(Function):
 
 		if math.isnan(output_coords.sum()):
 			raise(Exception('CoordsTranslateFunction: forward Nan'))	
-
+		# print('CoordsTranslate forward:', output_coords.dtype)
 		return output_coords
 
 	@staticmethod
 	def backward(ctx, grad_output_coords):
+		# print('CoordsTranslate backward')
 		# ATTENTION! It passes non-contiguous tensor
 		grad_output_coords = grad_output_coords.contiguous()
 		T, num_atoms = ctx.saved_tensors
@@ -183,6 +184,7 @@ class Coords2CenterFunction(Function):
 	
 	@staticmethod		
 	def backward(ctx, grad_output_center):
+		# print('Coords2Center backward')
 		# ATTENTION! It passes non-contiguous tensor
 		grad_output_center = grad_output_center.contiguous()
 		input_coords, num_atoms = ctx.saved_tensors

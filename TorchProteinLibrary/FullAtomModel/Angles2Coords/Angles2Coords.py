@@ -54,7 +54,8 @@ class Angles2CoordsFunction(Function):
 		
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: forward Nan'))
-		
+			
+		ctx.mark_non_differentiable(output_resnames_cpu, output_atomnames_cpu, num_atoms)
 		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
 	
 	# @profile

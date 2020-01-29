@@ -167,8 +167,8 @@ class VisualTestAngles2Backbone(unittest.TestCase):
 		anim = animation.FuncAnimation(fig, update_plot,
                                     frames=300, interval=20, blit=True)
 		ax.legend()
-		anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
-		# plt.show()
+		# anim.save("ExampleFitBackboneResultParam.gif", dpi=80, writer='imagemagick')
+		plt.show()
 
 class VisualTestAngles2Backbone(VisualTestAngles2Backbone):
 	device = 'cuda'

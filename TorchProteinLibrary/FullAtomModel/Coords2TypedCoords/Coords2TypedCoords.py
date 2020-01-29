@@ -35,17 +35,19 @@ class Coords2TypedCoordsFunction(Function):
 			raise(Exception('Coords2TypedCoordsFunction: forward Nan'))	
 		
 		ctx.save_for_backward(num_atoms_of_type, offsets)
+		ctx.mark_non_differentiable(num_atoms_of_type, offsets)
 		return output_coords_cpu, num_atoms_of_type, offsets
 	
 	@staticmethod
 	def backward(ctx, grad_typed_coords_cpu, *kwargs):
+		# print('Coords2TypedCoords backward')
 		# ATTENTION! It passes non-contiguous tensor
 		grad_typed_coords_cpu = grad_typed_coords_cpu.contiguous()
 		num_atom_types = 11
 		num_atoms_of_type, offsets = ctx.saved_tensors
 
 		if len(grad_typed_coords_cpu.size()) == 2:
-			grad_coords_cpu = torch.zeros(grad_typed_coords_cpu.size(0), grad_typed_coords_cpu.size(1), dtype=grad_typed_coords_cpu.dtype)
+			grad_coords_cpu = torch.zeros_like(grad_typed_coords_cpu)
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
@@ -57,7 +59,7 @@ class Coords2TypedCoordsFunction(Function):
 		if math.isnan(grad_coords_cpu.sum()):
 			raise(Exception('Coords2TypedCoordsFunction: backward Nan'))		
 		
-		return Variable(grad_coords_cpu), None, None, None
+		return grad_coords_cpu, None, None, None
 
 class Coords2TypedCoords(Module):
 	def __init__(self):
