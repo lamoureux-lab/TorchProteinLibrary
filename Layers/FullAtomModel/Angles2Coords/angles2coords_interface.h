@@ -3,6 +3,7 @@ void Angles2Coords_forward(     at::Tensor sequences,
                                 at::Tensor input_angles, 
                                 at::Tensor output_coords,
                                 at::Tensor res_names,
+                                torch::Tensor res_nums,
                                 at::Tensor atom_names
                         );
 

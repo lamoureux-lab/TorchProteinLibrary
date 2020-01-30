@@ -9,6 +9,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                                 torch::Tensor input_angles, 
                                 torch::Tensor output_coords,
                                 torch::Tensor res_names,
+                                torch::Tensor res_nums,
                                 torch::Tensor atom_names
                         ){
     bool add_terminal = false;
@@ -30,6 +31,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
         torch::Tensor single_sequence = sequences[i];
         torch::Tensor single_atom_names = atom_names[i];
         torch::Tensor single_res_names = res_names[i];
+        torch::Tensor single_res_nums = res_nums[i];
         torch::Tensor single_angles = input_angles[i];
         torch::Tensor single_coords = output_coords[i];
         
@@ -61,6 +63,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                     int idx = conf.groups[j]->atomIndexes[k];
                     torch::Tensor single_atom_name = single_atom_names[idx];
                     torch::Tensor single_res_name = single_res_names[idx];
+                    single_res_nums[idx] = (int)conf.groups[j]->residueIndex;
                     StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name);
                     StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
                 }

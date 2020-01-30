@@ -43,20 +43,23 @@ class Angles2CoordsFunction(Function):
 		max_num_atoms = torch.max(num_atoms)
 		batch_size = input_angles_cpu.size(0)
 		output_coords_cpu = torch.zeros(batch_size, 3*max_num_atoms, dtype=input_angles_cpu.dtype)
+		output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A'))
 		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
+		output_resnums_cpu = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
 		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
 		_FullAtomModel.Angles2Coords_forward( 	sequenceTensor,
 												input_angles_cpu, 
 												output_coords_cpu, 
 												output_resnames_cpu,
+												output_resnums_cpu,
 												output_atomnames_cpu)
 		
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: forward Nan'))
 			
-		ctx.mark_non_differentiable(output_resnames_cpu, output_atomnames_cpu, num_atoms)
-		return output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms
+		ctx.mark_non_differentiable(output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
+		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 	
 	# @profile
 	@staticmethod 
