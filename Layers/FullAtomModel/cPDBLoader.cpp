@@ -57,58 +57,49 @@ cPDBLoader::~cPDBLoader() {
 		
 }
 
-void cPDBLoader::reorder(){
-    int global_ind=0;
-    int local_ind;
-    std::string lastO("O");
+// void cPDBLoader::reorder(){
+//     int global_ind=0;
+//     int local_ind;
+//     std::string lastO("O");
 
-    // std::cout<<"==="<<std::endl;
-    // reorganizing according to residue numbers
-    int num_residues = res_nums.back() - res_nums[0] + 1;
-    // std::cout<<"Num residues = "<<num_residues<<std::endl;
-    res_r.resize(num_residues);
-    res_atom_names.resize(num_residues);
-    res_res_names.resize(num_residues);
-    for(int i=0; i<r.size(); i++){
-        int res_num = res_nums[i] - res_nums[0];
-        // std::cout<<"res_num = "<<res_num<<std::endl;
-        res_r[res_num].push_back(r[i]);
-        res_atom_names[res_num].push_back(atom_names[i]);
-        res_res_names[res_num] = res_names[i];
-    }
-    // std::cout<<"end loading"<<std::endl;
+//     // reorganizing according to residue numbers
+//     int num_residues = res_nums.back() - res_nums[0] + 1;
+//     std::cout<<"Num residues = "<<num_residues<<std::endl;
+    
+//     res_r.resize(num_residues);
+//     res_atom_names.resize(num_residues);
+//     res_res_names.resize(num_residues);
+//     for(int i=0; i<r.size(); i++){
+//         int res_num = res_nums[i] - res_nums[0];
+//         // std::cout<<"res_num = "<<res_num<<std::endl;
+//         res_r[res_num].push_back(r[i]);
+//         res_atom_names[res_num].push_back(atom_names[i]);
+//         res_res_names[res_num] = res_names[i];
+//     }
+//     // std::cout<<"end loading"<<std::endl;
 
-    // reordering atoms according to cConformation output
-    /*
-    for(int i=0; i<res_r.size(); i++){
-        for(int j=0; j<res_r[i].size(); j++){
-            local_ind = getAtomIndex(res_res_names[i], res_atom_names[i][j]);
-            if(local_ind == -1){
-                std::cout<<"cPDBLoader::reorder: unknown atom "<<res_res_names[i]<<" "<<res_atom_names[i][j]<<std::endl;
-                throw std::string("cPDBLoader::reorder: unknown atom ") + res_res_names[i] +std::string(":")+res_atom_names[i][j];
-            }
-            cVector3 global_r(coords + (global_ind + local_ind)*3);
-            global_r = res_r[i][j];
-        }
-        if(add_terminal){
-            if( i<(res_r.size()-1) )
-                lastO = "O";
-            else
-                lastO = "OXT";
-        }else{
-            lastO = "O";
-        }
-        if(res_r[i].size()!= (getAtomIndex(res_res_names[i], lastO) + 1) ){
-            std::cout<<"Missing atoms in residue "<<res_res_names[i]<<std::endl;
-            for(int j=0;j<res_atom_names[i].size();j++){
-                std::cout<<res_atom_names[i][j]<<std::endl;
-            }
-            throw std::string("cPDBLoader::reorder: Missing atoms");
-        }
-        global_ind += getAtomIndex(res_res_names[i], lastO) + 1;
-    } 
-    */      
-}
+//     // reordering atoms according to cConformation output
+//     // for(int i=0; i<res_r.size(); i++){
+//     //     for(int j=0; j<res_r[i].size(); j++){
+//     //         local_ind = getAtomIndex(res_res_names[i], res_atom_names[i][j]);
+//     //         if(local_ind == -1){
+//     //             std::cout<<"cPDBLoader::reorder: unknown atom "<<res_res_names[i]<<" "<<res_atom_names[i][j]<<std::endl;
+//     //             throw std::string("cPDBLoader::reorder: unknown atom ") + res_res_names[i] +std::string(":")+res_atom_names[i][j];
+//     //         }
+//     //         cVector3 global_r(coords + (global_ind + local_ind)*3);
+//     //         global_r = res_r[i][j];
+//     //     }
+//     //     lastO = "OXT";
+//     //     if(res_r[i].size()!= (getAtomIndex(res_res_names[i], lastO) + 1) ){
+//     //         std::cout<<"Missing atoms in residue "<<res_res_names[i]<<std::endl;
+//     //         for(int j=0;j<res_atom_names[i].size();j++){
+//     //             std::cout<<res_atom_names[i][j]<<std::endl;
+//     //         }
+//     //         throw std::string("cPDBLoader::reorder: Missing atoms");
+//     //     }
+//     //     global_ind += getAtomIndex(res_res_names[i], lastO) + 1;
+//     // } 
+// }
 
 cVector3<double> cPDBLoader::getCenterMass(){
     cVector3<double> c(0., 0., 0.);

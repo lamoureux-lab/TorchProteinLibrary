@@ -56,18 +56,19 @@ class PDB2CoordsOrdered:
 	def __call__(self, filenames):
 		
 		filenamesTensor = convertStringList(filenames)
-		max_num_atoms = 1
-		batch_size = len(self.filenames)
-
+		batch_size = len(filenames)
 		num_atoms = torch.zeros(batch_size, dtype=torch.int)
-		output_coords_cpu = torch.zeros(batch_size, max_num_atoms*3, dtype=torch.double)
-		output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
-		output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
-		mask = torch.zeros(batch_size, max_num_atoms, dtype=torch.uint8)
+		output_coords_cpu = torch.zeros(batch_size, 1, dtype=torch.double)
+		output_chainnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+		output_resnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+		output_resnums_cpu = torch.zeros(batch_size, 1, dtype=torch.int)
+		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
+		mask = torch.zeros(batch_size, 1, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, sequences, output_coords_cpu, output_resnames_cpu, output_atomnames_cpu, num_atoms, mask)
+		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, 
+										output_resnums_cpu, output_atomnames_cpu, mask, num_atoms)
 	
-		return output_coords_cpu, mask, output_resnames_cpu, output_atomnames_cpu, num_atoms
+		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, mask, num_atoms
 
 class PDB2CoordsUnordered:
 					
@@ -82,7 +83,8 @@ class PDB2CoordsUnordered:
 		output_resnums_cpu = torch.zeros(batch_size, 1, dtype=torch.int)
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
+		_FullAtomModel.PDB2CoordsUnordered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, 
+											output_resnums_cpu, output_atomnames_cpu, num_atoms)
 	
 		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 
