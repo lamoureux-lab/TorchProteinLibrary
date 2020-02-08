@@ -281,7 +281,6 @@ def unite_proteins(receptor, ligand):
 if __name__=='__main__':
 	from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
 	
-	
 	p2c = PDB2CoordsUnordered()
 	prot = ProteinStructure(*p2c(["1brs.pdb"]))
 	atoms_plot = prot.plot_atoms()
