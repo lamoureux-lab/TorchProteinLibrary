@@ -57,7 +57,7 @@ class TestAngles2BackboneForwardCPU(TestAngles2Backbone):
 		fa_angles = torch.zeros(self.batch_size, 8, self.length, dtype=self.dtype)
 		fa_angles[:,0:3,:].copy_(backbone_angles[:,0:3,:].cpu())
 		
-		coords_fa, res_names, atom_names, num_atoms = self.a2c(fa_angles, sequences)
+		coords_fa, _, res_names, _, atom_names, num_atoms = self.a2c(fa_angles, sequences)
 		max_num_atoms = torch.max(num_atoms)
 		coords_fa = coords_fa.detach().cpu().view(self.batch_size, max_num_atoms, 3).numpy()
 

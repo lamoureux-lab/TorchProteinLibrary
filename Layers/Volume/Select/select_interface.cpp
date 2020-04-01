@@ -31,9 +31,43 @@ void SelectVolume_forward(  torch::Tensor volume,
         torch::Tensor single_features = features[i];
 
         int single_num_atoms = num_atoms[i].item().toInt();
-        gpu_selectFromTensor(   single_features.data<float>(), num_features,
-                                single_volume.data<float>(), spatial_dim,
-                                single_coords.data<float>(), single_num_atoms, max_num_atoms, res);
+        gpu_coordSelect(single_features.data<float>(), num_features,
+                        single_volume.data<float>(), spatial_dim,
+                        single_coords.data<float>(), single_num_atoms, max_num_atoms, res);
     }
-}                        
+}                       
+
+
+void SelectVolume_backward( torch::Tensor gradOutput,
+                            torch::Tensor gradInput,
+                            torch::Tensor coords,
+                            torch::Tensor num_atoms,
+                            float res
+                        ){
+    CHECK_GPU_INPUT(gradOutput);
+    CHECK_GPU_INPUT(gradInput);
+    CHECK_GPU_INPUT(coords);
+    CHECK_GPU_INPUT_TYPE(num_atoms, torch::kInt);
+    if(coords.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+
+
+    int batch_size = coords.size(0);
+    int num_features = gradOutput.size(1);
+    int spatial_dim = gradInput.size(2);
+    int max_num_atoms = coords.size(1)/3;
+
+    #pragma omp parallel for
+    for(int i=0; i<batch_size; i++){
+        torch::Tensor single_gradInput = gradInput[i];
+        torch::Tensor single_coords = coords[i];
+        torch::Tensor single_gradOutput = gradOutput[i];
+
+        int single_num_atoms = num_atoms[i].item().toInt();
+        gpu_coordSelectGrad(single_gradOutput.data<float>(), num_features,
+                            single_gradInput.data<float>(), spatial_dim,
+                            single_coords.data<float>(), single_num_atoms, max_num_atoms, res);
+    }
+}                  
 

@@ -93,7 +93,7 @@ Output:
 }
 
 
-__global__ void selectFromTensor(float *features, 
+__global__ void coordSelect(float *features, 
 								float* volume, int spatial_dim, 
 								float *coords, int num_atoms, int max_num_atoms,
 								float res){
@@ -118,6 +118,35 @@ Output:
 		if( (x<spatial_dim && x>=0)&&(y<spatial_dim && y>=0)&&(z<spatial_dim && z>=0)){
 			uint idx = z + y*spatial_dim + x*spatial_dim*spatial_dim;
 			feature_output[atom_idx] = feature_volume[idx];
+		}
+	}
+}
+
+__global__ void coordSelectGrad(float *gradOutput, 
+								float* gradInput, int spatial_dim, 
+								float *coords, int num_atoms, int max_num_atoms,
+								float res){
+/*
+Input:
+	gradOutput: gradient of selected features
+	coords: coordinates in a flat array
+	num_atoms: number of atoms 
+	spatial_dim: volume 3d array real size
+	res: volume 3d array resolution
+		
+Output: 
+	gradInput: 3d array from which we selected
+*/
+	int feature_index = threadIdx.x;
+	float *feature_volume = gradInput + feature_index * spatial_dim*spatial_dim*spatial_dim;
+	float *feature_grad = gradOutput + feature_index * max_num_atoms;
+	for(int atom_idx = 0; atom_idx<num_atoms; atom_idx++){
+		float 	x = floor(coords[3*atom_idx]/res),
+				y = floor(coords[3*atom_idx + 1]/res),
+				z = floor(coords[3*atom_idx + 2]/res);
+		if( (x<spatial_dim && x>=0)&&(y<spatial_dim && y>=0)&&(z<spatial_dim && z>=0)){
+			uint idx = z + y*spatial_dim + x*spatial_dim*spatial_dim;
+			feature_volume[idx] = feature_grad[atom_idx];
 		}
 	}
 }
@@ -150,13 +179,24 @@ void gpu_computeVolume2Coords(	T *coords,
 
 }
 
-void gpu_selectFromTensor(	float *features, int num_features, 
-							float* volume, int spatial_dim, 
+void gpu_coordSelect(	float *features, int num_features, 
+						float* volume, int spatial_dim, 
+						float *coords, int num_atoms, int max_num_atoms, 
+						float res){
+
+	coordSelect<<<1, num_features>>>(	features, 
+										volume, spatial_dim, 
+										coords, num_atoms, max_num_atoms,
+										res);
+}
+
+void gpu_coordSelectGrad(	float *gradOutput, int num_features, 
+							float* gradInput, int spatial_dim, 
 							float *coords, int num_atoms, int max_num_atoms, 
 							float res){
 
-	selectFromTensor<<<1, num_features>>>(	features, 
-											volume, spatial_dim, 
+	coordSelectGrad<<<1, num_features>>>(	gradOutput, 
+											gradInput, spatial_dim, 
 											coords, num_atoms, max_num_atoms,
 											res);
 }

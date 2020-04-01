@@ -1,1 +1,2 @@
 from .ProteinStructure import ProteinStructure
+from .BackboneStructure import BackboneStructure

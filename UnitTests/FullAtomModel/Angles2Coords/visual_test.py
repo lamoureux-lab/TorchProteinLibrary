@@ -46,35 +46,37 @@ if __name__=='__main__':
 	translate = CoordsTranslate()
 	rotate = CoordsRotate()
 
-	# angles = torch.zeros(1, 3, num_aa.item(), dtype=self.dtype, device=self.device).normal_().requires_grad_()
-	# angles = self.ref_angles.to(dtype=self.dtype, device=self.device).contiguous()
-	# angles.requires_grad_()
 
-	# optimizer = optim.Adam([angles, param], lr = 0.05)
 	
 	p2c = PDB2CoordsOrdered()
 	loaded_prot = p2c(["f4TQ1_B.pdb"])
 
-	coords, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
+	coords_dst, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
+	coords_dst = coords_dst.to(dtype=torch.float)
 	sequences = get_sequence(resnames, resnums, num_atoms, mask)
 	
-	angles, length = Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms)
+	angles, length = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms)
+	angles = angles.to(dtype=torch.float)
 	angles.requires_grad_()
-
+	optimizer = optim.Adam([angles], lr = 0.001)
 	pred_prot = a2c(angles, sequences)
 	
-	ref_structure = ProteinStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
-	pred_structure = ProteinStructure(*pred_prot)
-	ref_atoms_plot = ref_structure.plot_atoms()
-	pred_atoms_plot = pred_structure.plot_atoms()
 
-	print(mask)
-	
 	v = vp.Plotter(N=2, title='basic shapes', axes=0)
 	v.sharecam = True
-	v.show(ref_atoms_plot, at=0)
-	v.show(pred_atoms_plot, at=1, interactive=1)
+	for epoch in range(300):
+		coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences)
+		L = rmsd(coords_src, coords_dst, num_atoms)
+		L.backward()
+		optimizer.step()
 
+		ref_structure = ProteinStructure(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms)
+		pred_structure = ProteinStructure(coords_src, chainnames, resnames, resnums, atomnames, num_atoms)
+		ref_atoms_plot = ref_structure.plot_atoms()
+		pred_atoms_plot = pred_structure.plot_atoms()
+		v.show(ref_atoms_plot, at=0)
+		v.show(pred_atoms_plot, at=1)
+	v.show(interactive=1)
 # L = 0.1  # spring x position at rest
 # x0 = 0.85  # initial x-coordinate of the block
 # k = 25  # spring constant
