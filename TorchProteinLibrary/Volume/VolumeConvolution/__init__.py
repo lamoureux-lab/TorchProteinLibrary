@@ -1,1 +1,2 @@
 from .VolumeConvolution import VolumeConvolution
+from .VolumeCrossConvolution import VolumeCrossConvolution
