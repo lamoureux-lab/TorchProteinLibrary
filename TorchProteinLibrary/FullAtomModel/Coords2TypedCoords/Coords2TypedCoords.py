@@ -20,23 +20,22 @@ class Coords2TypedCoordsFunction(Function):
 			
 		if len(input_coords_cpu.size())==2:
 			batch_size = input_coords_cpu.size(0)
-			output_coords_cpu = torch.zeros(batch_size, 3*max_num_atoms, dtype=input_coords_cpu.dtype)
+			output_coords_cpu = torch.zeros(batch_size, num_atom_types, 3*max_num_atoms, dtype=input_coords_cpu.dtype)
 			num_atoms_of_type = torch.zeros(batch_size, num_atom_types, dtype=torch.int)
-			offsets = torch.zeros(batch_size, num_atom_types, dtype=torch.int)
-			ctx.atom_indexes = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
+			ctx.atom_indexes = torch.zeros(batch_size, num_atom_types, max_num_atoms, dtype=torch.int)
 			
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_coords_cpu.size()) 
 
 		_FullAtomModel.Coords2TypedCoords_forward(   input_coords_cpu, input_resnames, input_atomnames, num_atoms,
-													output_coords_cpu, num_atoms_of_type, offsets, ctx.atom_indexes)
+													output_coords_cpu, num_atoms_of_type, ctx.atom_indexes)
 
 		if math.isnan(output_coords_cpu.sum()):
 			raise(Exception('Coords2TypedCoordsFunction: forward Nan'))	
 		
-		ctx.save_for_backward(num_atoms_of_type, offsets)
-		ctx.mark_non_differentiable(num_atoms_of_type, offsets)
-		return output_coords_cpu, num_atoms_of_type, offsets
+		ctx.save_for_backward(num_atoms_of_type, input_coords_cpu)
+		ctx.mark_non_differentiable(num_atoms_of_type)
+		return output_coords_cpu, num_atoms_of_type
 	
 	@staticmethod
 	def backward(ctx, grad_typed_coords_cpu, *kwargs):
@@ -44,16 +43,15 @@ class Coords2TypedCoordsFunction(Function):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_typed_coords_cpu = grad_typed_coords_cpu.contiguous()
 		num_atom_types = 11
-		num_atoms_of_type, offsets = ctx.saved_tensors
+		num_atoms_of_type, input_coords_cpu = ctx.saved_tensors
 
-		if len(grad_typed_coords_cpu.size()) == 2:
-			grad_coords_cpu = torch.zeros_like(grad_typed_coords_cpu)
+		if len(grad_typed_coords_cpu.size()) == 3:
+			grad_coords_cpu = torch.zeros_like(input_coords_cpu)
 		else:
 			raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_angles_cpu.size()) 
 		
 		_FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu, grad_coords_cpu, 
 													num_atoms_of_type, 
-													offsets, 
 													ctx.atom_indexes)
 		
 		if math.isnan(grad_coords_cpu.sum()):

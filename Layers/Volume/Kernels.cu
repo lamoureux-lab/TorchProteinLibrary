@@ -1,95 +1,97 @@
 #include <Kernels.h>
 
 template <typename T>
-__global__ void projectToTensor(T* coords, int* num_atoms_of_type, int* offsets, T *volume, 
-                                int spatial_dim, float res){
-/*
-Input:
-        coords: coordinates in a flat array:
-                coords: {protein1, ... proteinN}
-                protein1: {atom_type1 .. atom_typeM}
-                atom_type: {x1,y1,z1 .. xL,yL,zL}
-        num_atoms_of_type: number of atoms in each atom_type 
-        offsets: offset for coordinates for each atom_type volume
-Output: 
-	volume: density
-*/
-	int d = 2;
-	int type_index = threadIdx.x;
-	T *type_volume = volume + type_index * spatial_dim*spatial_dim*spatial_dim;
-	T *atoms_coords = coords + 3*offsets[type_index];
-	int n_atoms = num_atoms_of_type[type_index];
-	for(int atom_idx = 0; atom_idx<3*n_atoms; atom_idx+=3){
-		T 	x = atoms_coords[atom_idx],
-			y = atoms_coords[atom_idx + 1],
-			z = atoms_coords[atom_idx + 2];
-		int x_i = floor(x/res);
+__global__ void projectToCell(T* coords, int num_atoms, T *volume, int spatial_dim, float res){
+	uint d = 2;
+    uint i = (blockIdx.x * blockDim.x) + threadIdx.x;
+    uint j = (blockIdx.y * blockDim.y) + threadIdx.y;
+    uint k = (blockIdx.z * blockDim.z) + threadIdx.z;
+	
+    if( !((i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim)) )
+        return;
+    
+    uint idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
+    T result = 0.0;
+    for(int atom_idx = 0; atom_idx<num_atoms; atom_idx++){
+		T x = coords[3*atom_idx], y = coords[3*atom_idx + 1], z = coords[3*atom_idx + 2];
+		
+        int x_i = floor(x/res);
 		int y_i = floor(y/res);
 		int z_i = floor(z/res);
-		for(int i=x_i-d; i<=(x_i+d);i++){
-			for(int j=y_i-d; j<=(y_i+d);j++){
-				for(int k=z_i-d; k<=(z_i+d);k++){
-					if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
-						int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;							
-						T r2 = (x - i*res)*(x - i*res)+\
-						(y - j*res)*(y - j*res)+\
-						(z - k*res)*(z - k*res);
-						type_volume[idx]+=exp(-r2/2.0);
-					}
-				}
-			}
-		}
+
+        if(__sad(x_i, i, 0)>d) continue;
+        if(__sad(y_i, j, 0)>d) continue;
+        if(__sad(z_i, k, 0)>d) continue;
+
+        T r2 = (x - i*res)*(x - i*res)+(y - j*res)*(y - j*res)+(z - k*res)*(z - k*res);
+
+		result += exp(-r2/2.0);
 	}
+    volume[idx] = result;
 }
+
 template <typename T>
-__global__ void projectFromTensor(T* coords, T* grad, int* num_atoms_of_type, int* offsets, T *volume,
-                                  int spatial_dim, float res){
-/*
-Input:
-	coords: coordinates in a flat array:
-		coords: {protein1, ... proteinN}
-		protein1: {atom_type1 .. atom_typeM}
-		atom_type: {x1,y1,z1 .. xL,yL,zL}
-	num_atoms_of_type: number of atoms in each atom_type 
-	offsets: offset for coordinates for each atom_type volume
-	volume: gradient to be projected on atoms
-Output: 
-	grad: for each atom to store the gradient projection
-*/
-	int d = 2;
-	int type_index = threadIdx.x;
-	T *type_volume = volume + type_index * spatial_dim*spatial_dim*spatial_dim;
-	T *atoms_coords = coords + 3*offsets[type_index];
-	T *grad_coords = grad + 3*offsets[type_index];
-	int n_atoms = num_atoms_of_type[type_index];
-	for(int atom_idx = 0; atom_idx<3*n_atoms; atom_idx+=3){
-		T 	x = atoms_coords[atom_idx],
-			y = atoms_coords[atom_idx + 1],
-			z = atoms_coords[atom_idx + 2];
-		// grad_coords[atom_idx] = 0.0;
-		// grad_coords[atom_idx+1] = 0.0;
-		// grad_coords[atom_idx+2] = 0.0;
-		int x_i = floor(x/res);
-		int y_i = floor(y/res);
-		int z_i = floor(z/res);
-		
-		for(int i=x_i-d; i<=(x_i+d);i++){
-			for(int j=y_i-d; j<=(y_i+d);j++){
-				for(int k=z_i-d; k<=(z_i+d);k++){
-					if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
-						int idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
-						T r2 = (x - i*res)*(x - i*res)+\
-						(y - j*res)*(y - j*res)+\
-						(z - k*res)*(z - k*res);
-						grad_coords[atom_idx] -= (x - i*res)*type_volume[idx]*exp(-r2/2.0);
-						grad_coords[atom_idx + 1] -= (y-j*res)*type_volume[idx]*exp(-r2/2.0);
-						grad_coords[atom_idx + 2] -= (z-k*res)*type_volume[idx]*exp(-r2/2.0);
-					}
+void gpu_computeCoords2Volume(	T *coords,
+                                int num_atoms,
+								T *volume,
+								int spatial_dim,
+								float res){
+	
+	dim3 threadsPerBlock(4, 4, 4);
+    dim3 numBlocks( spatial_dim/threadsPerBlock.x + 1,
+                    spatial_dim/threadsPerBlock.y + 1,
+                    spatial_dim/threadsPerBlock.z + 1);
+	
+	projectToCell<T><<<numBlocks,threadsPerBlock>>>(coords, num_atoms, volume, spatial_dim, res);
+	
+}
+
+
+template <typename T>
+__global__ void projectFromTensor(	T* coords, T* grad, int num_atoms, 
+									T *volume, int spatial_dim, float res){
+	uint d = 2;
+	uint atom_idx = (blockIdx.x * blockDim.x) + threadIdx.x;
+	if(atom_idx>num_atoms)return;
+	
+	T x = coords[3*atom_idx], y = coords[3*atom_idx + 1], z = coords[3*atom_idx + 2];
+	int x_i = floor(x/res);
+	int y_i = floor(y/res);
+	int z_i = floor(z/res);
+	
+	T grad_x=0, grad_y=0, grad_z=0;
+	for(int i=x_i-d; i<=(x_i+d);i++){
+		for(int j=y_i-d; j<=(y_i+d);j++){
+			for(int k=z_i-d; k<=(z_i+d);k++){
+				if( (i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim) ){
+					int cell_idx = k + j*spatial_dim + i*spatial_dim*spatial_dim;
+					T vol_value = volume[cell_idx];
+
+					T r2 = (x - i*res)*(x - i*res)+(y - j*res)*(y - j*res)+(z - k*res)*(z - k*res);
+					
+					grad_x -= (x - i*res)*vol_value*exp(-r2/2.0);
+					grad_y -= (y - j*res)*vol_value*exp(-r2/2.0);
+					grad_z -= (z - k*res)*vol_value*exp(-r2/2.0);
 				}
 			}
 		}
-		
 	}
+	grad[3*atom_idx] = grad_x;
+	grad[3*atom_idx + 1] = grad_y;
+	grad[3*atom_idx + 2] = grad_z;
+}
+
+template <typename T>
+void gpu_computeVolume2Coords(	T *coords,
+								T* grad,
+                                int num_atoms, 
+								T *volume,
+								int spatial_dim,
+								float res){
+	dim3 threadsPerBlock(64);
+    dim3 numBlocks( num_atoms/threadsPerBlock.x + 1);
+
+	projectFromTensor<T><<<numBlocks,threadsPerBlock>>>(coords, grad, num_atoms, volume, spatial_dim, res);
 }
 
 
@@ -151,33 +153,6 @@ Output:
 	}
 }
 
-template <typename T>
-void gpu_computeCoords2Volume(	T *coords,
-                                int *num_atoms_of_type,
-							    int *offsets, 
-								T *volume,
-								int spatial_dim,
-                                int num_atom_types,
-								float res){
-
-	projectToTensor<T><<<1, num_atom_types>>>(	coords, num_atoms_of_type, offsets,
-											volume, spatial_dim, res);
-
-}
-template <typename T>
-void gpu_computeVolume2Coords(	T *coords,
-								T* grad,
-                                int *num_atoms_of_type,
-							    int *offsets, 
-								T *volume,
-								int spatial_dim,
-                                int num_atom_types,
-								float res){
-
-	projectFromTensor<T><<<1, num_atom_types>>>(coords, grad, num_atoms_of_type, offsets,
-												volume, spatial_dim, res);
-
-}
 
 void gpu_coordSelect(	float *features, int num_features, 
 						float* volume, int spatial_dim, 
@@ -201,8 +176,8 @@ void gpu_coordSelectGrad(	float *gradOutput, int num_features,
 											res);
 }
 
-template void gpu_computeVolume2Coords<float>(	float*, float*, int*, int*, float*, int, int, float);
-template void gpu_computeVolume2Coords<double>(	double*, double*, int*, int*, double*, int, int, float);
+template void gpu_computeVolume2Coords<float>(	float*, float*, int, float*, int, float);
+template void gpu_computeVolume2Coords<double>(	double*, double*, int, double*, int, float);
 
-template void gpu_computeCoords2Volume<float>(float*, int*, int*, float*, int, int, float);
-template void gpu_computeCoords2Volume<double>(double*, int*, int*, double*, int, int, float);
+template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float);
+template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float);

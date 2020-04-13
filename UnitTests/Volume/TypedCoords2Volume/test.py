@@ -15,7 +15,7 @@ class TestTypedCoords2Volume(unittest.TestCase):
 	device = 'cuda'
 	dtype = torch.float
 	places = 5
-	batch_size = 4
+	batch_size = 1
 	max_num_atoms = 16
 	eps=1e-03 
 	atol=1e-05 
@@ -33,34 +33,21 @@ class TestTypedCoords2Volume(unittest.TestCase):
 		return potential
 
 	def generateAtoms(self, num_atoms, box_size):
-		atom_coords = []
-		atom_types = []
+		num_atoms_of_type = torch.zeros(1, 11, dtype=torch.int, device=self.device)
+		coords = torch.zeros(1, 11, 3*self.max_num_atoms, dtype=self.dtype, device=self.device)
+		
 		for i in range(0, num_atoms):
-			atom_coords.append(1.0 + np.random.rand(3)*box_size)
-			atom_types.append(np.random.randint(low=0, high=11))
-		
-		num_atoms_of_type = torch.zeros(1,11, dtype=torch.int, device=self.device)
-		offsets = torch.zeros(1,11, dtype=torch.int, device=self.device)
-		coords = torch.zeros(1, 3*self.max_num_atoms, dtype=self.dtype, device=self.device)
-		
-		for atom_type in range(0,11):
+			atom_type = np.random.randint(low=0, high=11)
 			
-			for i, atom in enumerate(atom_types):
-				if atom == atom_type:
-					num_atoms_of_type[0,atom_type]+=1
-			
-			if atom_type>0:
-				offsets[0, atom_type] = offsets[0, atom_type-1] + num_atoms_of_type[0, atom_type-1]
-		
-		current_num_atoms_of_type = [0 for i in range(11)]
-		for i, r in enumerate(atom_coords):
-			index = 3*offsets[0, atom_types[i]] + 3*current_num_atoms_of_type[atom_types[i]]
-			coords[0, index + 0 ] = r[0]
-			coords[0, index + 1 ] = r[1]
-			coords[0, index + 2 ] = r[2]
-			current_num_atoms_of_type[atom_types[i]] += 1
+			atom_index = num_atoms_of_type[0, atom_type].item()
 
-		return coords, num_atoms_of_type, offsets
+			coords[0, atom_type, 3*atom_index + 0 ] = float(random.randrange(2.0, box_size-2.0))
+			coords[0, atom_type, 3*atom_index + 1 ] = float(random.randrange(2.0, box_size-2.0))
+			coords[0, atom_type, 3*atom_index + 2 ] = float(random.randrange(2.0, box_size-2.0))
+
+			num_atoms_of_type[0, atom_type] += 1
+		
+		return coords, num_atoms_of_type
 		
 
 	def setUp(self):
@@ -72,20 +59,17 @@ class TestTypedCoords2Volume(unittest.TestCase):
 
 		b_coords = []
 		b_num_atoms_of_type = []
-		b_offsets = []
 		b_potential = []
 		for i in range(self.batch_size):
 			num_atoms = math.floor(0.5 * (1.0 + random.random()) * self.max_num_atoms)
-			coords, num_atoms_of_type, offsets = self.generateAtoms(num_atoms, self.box_size)
+			coords, num_atoms_of_type = self.generateAtoms(num_atoms, self.box_size)
 			potential = self.generatePotential(self.box_size)
 			b_coords.append(coords)
 			b_num_atoms_of_type.append(num_atoms_of_type)
-			b_offsets.append(offsets)
 			b_potential.append(potential)
 
 		self.coords = torch.cat(b_coords, dim=0)
 		self.num_atoms_of_type = torch.cat(b_num_atoms_of_type, dim=0)
-		self.offsets = torch.cat(b_offsets, dim=0)
 		self.potential = torch.cat(b_potential, dim=0)
 
 
@@ -93,7 +77,7 @@ class TestTypedCoords2Volume(unittest.TestCase):
 
 class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 	def runTest(self):
-		volume_gpu = self.tc2v(self.coords, self.num_atoms_of_type, self.offsets)
+		volume_gpu = self.tc2v(self.coords, self.num_atoms_of_type)
 		volume = volume_gpu.sum(dim=1).to(device='cpu', dtype=torch.float)
 		
 		if not os.path.exists('TestFig'):
@@ -108,18 +92,19 @@ class TestTypedCoords2VolumeBackward(TestTypedCoords2Volume):
 	msg = "Testing TypedCoords2VolumeBackward"
 	def runTest(self):
 		coords0 = torch.zeros_like(self.coords).copy_(self.coords).requires_grad_()
-		volume_gpu = self.tc2v(coords0, self.num_atoms_of_type, self.offsets)
+		volume_gpu = self.tc2v(coords0, self.num_atoms_of_type)
 		E0 = torch.sum(volume_gpu*self.potential)
 		E0.backward()
 		
 		for i in range(0, self.coords.size(0)):
 			for j in range(0, self.coords.size(1)):
-				coords1 = torch.zeros_like(self.coords).copy_(self.coords)
-				coords1[i,j] += self.eps
-				volume_gpu1 = self.tc2v(coords1, self.num_atoms_of_type, self.offsets)
-				E1 = torch.sum(volume_gpu1*self.potential)
-				dE_dx = (E1.item() - E0.item())/(self.eps)
-				self.assertLess(math.fabs(dE_dx - coords0.grad[i,j].item()), math.fabs(E0.item()) * self.rtol + self.atol)
+				for k in range(0, self.coords.size(2)):
+					coords1 = torch.zeros_like(self.coords).copy_(self.coords)
+					coords1[i,j,k] += self.eps
+					volume_gpu1 = self.tc2v(coords1, self.num_atoms_of_type)
+					E1 = torch.sum(volume_gpu1*self.potential)
+					dE_dx = (E1.item() - E0.item())/(self.eps)
+					self.assertLess(math.fabs(dE_dx - coords0.grad[i,j,k].item()), math.fabs(E0.item()) * self.rtol + self.atol)
 
 class TestTypedCoords2VolumeBackward_Double(TestTypedCoords2VolumeBackward):
 	dtype=torch.double

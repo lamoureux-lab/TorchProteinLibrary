@@ -16,12 +16,12 @@ class TestCoords2TypedCoords(unittest.TestCase):
 		angles[0,2:,:] = np.pi
 		angles[0,3:,:] = 110.4*np.pi/180.0
 		a2c = Angles2Coords()
-		self.coords, self.res_names, self.atom_names, self.num_atoms = a2c(angles, self.sequence)
+		self.coords, _, self.res_names, _, self.atom_names, self.num_atoms = a2c(angles, self.sequence)
 		self.c2tc = Coords2TypedCoords()
 
 class TestCoords2TypedCoordsForward(TestCoords2TypedCoords):
 	def runTest(self):		
-		tcoords, num_atoms_of_type, offsets = self.c2tc(self.coords, self.res_names, self.atom_names, self.num_atoms)
+		tcoords, num_atoms_of_type = self.c2tc(self.coords, self.res_names, self.atom_names, self.num_atoms)
 		self.assertEqual(num_atoms_of_type[0,0].item(), 0) #sulfur 
 		self.assertEqual(num_atoms_of_type[0,1].item(), len(self.sequence[0])) #nitrogen amide
 		self.assertEqual(num_atoms_of_type[0,2].item(), 0) #nitrogen arom
@@ -41,22 +41,21 @@ class TestCoords2TypedCoordsForward(TestCoords2TypedCoords):
 class TestCoords2TypedCoordsBackward(TestCoords2TypedCoords):
 	def runTest(self):
 		self.coords.requires_grad_()
-		tcoords, num_atoms_of_type, offsets = self.c2tc(self.coords, self.res_names, self.atom_names, self.num_atoms)
-		z0 = tcoords.sum()	
+		tcoords, num_atoms_of_type = self.c2tc(self.coords, self.res_names, self.atom_names, self.num_atoms)
+		z0 = tcoords.sum()
 		z0.backward()
 		back_grad_x0 = torch.zeros_like(self.coords).copy_(self.coords.grad)
-		
 		error = 0.0
 		N = 0
 		x1 = torch.zeros_like(self.coords)
-		for i in range(0,len(self.sequence)):
-			for j in range(0,tcoords.size(1)):
-				dx = 0.0001
+		for i in range(0, self.coords.size(0)):
+			for j in range(0, self.coords.size(1)):
+				dx = 0.01
 				x1.copy_(self.coords)
 				x1[i,j] += dx
-				x1coords, num_atoms_of_type, offsets = self.c2tc(x1, self.res_names, self.atom_names, self.num_atoms)
+				x1coords, num_atoms_of_type = self.c2tc(x1, self.res_names, self.atom_names, self.num_atoms)
 				z1 = x1coords.sum()
-				dy_dx = (z1-z0)/(dx)
+				dy_dx = (z1.item()-z0.item())/(dx)
 				error += torch.abs(dy_dx - back_grad_x0[i,j]).item()
 				N+=1
 
