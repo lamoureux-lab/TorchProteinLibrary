@@ -13,6 +13,7 @@
 #include <thrust/scan.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/functional.h>
+#include <thrust/iterator/zip_iterator.h>
 
 #include <cmath>
 #include <iostream>
@@ -68,8 +69,6 @@ struct Matrix44
 	}
 };
 
-
-
 struct AMatFunctor
 {
 	__device__ Matrix44 operator()(const Matrix44& Aim1, Matrix44& Ai) const
@@ -107,9 +106,9 @@ int main(void) {
 	int num_atoms = 3*num_aa;
 	int num_coords = num_atoms*3;
 	int num_angles = 3*num_aa;
-	int batch_size = 64;
+	int batch_size = 1;
 
-	thrust::device_vector<float> gpu_input_angles(batch_size*num_angles, 0.0);
+	thrust::device_vector<float> gpu_input_angles(batch_size*num_angles, 1.0);
 	thrust::device_vector<float> gpu_output_coords(batch_size*num_coords, 0.0);
 	thrust::device_vector<float> gpu_A(batch_size*num_atoms*16, 0.0);
 	thrust::device_vector<float> gpu_param(6, 1.0);
@@ -123,8 +122,15 @@ int main(void) {
 	thrust::device_ptr<Vector3> dev_vec_ptr(raw_vec_ptr);
 	thrust::device_vector<Vector3> gpu_output_vec(dev_vec_ptr, dev_vec_ptr+batch_size*num_atoms);
 	
+	for(int i = 0; i < gpu_param.size(); i++)
+        std::cout << "gpu_param[" << i << "] = " << gpu_param[i] << std::endl;
+	
+	for(int i = 0; i < gpu_length.size(); i++)
+        std::cout << "gpu_length[" << i << "] = " << gpu_length[i] << std::endl;
+	
 	CHECK(cudaEventRecord(start));
 	for(int i=0; i<NLOOPS; i++){
+		
 		gpu_computeBMatBackbone(thrust::raw_pointer_cast(gpu_input_angles.data()), 
 								thrust::raw_pointer_cast(gpu_param.data()),
 								thrust::raw_pointer_cast(gpu_A.data()),
@@ -139,6 +145,9 @@ int main(void) {
 	float milliseconds = 0;
 	CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
 	printf("Forward opt %.3f ms\n", double(milliseconds)/double(NLOOPS));
+
+	for(int i = 0; i < gpu_length.size(); i++)
+        std::cout << "gpu_length[" << i << "] = " << gpu_length[i] << std::endl;
 	
 
 	thrust::device_vector<float> gpu_output_coords_old(batch_size*num_coords, 0.0);
@@ -156,6 +165,10 @@ int main(void) {
 	CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
 	printf("Forward ref %.3f ms\n", double(milliseconds)/double(NLOOPS));
 
+	for(int i = 0; i < 6; i++)
+        std::cout<<"coords_thrust["<<i<<"]:"<<gpu_output_coords[3*i]<<","<<gpu_output_coords[3*i+1]<<","<<gpu_output_coords[3*i+2]<<std::endl;
+	for(int i = 0; i < 6; i++)
+        std::cout<<"coords_old["<<i<<"]:"<<gpu_output_coords_old[3*i]<<","<<gpu_output_coords_old[3*i+1]<<","<<gpu_output_coords_old[3*i+2]<<std::endl;
 
 	thrust::device_vector<float> gpu_output_diff(batch_size*num_coords, 0.0);
 	thrust::transform(	gpu_output_coords.begin(), gpu_output_coords.end(), 
@@ -165,6 +178,8 @@ int main(void) {
 
 	float err = std::sqrt(thrust::transform_reduce(gpu_output_diff.begin(), gpu_output_diff.end(), thrust::square<float>(), float(0.0), thrust::plus<float>()));
 	printf("Error: %f\n", err);
+
+	
 
 	// float *cpu_gradInput, *cpu_gradOutput;
 	// float *gpu_gradInput = zeros_gpu<float>(batch_size*num_angles, cpu_gradInput);

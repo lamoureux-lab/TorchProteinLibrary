@@ -10,6 +10,8 @@ __global__ void computeCoordinatesBackbone( T *angles, T *param, T *atoms, T *A,
     int num_angles = length[batch_idx];
     int num_atoms = 3*length[batch_idx];
 
+	// printf("batch_idx=%d, num_atoms=%d\n", batch_idx, num_atoms);
+
 	T R_N_CA = param[0];
     T C_N_CA = param[1];
     T R_CA_C = param[2];
@@ -48,13 +50,15 @@ __global__ void computeCoordinatesBackbone( T *angles, T *param, T *atoms, T *A,
 }
 
 template <typename T>
-__global__ void computeTransformationMatrixes( T *angles, T *param, T *A, int *length, int angles_stride){
+__global__ void computeTransformationMatrixes(T *angles, T *param, T *A, int *length){
 	uint batch_idx = threadIdx.x;
 	uint atom_idx = blockIdx.x;
-    int atoms_stride = 3*angles_stride;
-    int num_angles = length[batch_idx];
-    int num_atoms = 3*length[batch_idx];
+    int max_num_atoms = gridDim.x;
+	int max_num_angles = max_num_atoms/3;
+	int num_angles = length[batch_idx];
+	int num_atoms = num_angles*3;
 
+	// printf("batch_idx=%d, atom_idx=%d\n", batch_idx, atom_idx);
 	T R_N_CA = param[0];
     T C_N_CA = param[1];
     T R_CA_C = param[2];
@@ -62,10 +66,10 @@ __global__ void computeTransformationMatrixes( T *angles, T *param, T *A, int *l
     T R_C_N = param[4];
     T CA_C_N = param[5];
 	
-	T *d_phi = angles + 3*batch_idx*angles_stride;
-	T *d_psi = angles + (3*batch_idx+1)*angles_stride;
-	T *d_omega = angles + (3*batch_idx+2)*angles_stride;
-	T *d_A = A + batch_idx*atoms_stride*16 + atom_idx*16;
+	T *d_phi = angles + 3*batch_idx*max_num_angles;
+	T *d_psi = angles + (3*batch_idx+1)*max_num_angles;
+	T *d_omega = angles + (3*batch_idx+2)*max_num_angles;
+	T *d_A = A + batch_idx*max_num_atoms*16 + atom_idx*16;
 
 	if(atom_idx == 0){
 		getIdentityMatrix44<T>(d_A);
@@ -77,11 +81,11 @@ __global__ void computeTransformationMatrixes( T *angles, T *param, T *A, int *l
 
 	int angle_idx = atom_idx/3;
 	if(atom_idx%3 == 1){
-		getRotationMatrixDihedral<T>(d_A+16*atom_idx, d_phi[angle_idx], C_N_CA, R_N_CA);
+		getRotationMatrixDihedral<T>(d_A, d_phi[angle_idx], C_N_CA, R_N_CA);
 	}else if (atom_idx%3 == 2){
-		getRotationMatrixDihedral<T>(d_A+16*atom_idx, d_psi[angle_idx], N_CA_C, R_CA_C);
+		getRotationMatrixDihedral<T>(d_A, d_psi[angle_idx], N_CA_C, R_CA_C);
 	}else{
-		getRotationMatrixDihedral<T>(d_A+16*atom_idx, d_omega[angle_idx-1], CA_C_N, R_C_N);
+		getRotationMatrixDihedral<T>(d_A, d_omega[angle_idx-1], CA_C_N, R_C_N);
 	}
 }
 
@@ -179,8 +183,8 @@ void gpu_computeCoordinatesBackbone(T *angles, T *param, T *atoms, T *A, int *le
 }
 
 template <typename T>
-void gpu_computeBMatBackbone(T *angles, T *param, T *A, int *length, int batch_size, int angles_stride){
-	computeTransformationMatrixes<<<3*angles_stride, batch_size>>>(angles, param, A, length, angles_stride);
+void gpu_computeBMatBackbone(T *angles, T *param, T *A, int *length, int batch_size, int max_num_angles){
+	computeTransformationMatrixes<<<3*max_num_angles, batch_size>>>(angles, param, A, length);
 }
 
 template <typename T>

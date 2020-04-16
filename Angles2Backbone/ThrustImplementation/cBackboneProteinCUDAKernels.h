@@ -8,7 +8,7 @@ void gpu_computeCoordinatesBackbone(T *angles,
 									int angles_stride);
 
 template <typename T>
-void gpu_computeBMatBackbone(T *angles, T *param, T *A, int *length, int batch_size, int angles_stride);
+void gpu_computeBMatBackbone(T *angles, T *param, T *A, int *length, int batch_size, int max_num_angles);
 
 template <typename T>
 void gpu_computeDerivativesBackbone(T *angles, 
