@@ -1,7 +1,7 @@
 #include "typedcoords2volume_interface.h"
 #include <iostream>
 #include <string>
-#include <Kernels.h>
+#include <HashKernel.h>
 #include <nUtil.h>
 
 void TypedCoords2Volume_forward(    torch::Tensor input_coords,
@@ -24,7 +24,7 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
             gpu_computeCoords2Volume<scalar_t>( single_input_coords.data<scalar_t>(), 
                                                 a_num_atoms[i], 
                                                 single_volume.data<scalar_t>(), 
-                                                single_volume.size(1), resolution);
+                                                single_volume.size(1), resolution, 2);
         }));
     }
     
@@ -59,3 +59,5 @@ void TypedCoords2Volume_backward(   torch::Tensor grad_volume,
     }
     
 }
+
+

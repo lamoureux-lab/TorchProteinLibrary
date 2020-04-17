@@ -1,5 +1,6 @@
 #include <Kernels.h>
 
+/*
 template <typename T>
 __global__ void projectToCell(T* coords, int num_atoms, T *volume, int spatial_dim, float res){
 	uint d = 2;
@@ -93,7 +94,7 @@ void gpu_computeVolume2Coords(	T *coords,
 
 	projectFromTensor<T><<<numBlocks,threadsPerBlock>>>(coords, grad, num_atoms, volume, spatial_dim, res);
 }
-
+*/
 
 __global__ void coordSelect(float *features, 
 								float* volume, int spatial_dim, 
@@ -175,9 +176,10 @@ void gpu_coordSelectGrad(	float *gradOutput, int num_features,
 											coords, num_atoms, max_num_atoms,
 											res);
 }
-
+/*
 template void gpu_computeVolume2Coords<float>(	float*, float*, int, float*, int, float);
 template void gpu_computeVolume2Coords<double>(	double*, double*, int, double*, int, float);
 
 template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float);
 template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float);
+*/

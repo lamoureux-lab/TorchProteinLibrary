@@ -73,6 +73,7 @@ if __name__=='__main__':
 					'Layers/Volume/VolumeRotation/volumeRotation_interface.cpp',
 					'Layers/Volume/VolumeRMSD/volumeRMSD_interface.cpp',
 					'Layers/Volume/Kernels.cu',
+					'Layers/Volume/HashKernel.cu',
 					'Layers/Volume/VolumeConv.cu',
 					'Layers/Volume/RotateGrid.cu',
 					'Layers/Volume/VolumeRMSD.cu',
