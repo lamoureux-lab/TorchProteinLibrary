@@ -1,5 +1,5 @@
 #include "Kernel.h"
-
+#include <stdio.h>
 __global__ void projectToTensor(float* coords, int num_atoms, float *volume, int spatial_dim, float res){
 	int d = 2;
 	for(int atom_idx = 0; atom_idx<3*num_atoms; atom_idx+=3){

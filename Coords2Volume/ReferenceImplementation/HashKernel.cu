@@ -11,8 +11,6 @@ namespace cg = cooperative_groups;
 
 #include "HashKernel.h"
 
-#define MAX_NUM_NEIGHBOURS 27
-
 //Round a / b to nearest higher integer value
 uint iDivUp(uint a, uint b)
 {
@@ -44,7 +42,7 @@ __global__
 void computeHash( 	uint *gridParticleHash, uint *gridParticleIndex, float *coords, 
 					int num_atoms, int spatial_dim, float res, int d){
 	uint atom_idx = blockIdx.x*blockDim.x + threadIdx.x;
-
+	uint num_neighbours = (2*d+1)*(2*d+1)*(2*d+1);
 	if (atom_idx>=num_atoms) return;
 	
 	int3 gridPos = computeGridPos(	make_float3(
@@ -57,8 +55,8 @@ void computeHash( 	uint *gridParticleHash, uint *gridParticleIndex, float *coord
 			for(int k=gridPos.z-d; k<=gridPos.z+d; k++){
 				if( ((i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim)) ){
 					uint hash = computeGridHash(make_int3(i,j,k), spatial_dim);
-					gridParticleHash[neighbour_idx*atom_idx + neighbour_idx] = hash;
-					gridParticleIndex[neighbour_idx*atom_idx + neighbour_idx] = atom_idx;
+					gridParticleHash[num_neighbours*atom_idx + neighbour_idx] = hash;
+					gridParticleIndex[num_neighbours*atom_idx + neighbour_idx] = atom_idx;
 					
 				}
 				neighbour_idx+=1;
@@ -82,27 +80,34 @@ void reorderData(uint *cellStart, uint *cellEnd,
 
 	if(index < num_atoms){
 		hash = gridParticleHash[index];
-		if(hash == 0xffffffff)return;
 		sharedHash[threadIdx.x + 1] = hash;
 		if(threadIdx.x == 0 && index > 0){
 			sharedHash[0] = gridParticleHash[index-1];
 		}
+		
 	}
 
 	cg::sync(cta);
 
 	if(index < num_atoms){
+		
+		if(sharedHash[threadIdx.x] == 0xffffffff){
+			return;
+		}
+		
 		if(index == 0 || hash != sharedHash[threadIdx.x]){
-			cellStart[hash] = index;
+			if(hash != 0xffffffff)
+				cellStart[hash] = index;
 			if (index > 0)
                 cellEnd[sharedHash[threadIdx.x]] = index;
 		}
-		if(index == num_atoms - 1){
+		if(index == num_atoms - 1 && hash != 0xffffffff){
 			cellEnd[hash] = index + 1;
 		}
-		uint sortedIndex = gridParticleIndex[index];
-		// printf("SI: %d", sortedIndex);
-		sortedPos[index] = make_float3(coords[3*sortedIndex+0], coords[3*sortedIndex+1], coords[3*sortedIndex+2]);
+		if(hash != 0xffffffff){
+			uint sortedIndex = gridParticleIndex[index];
+			sortedPos[index] = make_float3(coords[3*sortedIndex+0], coords[3*sortedIndex+1], coords[3*sortedIndex+2]);
+		}
 	}
 }
 
@@ -124,7 +129,7 @@ void evalCell(	float3 *sortedPos, float *volume,
 	if(start == 0xffffffff)
 		return;
 	uint end = cellEnd[cellHash];
-
+	
 	float3 cell = make_float3(i*res, j*res, k*res);
     
     float result = 0.0;
@@ -213,11 +218,11 @@ void gpu_BuildHashTable(float *coords,
 	// printArrays<<<1,1>>>(gridParticleHash, gridParticleIndex, (float*)sortedPos, num_neighbours*num_atoms);
 	// printArrays<<<1,1>>>(cellStart, cellEnd, grid_size);
 
-	// dim3 d3ThreadsPerBlock(4, 4, 4);
-    // dim3 d3NumBlocks( 	spatial_dim/d3ThreadsPerBlock.x + 1,
-    //                 	spatial_dim/d3ThreadsPerBlock.y + 1,
-    //                 	spatial_dim/d3ThreadsPerBlock.z + 1);
-	// evalCell<<<d3NumBlocks,d3ThreadsPerBlock>>>(sortedPos, volume, cellStart, cellEnd, spatial_dim, res);
+	dim3 d3ThreadsPerBlock(4, 4, 4);
+    dim3 d3NumBlocks( 	spatial_dim/d3ThreadsPerBlock.x + 1,
+                    	spatial_dim/d3ThreadsPerBlock.y + 1,
+                    	spatial_dim/d3ThreadsPerBlock.z + 1);
+	evalCell<<<d3NumBlocks,d3ThreadsPerBlock>>>(sortedPos, volume, cellStart, cellEnd, spatial_dim, res);
 
 	
 }

@@ -80,6 +80,8 @@ int main(void) {
 
     float *cpu_output_volume_ref = to_cpu<float>(gpu_output_volume, L*L*L);
 
+
+
     CHECK(cudaEventRecord(start));
 	for(int i=0; i<NLOOPS; i++){
 		gpu_coords2volume_cell(gpu_input_coords, num_atoms, gpu_output_volume, L, 1.0);
@@ -89,6 +91,14 @@ int main(void) {
 	milliseconds = 0;
 	CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
 	printf("Forward(cell) %.3f ms\n", double(milliseconds)/double(NLOOPS));
+
+	float *cpu_output_volume_cell = to_cpu<float>(gpu_output_volume, L*L*L);
+    float err = 0.0;
+    for(int i=0; i<L*L*L; i++){
+        err += fabs(cpu_output_volume_ref[i] - cpu_output_volume_cell[i]);
+    }
+    printf("Error cell: %.3f\n", err);
+
 
 
 	CHECK(cudaEventRecord(start));
@@ -101,12 +111,12 @@ int main(void) {
 	CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
 	printf("Forward(hash) %.3f ms\n", double(milliseconds)/double(NLOOPS));
 
-    float *cpu_output_volume_cell = to_cpu<float>(gpu_output_volume, L*L*L);
-    float err = 0.0;
+    float *cpu_output_volume_hash = to_cpu<float>(gpu_output_volume, L*L*L);
+    err = 0.0;
     for(int i=0; i<L*L*L; i++){
-        err += fabs(cpu_output_volume_ref[i] - cpu_output_volume_cell[i]);
+        err += fabs(cpu_output_volume_ref[i] - cpu_output_volume_hash[i]);
     }
-    printf("Error: %.3f\n", err);
+    printf("Error hash: %.3f\n", err);
 
 
 
