@@ -105,17 +105,23 @@ class VolumeCrossConvolution(nn.Module):
 		num_features = volume1.size(1)
 		volume_size = volume1.size(2)
 		
-		volume1 = volume1.unsqueeze(dim=2).repeat(1, 1, num_features, 1, 1, 1)
-		volume2 = volume2.unsqueeze(dim=1).repeat(1, num_features, 1, 1, 1, 1)
-		volume1 = volume1.view(batch_size*num_features*num_features, volume_size, volume_size, volume_size)
-		volume2 = volume2.view(batch_size*num_features*num_features, volume_size, volume_size, volume_size)
+		volume1_unpacked = []
+		volume2_unpacked = []
+		for i in range(0, num_features):
+			volume1_unpacked.append(volume1[:,0:num_features-i,:,:,:])
+			volume2_unpacked.append(volume2[:,i:num_features,:,:,:])
+		volume1 = torch.cat(volume1_unpacked, dim=1)
+		volume2 = torch.cat(volume2_unpacked, dim=1)
+		
+		num_output_features = volume1.size(1)
+		volume1 = volume1.view(batch_size*num_output_features, volume_size, volume_size, volume_size)
+		volume2 = volume2.view(batch_size*num_output_features, volume_size, volume_size, volume_size)
 		
 		input_volume1 = F.pad(volume1, (0, volume_size, 0, volume_size, 0, volume_size)).contiguous()
 		input_volume2 = F.pad(volume2, (0, volume_size, 0, volume_size, 0, volume_size)).contiguous()
 		
 		circ_volume = CrossConvFunction.apply(input_volume1, input_volume2)
 		
-		num_output_features = num_features*num_features
 		output_volume_size = circ_volume.size(2)
 		volume = SwapQuadrants3DFunction.apply(circ_volume)
 

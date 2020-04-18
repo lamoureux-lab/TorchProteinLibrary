@@ -15,7 +15,7 @@ class TestTypedCoords2Volume(unittest.TestCase):
 	device = 'cuda'
 	dtype = torch.float
 	places = 5
-	batch_size = 1
+	batch_size = 2
 	max_num_atoms = 16
 	eps=1e-03 
 	atol=1e-05 
@@ -82,6 +82,22 @@ class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 		
 		if not os.path.exists('TestFig'):
 			os.mkdir('TestFig')
+
+		for i in range(self.batch_size):
+			for j in range(11):
+				for k in range(self.num_atoms_of_type[i,j]):
+					x = self.coords[i,j,3*k+0].item()
+					y = self.coords[i,j,3*k+1].item()
+					z = self.coords[i,j,3*k+2].item()
+					x_i = int(x/self.resolution)
+					y_i = int(y/self.resolution)
+					z_i = int(z/self.resolution)
+					xc = x_i * self.resolution
+					yc = y_i * self.resolution
+					zc = z_i * self.resolution
+					r2 = (x-xc)*(x-xc) + (y-yc)*(y-yc) + (z-zc)*(z-zc)
+					self.assertGreaterEqual(volume_gpu[i,j,x_i,y_i,z_i].item(), np.exp(-r2/2.0))
+		
 		_Volume.Volume2Xplor(volume[0,:,:,:], "TestFig/total_b0_vtest_%d_%.1f.xplor"%(self.box_size, self.resolution), self.resolution)
 
 class TestTypedCoords2VolumeForward_Double(TestTypedCoords2VolumeForward):
