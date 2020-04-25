@@ -29,7 +29,7 @@ class CoordSelectFunction(Function):
 	
 	@staticmethod
 	def backward(ctx, gradOutput):
-		
+		gradOutput = gradOutput.contiguous()
 		input_coords_gpu, num_atoms, volume_gpu = ctx.saved_tensors
 		gradInput = torch.zeros_like(volume_gpu)
 

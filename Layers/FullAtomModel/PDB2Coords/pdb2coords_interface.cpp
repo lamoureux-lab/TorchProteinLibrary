@@ -45,14 +45,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
     int64_t size_coords[] = {batch_size, max_num_atoms*3};
     int64_t size_names[] = {batch_size, max_num_atoms, 4};
     
-    coords.resize_(torch::IntList(size_coords, 2));
-    chain_names.resize_(torch::IntList(size_names, 3));
-    res_names.resize_(torch::IntList(size_names, 3));
-    res_nums.resize_(torch::IntList(size_nums, 2));
-    atom_names.resize_(torch::IntList(size_names, 3));
-    atom_mask.resize_(torch::IntList(size_nums, 2));
+    coords.resize_(torch::IntList(size_coords, 2)).fill_(0.0);
+    chain_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+    res_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+    res_nums.resize_(torch::IntList(size_nums, 2)).fill_(0);
+    atom_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+    atom_mask.resize_(torch::IntList(size_nums, 2)).fill_(0);
     
-    atom_mask.fill_(0);
     
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
@@ -117,11 +116,11 @@ void PDB2CoordsUnordered(   torch::Tensor filenames, torch::Tensor coords, torch
     int64_t size_coords[] = {batch_size, max_num_atoms*3};
     int64_t size_names[] = {batch_size, max_num_atoms, 4};
     
-    coords.resize_(torch::IntList(size_coords, 2));
-    chain_names.resize_(torch::IntList(size_names, 3));
-    res_names.resize_(torch::IntList(size_names, 3));
-    res_nums.resize_(torch::IntList(size_nums, 2));
-    atom_names.resize_(torch::IntList(size_names, 3));
+    coords.resize_(torch::IntList(size_coords, 2)).fill_(0);
+    chain_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+    res_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+    res_nums.resize_(torch::IntList(size_nums, 2)).fill_(0);
+    atom_names.resize_(torch::IntList(size_names, 3)).fill_(0);
         
     #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
