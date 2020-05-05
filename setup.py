@@ -57,8 +57,8 @@ if __name__=='__main__':
 					'Layers/FullAtomModel/main.cpp'],
 					include_dirs = ['Layers/FullAtomModel', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']})
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']})
 
 	Volume = CUDAExtension('_Volume',
 					sources = [
@@ -80,8 +80,8 @@ if __name__=='__main__':
 					'Layers/Volume/main.cpp'],
 					include_dirs = ['Layers/Volume', 'Math'],
 					libraries = ['gomp', 'cufft'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
 						)
 
 	ReducedModel = CUDAExtension('_ReducedModel',
@@ -96,8 +96,8 @@ if __name__=='__main__':
 					'Layers/ReducedModel/main.cpp'],
 					include_dirs = ['Layers/ReducedModel', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
 					)
 
 	RMSD = CUDAExtension('_RMSD',
@@ -111,8 +111,9 @@ if __name__=='__main__':
 					'Layers/RMSD/main.cpp'],
 					include_dirs = ['Layers/RMSD', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']})
+					extra_compile_args={'cxx': ['-fopenmp', '-g', '-std=c++14'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
+					)
 
 
 	Physics = CUDAExtension('_Physics',
@@ -135,12 +136,12 @@ if __name__=='__main__':
 									'Layers/Physics/AtomNames2Params',
 									'cusplibrary'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++11']})
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']})
 
 	
 	setup(	name='TorchProteinLibrary',
-			version="0.1",
+			version="0.3",
 			ext_modules=[	
 							RMSD,
 							FullAtomModel, 
@@ -148,7 +149,7 @@ if __name__=='__main__':
 							ReducedModel,
 							Physics
 						],
-			cmdclass={'build_ext': BuildExtension},
+			cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)},
 
 			packages = Packages,
 			author="Georgy Derevyanko",
