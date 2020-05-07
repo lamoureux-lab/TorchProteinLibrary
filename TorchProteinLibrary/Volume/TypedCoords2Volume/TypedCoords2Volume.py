@@ -11,16 +11,25 @@ import os
 class TypedCoords2VolumeFunction(Function):
 	
 	@staticmethod
-	def forward(ctx, input_coords_gpu, num_atoms_gpu, box_size, resolution):
+	def forward(ctx, input_coords_gpu, num_atoms_gpu, box_size, resolution, num_neighbours):
 		num_atoms_cpu = num_atoms_gpu.cpu()
-		ctx.save_for_backward(input_coords_gpu, num_atoms_cpu, resolution)
+		ctx.save_for_backward(input_coords_gpu, num_atoms_cpu, resolution, num_neighbours)
 		if len(input_coords_gpu.size())==2:
 			batch_size = input_coords_gpu.size(0)
 			volume_gpu = torch.zeros(batch_size, box_size, box_size, box_size, dtype=input_coords_gpu.dtype, device='cuda')
+			max_num_atoms = torch.max(num_atoms_gpu).item()
+			num_neighbour_cells = (2*num_neighbours.item()+1)**3
+			sortedPos = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms*3, dtype=input_coords_gpu.dtype, device='cuda')
+			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda')
+			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda')
+			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda')
+			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda')
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_gpu.size()) 
 		
-		_Volume.TypedCoords2Volume_forward(input_coords_gpu, volume_gpu, num_atoms_cpu, resolution.item())
+		_Volume.TypedCoords2Volume_forward(	input_coords_gpu, volume_gpu, num_atoms_cpu, 
+											resolution.item(), num_neighbours.item(),
+											particleHash, particleIndex, cellStart, cellStop, sortedPos)
 		
 		if math.isnan(volume_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: forward Nan'))	
@@ -31,7 +40,7 @@ class TypedCoords2VolumeFunction(Function):
 	def backward(ctx, grad_volume_gpu):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_volume_gpu = grad_volume_gpu.contiguous()
-		input_coords_gpu, num_atoms_cpu, resolution = ctx.saved_tensors
+		input_coords_gpu, num_atoms_cpu, resolution, num_neighbours = ctx.saved_tensors
 		
 		if len(grad_volume_gpu.size()) == 4:
 			num_coords = input_coords_gpu.size(1)
@@ -40,21 +49,23 @@ class TypedCoords2VolumeFunction(Function):
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', grad_volume_gpu.size()) 
 		
-		_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_cpu, resolution.item())
+		_Volume.TypedCoords2Volume_backward(grad_volume_gpu, grad_coords_gpu, input_coords_gpu, num_atoms_cpu, 
+											resolution.item(), num_neighbours.item())
 		
 		if math.isnan(grad_coords_gpu.sum()):
 			raise(Exception('TypedCoords2VolumeFunction: backward Nan'))		
 		
-		return grad_coords_gpu, None, None, None
+		return grad_coords_gpu, None, None, None, None
 
 class TypedCoords2Volume(Module):
 	"""
 	Coordinated arranged in atom types function -> Volume
 	"""
-	def __init__(self, box_size=120, resolution=1.0):
+	def __init__(self, box_size=120, resolution=1.0, num_neighbours=2):
 		super(TypedCoords2Volume, self).__init__()
 		self.box_size = box_size
 		self.resolution = torch.tensor([resolution], dtype=torch.float)
+		self.num_neighbours = torch.tensor([num_neighbours], dtype=torch.int)
 						
 	def forward(self, input_coords, num_atoms):
 		batch_size = input_coords.size(0)
@@ -65,6 +76,6 @@ class TypedCoords2Volume(Module):
 		input_coords = input_coords.view(batch_size*num_types, max_num_coords).contiguous()
 		num_atoms = num_atoms.view(batch_size*num_atom_types).contiguous()
 
-		volume = TypedCoords2VolumeFunction.apply(input_coords, num_atoms, self.box_size, self.resolution)
+		volume = TypedCoords2VolumeFunction.apply(input_coords, num_atoms, self.box_size, self.resolution, self.num_neighbours)
 
 		return volume.view(batch_size, num_atom_types, self.box_size, self.box_size, self.box_size)

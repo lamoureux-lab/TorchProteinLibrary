@@ -33,12 +33,12 @@ __device__ int3 computeGridPos(T p_x, T p_y, T p_z, float res){
 	return gridPos;
 }
 
-__device__ uint computeGridHash(int3 gridPos, int spatial_dim){
+__device__ long computeGridHash(int3 gridPos, int spatial_dim){
 	return gridPos.z + gridPos.y * spatial_dim + gridPos.x * spatial_dim * spatial_dim;
 }
 
 template <typename T>
-__global__ void computeHash(uint *gridParticleHash, uint *gridParticleIndex, T *coords, 
+__global__ void computeHash(long *gridParticleHash, long *gridParticleIndex, T *coords, 
 					        int num_atoms, int spatial_dim, float res, int d){
 	uint atom_idx = blockIdx.x*blockDim.x + threadIdx.x;
 	uint num_neighbours = (2*d+1)*(2*d+1)*(2*d+1);
@@ -50,7 +50,7 @@ __global__ void computeHash(uint *gridParticleHash, uint *gridParticleIndex, T *
 		for(int j=gridPos.y-d; j<=gridPos.y+d; j++){
 			for(int k=gridPos.z-d; k<=gridPos.z+d; k++){
 				if( ((i>=0 && i<spatial_dim) && (j>=0 && j<spatial_dim) && (k>=0 && k<spatial_dim)) ){
-					uint hash = computeGridHash(make_int3(i,j,k), spatial_dim);
+					long hash = computeGridHash(make_int3(i,j,k), spatial_dim);
 					gridParticleHash[num_neighbours*atom_idx + neighbour_idx] = hash;
 					gridParticleIndex[num_neighbours*atom_idx + neighbour_idx] = atom_idx;
 				}
@@ -61,15 +61,15 @@ __global__ void computeHash(uint *gridParticleHash, uint *gridParticleIndex, T *
 }
 
 template <typename T>
-__global__ void reorderData(uint *cellStart, uint *cellEnd,
+__global__ void reorderData(long *cellStart, long *cellEnd,
                             T *sortedPos, 
-                            uint *gridParticleHash, uint *gridParticleIndex,
+                            long *gridParticleHash, long *gridParticleIndex,
                             T *coords, int num_atoms){
 
 	cg::thread_block cta = cg::this_thread_block();
-	extern __shared__ uint sharedHash[]; 
+	extern __shared__ long sharedHash[]; 
 	uint index = blockIdx.x * blockDim.x + threadIdx.x;
-	uint hash;
+	long hash;
 
 	if(index < num_atoms){
 		hash = gridParticleHash[index];
@@ -98,7 +98,7 @@ __global__ void reorderData(uint *cellStart, uint *cellEnd,
 			cellEnd[hash] = index + 1;
 		}
 		if(hash != 0xffffffff){
-			uint sortedIndex = gridParticleIndex[index];
+			long sortedIndex = gridParticleIndex[index];
 			sortedPos[3*index+0] = coords[3*sortedIndex+0];
             sortedPos[3*index+1] = coords[3*sortedIndex+1];
             sortedPos[3*index+2] = coords[3*sortedIndex+2];
@@ -109,7 +109,7 @@ __global__ void reorderData(uint *cellStart, uint *cellEnd,
 
 template <typename T>
 __global__ void evalCell(T *sortedPos, T *volume, 
-                        uint *cellStart, uint *cellEnd, 
+                        long *cellStart, long *cellEnd, 
                         int spatial_dim, float res){
 
     uint i = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -158,24 +158,29 @@ void gpu_computeCoords2Volume(	T *coords,
 								T *volume,
 								int spatial_dim,
 								float res,
-                                int d){
+                                int d,
+								long *gridParticleHash,
+								long *gridParticleIndex,
+								long *cellStart,
+								long *cellStop,
+								T *sortedPos){
     if(num_atoms == 0)return;                                
 	uint num_neighbours = (2*d+1)*(2*d+1)*(2*d+1);
-	uint *gridParticleHash, *gridParticleIndex, *cellStart, *cellEnd;
-    T *sortedPos;
-	uint grid_size = spatial_dim*spatial_dim*spatial_dim;
+	// uint *gridParticleHash, *gridParticleIndex, *cellStart, *cellEnd;
+    // T *sortedPos;
+	// uint grid_size = spatial_dim*spatial_dim*spatial_dim;
 
-	cudaMalloc(&sortedPos, num_neighbours*num_atoms*3*sizeof(T));
-    cudaMalloc(&gridParticleHash, num_neighbours*num_atoms*sizeof(uint));
-	cudaMalloc(&gridParticleIndex, num_neighbours*num_atoms*sizeof(uint));
-	cudaMalloc(&cellStart, grid_size*sizeof(uint));
-	cudaMalloc(&cellEnd, grid_size*sizeof(uint));
+	// cudaMalloc(&sortedPos, num_neighbours*num_atoms*3*sizeof(T));
+    // cudaMalloc(&gridParticleHash, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMalloc(&gridParticleIndex, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMalloc(&cellStart, grid_size*sizeof(uint));
+	// cudaMalloc(&cellEnd, grid_size*sizeof(uint));
         
-	cudaMemset(gridParticleHash, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
-	cudaMemset(gridParticleIndex, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
-	cudaMemset(cellStart, 0xffffffff, grid_size*sizeof(uint));
-	cudaMemset(cellEnd, 0xffffffff, grid_size*sizeof(uint));
-	cudaMemset(sortedPos, 0.0, num_neighbours*num_atoms*3*sizeof(T));
+	// cudaMemset(gridParticleHash, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMemset(gridParticleIndex, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMemset(cellStart, 0xffffffff, grid_size*sizeof(uint));
+	// cudaMemset(cellEnd, 0xffffffff, grid_size*sizeof(uint));
+	// cudaMemset(sortedPos, 0.0, num_neighbours*num_atoms*3*sizeof(T));
 	
 	uint numThreads, numBlocks;
 	computeGridSize(num_atoms, 64, numBlocks, numThreads);	
@@ -183,14 +188,14 @@ void gpu_computeCoords2Volume(	T *coords,
 											    coords, num_atoms, spatial_dim, res, d);
 	gpuErrchk( cudaPeekAtLastError() );
 		
-	thrust::sort_by_key(thrust::device_ptr<uint>(gridParticleHash),
-                        thrust::device_ptr<uint>(gridParticleHash + num_neighbours*num_atoms),
-                        thrust::device_ptr<uint>(gridParticleIndex));
+	thrust::sort_by_key(thrust::device_ptr<long>(gridParticleHash),
+                        thrust::device_ptr<long>(gridParticleHash + num_neighbours*num_atoms),
+                        thrust::device_ptr<long>(gridParticleIndex));
 	gpuErrchk( cudaPeekAtLastError() );
 
 	computeGridSize(num_neighbours*num_atoms, 64, numBlocks, numThreads);
-	uint smemSize = sizeof(uint)*(numThreads+1);
-	reorderData<T><<<numBlocks, numThreads, smemSize>>>(cellStart, cellEnd,
+	uint smemSize = sizeof(long)*(numThreads+1);
+	reorderData<T><<<numBlocks, numThreads, smemSize>>>(cellStart, cellStop,
                                                         sortedPos,
                                                         gridParticleHash, gridParticleIndex,
                                                         coords,	num_neighbours*num_atoms);
@@ -200,21 +205,20 @@ void gpu_computeCoords2Volume(	T *coords,
     dim3 d3NumBlocks( 	spatial_dim/d3ThreadsPerBlock.x + 1,
                     	spatial_dim/d3ThreadsPerBlock.y + 1,
                     	spatial_dim/d3ThreadsPerBlock.z + 1);
-	evalCell<T><<<d3NumBlocks,d3ThreadsPerBlock>>>(sortedPos, volume, cellStart, cellEnd, spatial_dim, res);
+	evalCell<T><<<d3NumBlocks,d3ThreadsPerBlock>>>(sortedPos, volume, cellStart, cellStop, spatial_dim, res);
 
-    cudaFree(gridParticleHash);
-    cudaFree(gridParticleIndex);
-    cudaFree(cellStart);
-    cudaFree(cellEnd);
-    cudaFree(sortedPos);
+    // cudaFree(gridParticleHash);
+    // cudaFree(gridParticleIndex);
+    // cudaFree(cellStart);
+    // cudaFree(cellEnd);
+    // cudaFree(sortedPos);
 }
 
 
 
 template <typename T>
 __global__ void projectFromTensor(	T* coords, T* grad, int num_atoms, 
-									T *volume, int spatial_dim, float res){
-	uint d = 2;
+									T *volume, int spatial_dim, float res, int d){
 	uint atom_idx = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if(atom_idx>num_atoms)return;
 	
@@ -250,17 +254,16 @@ void gpu_computeVolume2Coords(	T *coords,
 								T* grad,
                                 int num_atoms, 
 								T *volume,
-								int spatial_dim,
-								float res){
+								int spatial_dim, float res, int d){
 	dim3 threadsPerBlock(64);
     dim3 numBlocks( num_atoms/threadsPerBlock.x + 1);
 
-	projectFromTensor<T><<<numBlocks,threadsPerBlock>>>(coords, grad, num_atoms, volume, spatial_dim, res);
+	projectFromTensor<T><<<numBlocks,threadsPerBlock>>>(coords, grad, num_atoms, volume, spatial_dim, res, d);
 }
 
 
-template void gpu_computeVolume2Coords<float>(	float*, float*, int, float*, int, float);
-template void gpu_computeVolume2Coords<double>(	double*, double*, int, double*, int, float);
+template void gpu_computeVolume2Coords<float>(	float*, float*, int, float*, int, float, int);
+template void gpu_computeVolume2Coords<double>(	double*, double*, int, double*, int, float, int);
 
-template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float, int);
-template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float, int);
+template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float, int, long*, long*, long*, long*, float*);
+template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float, int, long*, long*, long*, long*, double*);

@@ -41,9 +41,9 @@ class TestTypedCoords2Volume(unittest.TestCase):
 			
 			atom_index = num_atoms_of_type[0, atom_type].item()
 
-			coords[0, atom_type, 3*atom_index + 0 ] = float(random.randrange(2.0, box_size-2.0))
-			coords[0, atom_type, 3*atom_index + 1 ] = float(random.randrange(2.0, box_size-2.0))
-			coords[0, atom_type, 3*atom_index + 2 ] = float(random.randrange(2.0, box_size-2.0))
+			coords[0, atom_type, 3*atom_index + 0 ] = float(random.randrange(5.0, box_size-5.0))
+			coords[0, atom_type, 3*atom_index + 1 ] = float(random.randrange(5.0, box_size-5.0))
+			coords[0, atom_type, 3*atom_index + 2 ] = float(random.randrange(5.0, box_size-5.0))
 
 			num_atoms_of_type[0, atom_type] += 1
 		
