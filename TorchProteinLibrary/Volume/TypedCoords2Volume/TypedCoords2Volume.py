@@ -17,13 +17,14 @@ class TypedCoords2VolumeFunction(Function):
 		if len(input_coords_gpu.size())==2:
 			batch_size = input_coords_gpu.size(0)
 			volume_gpu = torch.zeros(batch_size, box_size, box_size, box_size, dtype=input_coords_gpu.dtype, device='cuda')
-			max_num_atoms = torch.max(num_atoms_gpu).item()
+			max_num_atoms = torch.max(num_atoms_cpu).item()
 			num_neighbour_cells = (2*num_neighbours.item()+1)**3
+			HASH_EMPTY = 2147483647
 			sortedPos = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms*3, dtype=input_coords_gpu.dtype, device='cuda')
-			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda')
-			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda')
-			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda')
-			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda')
+			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
+			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
+			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
+			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_gpu.size()) 
 		

@@ -11,6 +11,8 @@ namespace cg = cooperative_groups;
 
 #include "HashKernel.h"
 
+#define HASH_EMPTY 2147483647
+
 //Round a / b to nearest higher integer value
 uint iDivUp(uint a, uint b)
 {
@@ -84,20 +86,20 @@ __global__ void reorderData(long *cellStart, long *cellEnd,
 
 	if(index < num_atoms){
 		
-		if(sharedHash[threadIdx.x] == 0xffffffff){
+		if(sharedHash[threadIdx.x] == HASH_EMPTY){
 			return;
 		}
 		
 		if(index == 0 || hash != sharedHash[threadIdx.x]){
-			if(hash != 0xffffffff)
+			if(hash != HASH_EMPTY)
 				cellStart[hash] = index;
 			if (index > 0)
                 cellEnd[sharedHash[threadIdx.x]] = index;
 		}
-		if(index == num_atoms - 1 && hash != 0xffffffff){
+		if(index == num_atoms - 1 && hash != HASH_EMPTY){
 			cellEnd[hash] = index + 1;
 		}
-		if(hash != 0xffffffff){
+		if(hash != HASH_EMPTY){
 			long sortedIndex = gridParticleIndex[index];
 			sortedPos[3*index+0] = coords[3*sortedIndex+0];
             sortedPos[3*index+1] = coords[3*sortedIndex+1];
@@ -121,7 +123,7 @@ __global__ void evalCell(T *sortedPos, T *volume,
 	
 	uint cellHash = k + j*spatial_dim + i*spatial_dim*spatial_dim;
 	uint start = cellStart[cellHash];
-	if(start == 0xffffffff)
+	if(start == HASH_EMPTY)
 		return;
 	uint end = cellEnd[cellHash];
 	
@@ -176,10 +178,10 @@ void gpu_computeCoords2Volume(	T *coords,
 	// cudaMalloc(&cellStart, grid_size*sizeof(uint));
 	// cudaMalloc(&cellEnd, grid_size*sizeof(uint));
         
-	// cudaMemset(gridParticleHash, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
-	// cudaMemset(gridParticleIndex, 0xffffffff, num_neighbours*num_atoms*sizeof(uint));
-	// cudaMemset(cellStart, 0xffffffff, grid_size*sizeof(uint));
-	// cudaMemset(cellEnd, 0xffffffff, grid_size*sizeof(uint));
+	// cudaMemset(gridParticleHash, HASH_EMPTY, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMemset(gridParticleIndex, HASH_EMPTY, num_neighbours*num_atoms*sizeof(uint));
+	// cudaMemset(cellStart, HASH_EMPTY, grid_size*sizeof(uint));
+	// cudaMemset(cellEnd, HASH_EMPTY, grid_size*sizeof(uint));
 	// cudaMemset(sortedPos, 0.0, num_neighbours*num_atoms*3*sizeof(T));
 	
 	uint numThreads, numBlocks;
