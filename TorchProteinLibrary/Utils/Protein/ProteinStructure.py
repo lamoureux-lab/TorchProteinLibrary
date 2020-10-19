@@ -29,10 +29,7 @@ class ProteinStructure:
 		sel_resnums = torch.masked_select(self.resnums, isSel).view(1, num_sel_atoms).contiguous()
 		sel_atomnames = torch.masked_select(self.atomnames, isSel_names).view(1, num_sel_atoms, 4).contiguous()
 
-		return sel_coords, sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms
-
-		# self.coords, self.chains, self.resnames, self.resnums, self.atomnames, self.numatoms = sel_coords, \
-		# sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms 
+		return ProteinStructure(sel_coords, sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms)
 
 	def select_CA(self):
 		is0C = torch.eq(self.atomnames[:,:,0], 67).squeeze()
@@ -72,9 +69,7 @@ class ProteinStructure:
 		sel_atomnames = torch.stack(sel_atomnames, dim=1).contiguous()
 		sel_numatoms = torch.tensor([sel_numatoms], dtype=torch.int, device='cpu').contiguous()
 
-		return sel_coords, sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms
-		# self.coords, self.chains, self.resnames, self.resnums, self.atomnames, self.numatoms = sel_coords, \
-		# sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms
+		return ProteinStructure(sel_coords, sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms)
 
 	def plot_coords(self, axis = None, type='line', args = {}):
 		import matplotlib 
@@ -92,7 +87,7 @@ class ProteinStructure:
 
 		for chain in chains:
 			prot_chain = self.select_chain(chain)
-			coords = prot_chain[0].view(1, prot_chain[-1].item(), 3)
+			coords = prot_chain.coords.view(1, prot_chain.numatoms.item(), 3)
 			sx, sy, sz = coords[0,:,0].numpy(), coords[0,:,1].numpy(), coords[0,:,2].numpy()
 			if type=='line':
 				axis.plot(sx, sy, sz, label = chain, **args)
@@ -124,172 +119,23 @@ class ProteinStructure:
 			axis.legend()
 			plt.show()
 
-	def plot_tube(self):
-		import vtk
-		colors = vtk.vtkNamedColors()
-		colors.SetColor("BkgColor", 0.9, 0.9, 0.9, 1.0)
+	def __add__(self, other):
+		rcoords, rchains, rres_names, rres_nums, ratom_names, rnum_atoms = self.get()
+		lcoords, lchains, lres_names, lres_nums, latom_names, lnum_atoms = other.get()
+		ccoords = torch.cat([lcoords, rcoords], dim=1).contiguous()
+		cchains = torch.cat([lchains, rchains], dim=1).contiguous()
+		cres_names = torch.cat([lres_names, rres_names], dim=1).contiguous()
+		cres_nums = torch.cat([lres_nums, rres_nums], dim=1).contiguous()
+		catom_names = torch.cat([latom_names, ratom_names], dim=1).contiguous()
+		cnum_atoms = lnum_atoms + rnum_atoms
 
-		N = self.numatoms[0].item()
-		points = vtk.vtkPoints()
-		points.SetNumberOfPoints(N)
-		for i in range(N):
-			points.SetPoint(i, self.coords[0,3*i+0].item(), self.coords[0,3*i+1].item(), self.coords[0,3*i+2].item())
-
-		polyLine = vtk.vtkPolyLine()
-		polyLine.GetPointIds().SetNumberOfIds(N)
-		for i in range(N):
-			polyLine.GetPointIds().SetId(i, i)
-		
-		# print(polyLine)
-		
-		cells = vtk.vtkCellArray()
-		cells.InsertNextCell(polyLine)
-		polyData = vtk.vtkPolyData()
-		polyData.SetPoints(points)
-		polyData.SetLines(cells)
-
-		tubeFilter = vtk.vtkTubeFilter()
-		tubeFilter.SetInputData(polyData)
-		tubeFilter.SetRadius(1.0)
-		tubeFilter.SetNumberOfSides(16)
-
-		mapper = vtk.vtkPolyDataMapper()
-		mapper.SetInputConnection(tubeFilter.GetOutputPort())
-		
-		actor = vtk.vtkActor()
-		actor.SetMapper(mapper)
-		actor.GetProperty().SetColor(colors.GetColor3d("Tomato"))
-		actor.GetProperty().SetLineWidth(5)
-		
-		return actor
-
-	def plot_atoms(self, colors=None):
-		import vtk
-		
-		N = self.numatoms[0].item()
-		points = vtk.vtkPoints()
-		points.SetNumberOfPoints(N)
-		for i in range(N):
-			points.SetPoint(i, self.coords[0,3*i+0].item(), self.coords[0,3*i+1].item(), self.coords[0,3*i+2].item())
-
-		bonds = vtk.vtkCellArray()
-		this_coords = self.coords.view(N, 3)
-		sep_mat = this_coords.unsqueeze(dim=1) - this_coords.unsqueeze(dim=0)
-		dist2_mat = (sep_mat*sep_mat).sum(dim=2)
-
-		for i in range(N):
-			for j in range(N):
-				if i >= j: continue
-				if dist2_mat[i,j].item() < 3.0:
-					bond = vtk.vtkLine()
-					bond.GetPointIds().SetId(0, i)
-					bond.GetPointIds().SetId(1, j)
-					bonds.InsertNextCell(bond)
-		
-		atom_colors = vtk.vtkUnsignedCharArray()
-		atom_colors.SetName('Colors')
-		atom_colors.SetNumberOfComponents(3)
-		atoms = vtk.vtkCellArray()
-		
-		for i in range(N):
-			vertex = vtk.vtkVertex()
-			vertex.GetPointIds().SetId(0, i)
-			atoms.InsertNextCell(vertex)
-			if colors is None:
-				if self.atomnames[0,i,0].item() == ord('C'):
-					atom_colors.InsertNextTuple3(100, 200, 100)
-				elif self.atomnames[0,i,0].item() == ord('N'):
-					atom_colors.InsertNextTuple3(100, 100, 200)
-				elif self.atomnames[0,i,0].item() == ord('O'):
-					atom_colors.InsertNextTuple3(200, 100, 100)
-				else:
-					atom_colors.InsertNextTuple3(200, 200, 200)
-			else:
-				atom_colors.InsertNextTuple3(colors[i,0].item(), colors[i,1].item(), colors[i,2].item())
-			
-		polyData = vtk.vtkPolyData()
-		polyData.SetPoints(points)
-		polyData.SetVerts(atoms)
-		polyData.SetLines(bonds)
-		polyData.GetPointData().SetScalars(atom_colors)
-		# polyData.AddArray(atom_colors)
-		
-		# Bonds actor
-		tubeFilter = vtk.vtkTubeFilter()
-		tubeFilter.SetInputData(polyData)
-		tubeFilter.SetRadius(0.3)
-		tubeFilter.SetNumberOfSides(3)	
-				
-		mapper_bonds = vtk.vtkPolyDataMapper()
-		mapper_bonds.SetInputConnection(tubeFilter.GetOutputPort())
-		
-		actor_bonds = vtk.vtkLODActor()
-		actor_bonds.SetMapper(mapper_bonds)
-		actor_bonds.GetProperty().SetRepresentationToSurface()
-		actor_bonds.GetProperty().SetInterpolationToGouraud()
-		actor_bonds.GetProperty().SetAmbient(0.15)
-		actor_bonds.GetProperty().SetDiffuse(0.85)
-		actor_bonds.GetProperty().SetSpecular(0.1)
-		actor_bonds.GetProperty().SetSpecularPower(30)
-		actor_bonds.GetProperty().SetSpecularColor(1, 1, 1)
-		actor_bonds.GetProperty().SetDiffuseColor(1.0000, 0.8941, 0.70981)
-		
-		# Atoms actor
-		sphere = vtk.vtkSphereSource()
-		sphere.SetCenter(0,0,0)
-		sphere.SetRadius(2.0)
-
-		glyph = vtk.vtkGlyph3D()
-		glyph.SetInputData(polyData)
-		glyph.SetOrient(1)
-		glyph.SetColorMode(1)
-		glyph.SetScaleMode(2)
-		glyph.SetScaleFactor(0.25)
-		glyph.SetSourceConnection(sphere.GetOutputPort())
-
-		mapper_atoms = vtk.vtkPolyDataMapper()
-		mapper_atoms.SetInputConnection(glyph.GetOutputPort())
-				
-		actor_atoms = vtk.vtkLODActor()
-		actor_atoms.SetMapper(mapper_atoms)
-		actor_atoms.GetProperty().SetRepresentationToSurface()
-		actor_atoms.GetProperty().SetInterpolationToGouraud()
-		actor_atoms.GetProperty().SetAmbient(0.15)
-		actor_atoms.GetProperty().SetDiffuse(0.85)
-		actor_atoms.GetProperty().SetSpecular(0.1)
-		actor_atoms.GetProperty().SetSpecularPower(30)
-		actor_atoms.GetProperty().SetSpecularColor(1, 1, 1)
-		actor_atoms.SetNumberOfCloudPoints(30000)
-		
-		return actor_bonds, actor_atoms
-
-
-def unite_proteins(receptor, ligand):
-	lcoords, lchains, lres_names, lres_nums, latom_names, lnum_atoms = ligand.get()
-	rcoords, rchains, rres_names, rres_nums, ratom_names, rnum_atoms = receptor.get()
-	ccoords = torch.cat([lcoords, rcoords], dim=1).contiguous()
-	cchains = torch.cat([lchains, rchains], dim=1).contiguous()
-	cres_names = torch.cat([lres_names, rres_names], dim=1).contiguous()
-	cres_nums = torch.cat([lres_nums, rres_nums], dim=1).contiguous()
-	catom_names = torch.cat([latom_names, ratom_names], dim=1).contiguous()
-	cnum_atoms = lnum_atoms + rnum_atoms
-
-	complex = ProteinStructure(ccoords, cchains, cres_names, cres_nums, catom_names, cnum_atoms)
-	return complex
+		return ProteinStructure(ccoords, cchains, cres_names, cres_nums, catom_names, cnum_atoms)
 
 
 if __name__=='__main__':
 	from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
 	
 	p2c = PDB2CoordsUnordered()
-	prot = ProteinStructure(*p2c(["1brs.pdb"]))
-	atoms_plot = prot.plot_atoms()
-	prot = ProteinStructure(*prot.select_CA())
-	backbone_plot = prot.plot_tube()
-
-	import vtkplotter as vp
-	v = vp.Plotter(N=2, title='basic shapes', axes=0)
-	v.sharecam = True
-	v.show(backbone_plot, at=0)
-	v.show(atoms_plot, at=1, interactive=1)
-
+	prot = ProteinStructure(*p2c(["1brs.pdb"])).select_CA()
+	atoms_plot = prot.plot_coords()
+	

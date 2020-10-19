@@ -21,6 +21,7 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Volume.TypedCoords2Volume',
 				'TorchProteinLibrary.Volume.Select',
 				'TorchProteinLibrary.Volume.VolumeConvolution',
+				'TorchProteinLibrary.Volume.VolumeMultiplication',
 				'TorchProteinLibrary.Volume.VolumeRotation',
 				'TorchProteinLibrary.Volume.VolumeRMSD',
 				#RMSD
