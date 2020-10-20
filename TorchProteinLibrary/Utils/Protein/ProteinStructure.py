@@ -41,8 +41,8 @@ class ProteinStructure:
 
 	def select_chain(self, chain_name):
 		is0C = torch.eq(self.chains[:,:,0], ord(chain_name)).squeeze()
-		is10 = torch.eq(self.chains[:,:,1], 0).squeeze()
-		isChain = is0C*is10
+		# is10 = torch.eq(self.chains[:,:,1], 0).squeeze()
+		isChain = is0C#*is10
 
 		return self.select_atoms_mask(isChain)
 
@@ -75,7 +75,7 @@ class ProteinStructure:
 		import matplotlib 
 		import matplotlib.pylab as plt
 		import mpl_toolkits.mplot3d.axes3d as p3
-		
+		fig = None
 		if axis is None:
 			fig = plt.figure()
 			axis = p3.Axes3D(fig)

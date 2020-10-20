@@ -83,6 +83,7 @@ void CoordsRotate_forward(  torch::Tensor input_coords,
         
         AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "CoordsRotate_forward", ([&]{
             cMatrix33<scalar_t> _R = tensor2Matrix33<scalar_t>(single_R);
+            
             rotate<scalar_t>(single_input_coords, _R, single_output_coords, num_at[i]);
         }));
     }

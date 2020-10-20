@@ -98,7 +98,7 @@ class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 					r2 = (x-xc)*(x-xc) + (y-yc)*(y-yc) + (z-zc)*(z-zc)
 					self.assertGreaterEqual(volume_gpu[i,j,x_i,y_i,z_i].item(), np.exp(-r2/2.0))
 		
-		_Volume.Volume2Xplor(volume[0,:,:,:], "TestFig/total_b0_vtest_%d_%.1f.xplor"%(self.box_size, self.resolution), self.resolution)
+		#_Volume.Volume2Xplor(volume[0,:,:,:], "TestFig/total_b0_vtest_%d_%.1f.xplor"%(self.box_size, self.resolution), self.resolution)
 
 class TestTypedCoords2VolumeForward_Double(TestTypedCoords2VolumeForward):
 	dtype=torch.double
