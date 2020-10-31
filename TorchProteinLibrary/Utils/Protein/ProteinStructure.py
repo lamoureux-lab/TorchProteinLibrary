@@ -1,9 +1,16 @@
 import os
 import sys
 import torch
+from math import *
 
 class ProteinStructure:
 	def __init__(self, coords, chains, resnames, resnums, atomnames, numatoms):
+		assert coords.size(0) == 1 and coords.ndim == 2
+		assert chains.size(0) == 1 and chains.ndim == 3
+		assert resnames.size(0) == 1 and resnames.ndim == 3
+		assert resnums.size(0) == 1 and resnums.ndim == 2
+		assert atomnames.size(0) == 1 and atomnames.ndim == 3
+		assert numatoms.size(0) == 1 and numatoms.ndim == 1
 		self.set(coords, chains, resnames, resnums, atomnames, numatoms)
 
 	def set(self, coords, chains, resnames, resnums, atomnames, numatoms):
@@ -131,6 +138,52 @@ class ProteinStructure:
 
 		return ProteinStructure(ccoords, cchains, cres_names, cres_nums, catom_names, cnum_atoms)
 
+class ProteinBatch:
+	def __init__(self, structures):
+		self.batch_size = len(structures)
+		self.structures = structures
+	
+	@classmethod
+	def from_batch(cls, coords, chains, resnames, resnums, atomnames, numatoms):
+		batch_size = numatoms.size(0)
+		assert coords.size(0) == batch_size
+		assert chains.size(0) == batch_size
+		assert resnames.size(0) == batch_size
+		assert resnums.size(0) == batch_size
+		assert atomnames.size(0) == batch_size
+		
+		structures = []
+		for i in range(batch_size):
+			ccoords = coords[i,:].unsqueeze(dim=0)
+			cchains = chains[i,:].unsqueeze(dim=0)
+			cresnames = resnames[i,:].unsqueeze(dim=0)
+			cresnums = resnums[i,:].unsqueeze(dim=0)
+			catomnames = atomnames[i,:].unsqueeze(dim=0)
+			cnumatoms = numatoms[i].unsqueeze(dim=0)
+			structures.append(ProteinStructure(ccoords, cchains, cresnames, cresnums, catomnames, cnumatoms))
+		return cls(structures)
+
+	def select_CA(self):
+		return ProteinBatch([x.select_CA() for x in self.structures])
+
+	def plot_coords(self, axis = None, type='line', args = {}):
+		import matplotlib 
+		import matplotlib.pylab as plt
+		import mpl_toolkits.mplot3d.axes3d as p3
+		fig = None
+		if axis is None:
+			fig = plt.figure()
+			axis = p3.Axes3D(fig)
+		
+		for i in range(self.batch_size):
+			self.structures[i].plot_coords(axis, type=type, args=args)
+		
+		if not fig is None:
+			axis.legend()
+			plt.show()
+	
+	def __add__(self, other):
+		return ProteinBatch([a+b for a,b in zip(self.structures, other.structures)])
 
 if __name__=='__main__':
 	from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
@@ -138,4 +191,7 @@ if __name__=='__main__':
 	p2c = PDB2CoordsUnordered()
 	prot = ProteinStructure(*p2c(["1brs.pdb"])).select_CA()
 	atoms_plot = prot.plot_coords()
+
+	batch = ProteinBatch.from_batch(*p2c(["1brs.pdb", "1brs.pdb", "1brs.pdb"])).select_CA()
+	batch.plot_coords()
 	
