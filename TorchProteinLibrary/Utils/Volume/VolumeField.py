@@ -16,18 +16,19 @@ class ScalarField():
 			self.T = self.T.squeeze()
 
 		if self.T.ndim != 3:
-			raise("Too many dimensions:", self.T.ndim())
+			raise("Too many dimensions:", self.T.ndim)
 		
 		if self.T.is_cuda:
 			self.T = self.T.cpu()
 				
-	def isosurface(self, isovalue, axis=None, edgecolor='k', facecolor='k', alpha=1.0):
+	def isosurface(self, isovalue, axis=None, edgecolor='k', facecolor='k', alpha=1.0, step_size=1):
 		import matplotlib.pyplot as plt
 		from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 		from skimage import measure
 		
 		verts, faces, normals, values = measure.marching_cubes_lewiner(self.T.numpy(), isovalue, 
-										spacing=(self.resolution, self.resolution, self.resolution))
+										spacing=(self.resolution, self.resolution, self.resolution),
+										step_size=step_size)
 		
 		mesh = Poly3DCollection(verts[faces])
 		mesh.set_edgecolor(edgecolor)

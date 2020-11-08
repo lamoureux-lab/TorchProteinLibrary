@@ -25,7 +25,6 @@ class VolumeRotation(nn.Module):
 		R = R[:, perm, :]
 		TransMat = torch.zeros(batch_size, 3, device=R.device, dtype=R.dtype)
 		A = torch.cat([R.transpose(1,2), TransMat.unsqueeze(dim=2)], dim=2)
-		print(A)
 		grid = nn.functional.affine_grid(A, size=volume.size(), align_corners=True)
 				
 		return nn.functional.grid_sample(volume, grid, mode=self.mode, padding_mode=self.padding_mode)
