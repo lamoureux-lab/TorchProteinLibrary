@@ -16,15 +16,15 @@ class TypedCoords2VolumeFunction(Function):
 		ctx.save_for_backward(input_coords_gpu, num_atoms_cpu, resolution, num_neighbours)
 		if len(input_coords_gpu.size())==2:
 			batch_size = input_coords_gpu.size(0)
-			volume_gpu = torch.zeros(batch_size, box_size, box_size, box_size, dtype=input_coords_gpu.dtype, device='cuda')
+			volume_gpu = torch.zeros(batch_size, box_size, box_size, box_size, dtype=input_coords_gpu.dtype, device=input_coords_gpu.device)
 			max_num_atoms = torch.max(num_atoms_cpu).item()
 			num_neighbour_cells = (2*num_neighbours.item()+1)**3
 			HASH_EMPTY = 2147483647
-			sortedPos = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms*3, dtype=input_coords_gpu.dtype, device='cuda')
-			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
-			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
-			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
-			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device='cuda').fill_(HASH_EMPTY)
+			sortedPos = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms*3, dtype=input_coords_gpu.dtype, device=input_coords_gpu.device)
+			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
+			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
+			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
+			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', input_coords_gpu.size()) 
 		
@@ -46,7 +46,7 @@ class TypedCoords2VolumeFunction(Function):
 		if len(grad_volume_gpu.size()) == 4:
 			num_coords = input_coords_gpu.size(1)
 			batch_size = grad_volume_gpu.size(0)
-			grad_coords_gpu = torch.zeros(batch_size, num_coords, dtype=input_coords_gpu.dtype, device='cuda')
+			grad_coords_gpu = torch.zeros(batch_size, num_coords, dtype=input_coords_gpu.dtype, device=input_coords_gpu.device)
 		else:
 			raise ValueError('TypedCoords2VolumeFunction: ', 'Incorrect input size:', grad_volume_gpu.size()) 
 		
