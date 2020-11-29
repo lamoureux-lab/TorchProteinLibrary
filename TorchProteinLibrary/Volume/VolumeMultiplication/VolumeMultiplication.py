@@ -51,7 +51,8 @@ class VolumeCrossMultiply(nn.Module):
 		R = R[:, perm, :]
 
 		RotMat = R.transpose(1, 2)
-		TransMat = torch.stack([(RotMat[:,:,0]*T).sum(dim=1), (RotMat[:,:,1]*T).sum(dim=1), (RotMat[:,:,2]*T).sum(dim=1)], dim=1)
+		TransMat = torch.stack([(RotMat[:,0,:]*T).sum(dim=1), (RotMat[:,1,:]*T).sum(dim=1), (RotMat[:,2,:]*T).sum(dim=1)], dim=1)
+		# TransMat = T
 		A = torch.cat([RotMat, TransMat.unsqueeze(dim=2)], dim=2)
 		
 		grid = nn.functional.affine_grid(A, size=volume2.size())

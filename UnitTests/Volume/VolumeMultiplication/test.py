@@ -29,7 +29,7 @@ def test_translations(a, b, dim=0):
 	for i in range(20):
 		R = torch.tensor([0.0, 0.0, 0.0]).unsqueeze(dim=0)
 		T = torch.tensor([0.0, 0.0, 0.0]).unsqueeze(dim=0)
-		T[0,2] = float(i)-10
+		T[0,1] = float(i)-10
 		R[0,2] = 2*np.pi*float(i)/20.0
 		v = mult(b.unsqueeze(dim=0).unsqueeze(dim=1), a.unsqueeze(dim=0).unsqueeze(dim=1),R,T)
 		
@@ -76,9 +76,9 @@ def test_rotations(a, b, dim):
 		ax.set_ylabel("y")
 		ax.set_zlabel("z")
 
-		ax.set_xlim(0, 10)
-		ax.set_ylim(0, 10)
-		ax.set_zlim(0, 10)
+		ax.set_xlim(0, 20)
+		ax.set_ylim(0, 20)
+		ax.set_zlim(0, 20)
 
 		plt.tight_layout()
 		cam.snap()
@@ -134,16 +134,16 @@ def test_optimization(a,b):
 	# plt.show()
 
 if __name__=='__main__':
-	# a = torch.zeros(20,20,20)
-	# b = torch.zeros(20,20,20)
-	# t = torch.zeros(20,20,20)
-	# gaussian(a, (-2,0,0), 1.0)
-	# gaussian(b, (2,0,0), 1.0)
-	# a += b
+	a = torch.zeros(20,20,20)
+	b = torch.zeros(20,20,20)
+	t = torch.zeros(20,20,20)
+	gaussian(a, (-2,0,0), 1.0)
+	gaussian(b, (2,0,0), 1.0)
+	a += b
 
 	# test_rotations(a, b, dim=2)
-	# test_translations(a, b, dim=2)
-
+	test_translations(a, b, dim=2)
+	sys.exit()
 	a = torch.zeros(30,30,30)
 	b = torch.zeros(30,30,30)
 	t = torch.zeros(30,30,30)
