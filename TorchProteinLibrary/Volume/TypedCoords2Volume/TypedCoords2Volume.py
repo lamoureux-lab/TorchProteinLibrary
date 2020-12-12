@@ -21,8 +21,8 @@ class TypedCoords2VolumeFunction(Function):
 			num_neighbour_cells = (2*num_neighbours.item()+1)**3
 			HASH_EMPTY = 2147483647
 			sortedPos = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms*3, dtype=input_coords_gpu.dtype, device=input_coords_gpu.device)
-			particleHash = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
-			particleIndex = torch.zeros(batch_size, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
+			particleHash = torch.zeros(batch_size, 2, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
+			particleIndex = torch.zeros(batch_size, 2, num_neighbour_cells*max_num_atoms, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
 			cellStart = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
 			cellStop = torch.zeros(batch_size, box_size*box_size*box_size, dtype=torch.int64, device=input_coords_gpu.device).fill_(HASH_EMPTY)
 		else:

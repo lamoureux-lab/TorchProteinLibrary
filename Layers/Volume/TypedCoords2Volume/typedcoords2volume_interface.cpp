@@ -28,7 +28,7 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
     }
     int batch_size = input_coords.size(0);
     auto a_num_atoms = num_atoms.accessor<int, 1>();
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for(int i=0; i<batch_size; i++){
         torch::Tensor single_volume = volume[i];
         torch::Tensor single_input_coords = input_coords[i];
@@ -42,8 +42,10 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
                                                 a_num_atoms[i], 
                                                 single_volume.data<scalar_t>(), 
                                                 single_volume.size(1), resolution, num_neighbours,
-                                                single_particleHash.data<long>(),
-                                                single_particleIndex.data<long>(),
+                                                (single_particleHash[0]).data<long>(),
+                                                (single_particleHash[1]).data<long>(),
+                                                (single_particleIndex[0]).data<long>(),
+                                                (single_particleIndex[1]).data<long>(),
                                                 single_cellStart.data<long>(),
                                                 single_cellStop.data<long>(),
                                                 single_sortedPos.data<scalar_t>());

@@ -75,7 +75,7 @@ if __name__=='__main__':
 					'Layers/Volume/HashKernel.cu',
 					'Layers/Volume/VolumeRMSD.cu',
 					'Layers/Volume/main.cpp'],
-					include_dirs = ['Layers/Volume', 'Math'],
+					include_dirs = ['Layers/Volume', 'Math', 'cub'],
 					libraries = ['gomp', 'cufft'],
 					extra_compile_args={'cxx': ['-fopenmp', '-g'],
                                         'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}

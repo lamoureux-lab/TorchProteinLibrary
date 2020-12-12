@@ -9,7 +9,8 @@ import math
 from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords, Angles2Coords
 from TorchProteinLibrary.FullAtomModel.CoordsTransform import CoordsTranslate, CoordsRotate, getBBox
 from TorchProteinLibrary.Volume import TypedCoords2Volume
-import _Volume
+
+from TorchProteinLibrary.Utils import ProteinBatch, ScalarField
 
 class TestTypedCoords2Volume(unittest.TestCase):
 	device = 'cuda'
@@ -79,6 +80,12 @@ class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 	def runTest(self):
 		volume_gpu = self.tc2v(self.coords, self.num_atoms_of_type)
 		volume = volume_gpu.sum(dim=1).to(device='cpu', dtype=torch.float)
+		
+		import matplotlib.pylab as plt
+		fig = plt.figure(figsize=(10, 10))
+		axis = fig.add_subplot(111, projection='3d')
+		ScalarField(volume.sum(dim=0), resolution=self.resolution).isosurface(0.5, axis=axis, alpha=0.0)
+		plt.show()
 		
 		if not os.path.exists('TestFig'):
 			os.mkdir('TestFig')
