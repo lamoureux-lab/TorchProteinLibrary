@@ -17,9 +17,9 @@ class TestTypedCoords2Volume(unittest.TestCase):
 	dtype = torch.float
 	places = 5
 	batch_size = 2
-	max_num_atoms = 16
-	eps=1e-03 
-	atol=1e-05 
+	max_num_atoms = 32
+	eps=1e-02 
+	atol=1e-03 
 	rtol=0.001
 	msg = "Testing TypedCoords2Volume"
 
@@ -79,12 +79,15 @@ class TestTypedCoords2Volume(unittest.TestCase):
 class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 	def runTest(self):
 		volume_gpu = self.tc2v(self.coords, self.num_atoms_of_type)
-		volume = volume_gpu.sum(dim=1).to(device='cpu', dtype=torch.float)
-		
+		volume = volume_gpu.to(device='cpu', dtype=torch.float)
+		print(torch.max(volume[0,0,:,:,:]), torch.min(volume[0,0,:,:,:]), self.num_atoms_of_type[0,0])
 		import matplotlib.pylab as plt
 		fig = plt.figure(figsize=(10, 10))
 		axis = fig.add_subplot(111, projection='3d')
-		ScalarField(volume.sum(dim=0), resolution=self.resolution).isosurface(0.5, axis=axis, alpha=0.0)
+		ScalarField(volume[0,0,:,:,:], resolution=self.resolution).isosurface(0.1, axis=axis, alpha=0.0)
+		num_atoms = self.num_atoms_of_type[0,0].item()
+		c = self.coords[0,0,:].view(int(self.coords.size(2)/3), 3)[:num_atoms, :]
+		axis.scatter(c[:,0].cpu().numpy(), c[:,1].cpu().numpy(), c[:,2].cpu().numpy())
 		plt.show()
 		
 		if not os.path.exists('TestFig'):
@@ -118,16 +121,17 @@ class TestTypedCoords2VolumeBackward(TestTypedCoords2Volume):
 		volume_gpu = self.tc2v(coords0, self.num_atoms_of_type)
 		E0 = torch.sum(volume_gpu*self.potential)
 		E0.backward()
-		
+		eps = 0.01
 		for i in range(0, self.coords.size(0)):
 			for j in range(0, self.coords.size(1)):
 				for k in range(0, self.coords.size(2)):
 					coords1 = torch.zeros_like(self.coords).copy_(self.coords)
-					coords1[i,j,k] += self.eps
+					coords1[i,j,k] += eps
 					volume_gpu1 = self.tc2v(coords1, self.num_atoms_of_type)
 					E1 = torch.sum(volume_gpu1*self.potential)
-					dE_dx = (E1.item() - E0.item())/(self.eps)
-					self.assertLess(math.fabs(dE_dx - coords0.grad[i,j,k].item()), math.fabs(E0.item()) * self.rtol + self.atol)
+					dE_dx = (E1.item() - E0.item())/(eps)
+					print(dE_dx, coords0.grad[i,j,k].item())
+					self.assertLess(math.fabs(dE_dx - coords0.grad[i,j,k].item()), math.fabs(coords0.grad[i,j,k].item()) * self.rtol + self.atol)
 
 class TestTypedCoords2VolumeBackward_Double(TestTypedCoords2VolumeBackward):
 	dtype=torch.double

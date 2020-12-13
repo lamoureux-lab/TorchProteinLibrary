@@ -4,6 +4,9 @@
 #include <HashKernel.h>
 #include <nUtil.h>
 
+//#define _OPENMP
+//#include <ATen/ParallelOpenMP.h>
+
 void TypedCoords2Volume_forward(    torch::Tensor input_coords,
                                     torch::Tensor volume,
                                     torch::Tensor num_atoms,
@@ -28,8 +31,11 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
     }
     int batch_size = input_coords.size(0);
     auto a_num_atoms = num_atoms.accessor<int, 1>();
-    #pragma omp parallel for
-    for(int i=0; i<batch_size; i++){
+    // #pragma omp parallel for
+    // for(int i=0; i<batch_size; i++){
+    at::parallel_for(0, batch_size, 0, [&](int64_t start, int64_t end) {
+    for (int64_t i = start; i < end; i++)
+    {
         torch::Tensor single_volume = volume[i];
         torch::Tensor single_input_coords = input_coords[i];
         torch::Tensor single_particleHash = gridParticleHash[i];
@@ -37,6 +43,7 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
         torch::Tensor single_cellStart = cellStart[i];
         torch::Tensor single_cellStop = cellStop[i];
         torch::Tensor single_sortedPos = sortedPos[i];
+        int device = single_input_coords.device().index();
         AT_DISPATCH_FLOATING_TYPES(input_coords.type(), "TypedCoords2Volume_forward", ([&]{
             gpu_computeCoords2Volume<scalar_t>( single_input_coords.data<scalar_t>(), 
                                                 a_num_atoms[i], 
@@ -48,9 +55,10 @@ void TypedCoords2Volume_forward(    torch::Tensor input_coords,
                                                 (single_particleIndex[1]).data<long>(),
                                                 single_cellStart.data<long>(),
                                                 single_cellStop.data<long>(),
-                                                single_sortedPos.data<scalar_t>());
+                                                single_sortedPos.data<scalar_t>(),
+                                                device);
         }));
-    }
+    }});
     
 }
 void TypedCoords2Volume_backward(   torch::Tensor grad_volume,

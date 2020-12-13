@@ -10,7 +10,8 @@ void gpu_computeCoords2Volume(	T *coords,
 								long *gridParticleIndex_buf,
 								long *cellStart,
 								long *cellStop,
-								T *sortedPos);
+								T *sortedPos,
+								int dev);
 
 template <typename T>
 void gpu_computeVolume2Coords(	T *coords,

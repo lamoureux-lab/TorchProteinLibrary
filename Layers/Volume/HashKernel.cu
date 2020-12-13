@@ -168,7 +168,9 @@ void gpu_computeCoords2Volume(	T *coords,
 								long *gridParticleIndex_buf,
 								long *cellStart,
 								long *cellStop,
-								T *sortedPos){
+								T *sortedPos,
+								int dev){
+	cudaSetDevice(dev);
     if(num_atoms == 0)return;                                
 	uint num_neighbours = (2*d+1)*(2*d+1)*(2*d+1);
 	
@@ -178,9 +180,6 @@ void gpu_computeCoords2Volume(	T *coords,
 											    coords, num_atoms, spatial_dim, res, d);
 	gpuErrchk( cudaPeekAtLastError() );
 		
-	// thrust::sort_by_key(thrust::device_ptr<long>(gridParticleHash),
-    //                     thrust::device_ptr<long>(gridParticleHash + num_neighbours*num_atoms),
-    //                     thrust::device_ptr<long>(gridParticleIndex));
 	void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
 	cub::DoubleBuffer<long> b_gridParticleHash(gridParticleHash, gridParticleHash_buf);
@@ -196,7 +195,7 @@ void gpu_computeCoords2Volume(	T *coords,
 	uint smemSize = sizeof(long)*(numThreads+1);
 	reorderData<T><<<numBlocks, numThreads, smemSize>>>(cellStart, cellStop,
                                                         sortedPos,
-                                                        gridParticleHash, gridParticleIndex,
+                                                        b_gridParticleHash.Current(), b_gridParticleIndex.Current(),
                                                         coords,	num_neighbours*num_atoms);
 	gpuErrchk( cudaPeekAtLastError() );
 
@@ -264,5 +263,5 @@ void gpu_computeVolume2Coords(	T *coords,
 template void gpu_computeVolume2Coords<float>(	float*, float*, int, float*, int, float, int);
 template void gpu_computeVolume2Coords<double>(	double*, double*, int, double*, int, float, int);
 
-template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float, int, long*, long*, long*, long*, long*, long*, float*);
-template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float, int, long*, long*, long*, long*, long*, long*, double*);
+template void gpu_computeCoords2Volume<float>(float*, int, float*, int, float, int, long*, long*, long*, long*, long*, long*, float*, int);
+template void gpu_computeCoords2Volume<double>(double*, int, double*, int, float, int, long*, long*, long*, long*, long*, long*, double*, int);
