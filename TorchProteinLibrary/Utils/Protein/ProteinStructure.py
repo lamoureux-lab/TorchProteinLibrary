@@ -39,12 +39,26 @@ class ProteinStructure:
 		return ProteinStructure(sel_coords, sel_chains, sel_resnames, sel_resnums, sel_atomnames, sel_numatoms)
 
 	def select_CA(self):
-		is0C = torch.eq(self.atomnames[:,:,0], 67).squeeze()
-		is1A = torch.eq(self.atomnames[:,:,1], 65).squeeze()
+		is0C = torch.eq(self.atomnames[:,:,0], ord('C')).squeeze()
+		is1A = torch.eq(self.atomnames[:,:,1], ord('A')).squeeze()
 		is20 = torch.eq(self.atomnames[:,:,2], 0).squeeze()
 		isCA = is0C*is1A*is20
 
 		return self.select_atoms_mask(isCA)
+
+	def select_backbone(self):
+		is0C = torch.eq(self.atomnames[:,:,0], ord('C')).squeeze()
+		is1A = torch.eq(self.atomnames[:,:,1], ord('A')).squeeze()
+		is20 = torch.eq(self.atomnames[:,:,2], 0).squeeze()
+		isCA = is0C*is1A*is20
+		is10 = torch.eq(self.atomnames[:,:,1], 0).squeeze()
+		isC = is0C*is10
+		is0N = torch.eq(self.atomnames[:,:,0], ord('N')).squeeze()
+		isN = is0N*is10
+
+		isBackbone = isCA + isC + isN
+
+		return self.select_atoms_mask(isBackbone)
 
 	def select_chain(self, chain_name):
 		is0C = torch.eq(self.chains[:,:,0], ord(chain_name)).squeeze()
@@ -165,6 +179,9 @@ class ProteinBatch:
 
 	def select_CA(self):
 		return ProteinBatch([x.select_CA() for x in self.structures])
+	
+	def select_backbone(self):
+		return ProteinBatch([x.select_backbone() for x in self.structures])
 
 	def plot_coords(self, axis = None, type='line', args = {}):
 		import matplotlib 
@@ -189,9 +206,9 @@ if __name__=='__main__':
 	from TorchProteinLibrary.FullAtomModel import PDB2CoordsUnordered
 	
 	p2c = PDB2CoordsUnordered()
-	prot = ProteinStructure(*p2c(["1brs.pdb"])).select_CA()
+	prot = ProteinStructure(*p2c(["1brs.pdb"])).select_backbone()
 	atoms_plot = prot.plot_coords()
 
-	batch = ProteinBatch.from_batch(*p2c(["1brs.pdb", "1brs.pdb", "1brs.pdb"])).select_CA()
-	batch.plot_coords()
+	# batch = ProteinBatch.from_batch(*p2c(["1brs.pdb", "1brs.pdb", "1brs.pdb"])).select_CA()
+	# batch.plot_coords()
 	

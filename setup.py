@@ -32,6 +32,8 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Physics.AtomNames2Params',
 				'TorchProteinLibrary.Physics.Coords2Elec',
 				'TorchProteinLibrary.Physics.Coords2Stress',
+				#Graph
+				# 'TorchProteinLibrary.Graph.Coords2Neighbours',
 				#Utils
 				'TorchProteinLibrary.Utils',
 				'TorchProteinLibrary.Utils.Protein',
@@ -136,6 +138,21 @@ if __name__=='__main__':
 					extra_compile_args={'cxx': ['-fopenmp', '-g'],
                                         'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']})
 
+	Graph = CUDAExtension('_Graph',
+					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
+					'Layers/Graph/Coords2Neighbours/coords2neighbours_interface.cpp',
+					'Layers/Graph/HashKernel.cu',
+					'Layers/Graph/main.cpp'],
+					include_dirs = ['Layers/Graph', 'Math', 'cub'],
+					libraries = ['gomp', 'cufft'],
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
+						)
+
 	
 	setup(	name='TorchProteinLibrary',
 			version="0.3",
@@ -144,7 +161,8 @@ if __name__=='__main__':
 							FullAtomModel, 
 							Volume, 
 							ReducedModel,
-							Physics
+							Physics,
+							# Graph
 						],
 			cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)},
 

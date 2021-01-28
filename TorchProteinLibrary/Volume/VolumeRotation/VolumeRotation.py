@@ -28,3 +28,36 @@ class VolumeRotation(nn.Module):
 		grid = nn.functional.affine_grid(A, size=volume.size(), align_corners=True)
 				
 		return nn.functional.grid_sample(volume, grid, mode=self.mode, padding_mode=self.padding_mode)
+
+
+class VolumeRotationSE3(nn.Module):
+	"""
+	Fields in a volume rotation by matrix
+	Rotates around the volume center: [(box_size-1)/2,(box_size-1)/2,(box_size-1)/2]
+	"""
+	def __init__(self, fields, **args):
+		super(VolumeRotationSE3, self).__init__()
+		self.vol_rotate = VolumeRotation(args)
+		self.fields = fields
+
+	def forward(self, volume, R):
+		batch_size = volume.size(0)
+		box_size = volume.size(-1)
+		rotated_vol = self.vol_rotate(volume, R)
+		idx_start = 0
+		for m, l in self.fields:
+			if m==0: continue
+			idx_end = idx + m*(2*l+1)
+			fields = rotated_vol[:, idx_start:idx_end, :, :, :].view(batch_size*m, 2*l+1, box_size, box_size, box_size)
+			if l==0:
+				pass
+			elif l==1:
+				fields = torch.einsum("aij,abjcde->abicde", R, volume)
+			else:
+				raise(Exception("Not implemented"))
+
+			rotated_vol[:, idx_start:idx_end, :, :, :] = fields.view(batch_size, m*(2*l+1), box_size, box_size, box_size)
+			idx_start = idx_end
+
+		return rotated_vol
+	

@@ -18,6 +18,8 @@ from TorchProteinLibrary.Volume import TypedCoords2Volume, VolumeRotation
 from TorchProteinLibrary.FullAtomModel import CoordsRotate, CoordsTranslate, Coords2Center, getRandomRotation
 from TorchProteinLibrary.Utils import ScalarField, ProteinStructure
 import time
+
+
 if __name__=='__main__':
 	
 	box_size = 30
