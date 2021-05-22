@@ -62,8 +62,9 @@ class VolumeCrossMultiply(nn.Module):
 		volume1_unpacked = []
 		volume2_unpacked = []
 		for i in range(0, num_features):
-			volume1_unpacked.append(volume1[:,0:num_features-i,:,:,:])
-			volume2_unpacked.append(volume2[:,i:num_features,:,:,:])
+	                volume1_unpacked.append(volume1)
+			volume2_unpacked.append(volume2)
+                        
 		volume1 = torch.cat(volume1_unpacked, dim=1)
 		volume2 = torch.cat(volume2_unpacked, dim=1)
 
