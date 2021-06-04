@@ -59,14 +59,20 @@ class VolumeCrossMultiply(nn.Module):
 		volume2 = nn.functional.grid_sample(volume2, grid)
 		self.transformed_volume = volume2
 
-		volume1_unpacked = []
-		volume2_unpacked = []
-		for i in range(0, num_features):
-			volume1_unpacked.append(volume1[:,0:num_features-i,:,:,:])
-			volume2_unpacked.append(volume2[:,i:num_features,:,:,:])
-		volume1 = torch.cat(volume1_unpacked, dim=1)
-		volume2 = torch.cat(volume2_unpacked, dim=1)
+		# volume1_unpacked = []
+		# volume2_unpacked = []
+		# for i in range(0, num_features):
+		# 	volume1_unpacked.append(volume1[:,0:num_features-i,:,:,:])
+		# 	volume2_unpacked.append(volume2[:,i:num_features,:,:,:])
+		# volume1 = torch.cat(volume1_unpacked, dim=1)
+		# volume2 = torch.cat(volume2_unpacked, dim=1)
 
+		num_output_features = num_features*num_features
+		volume1 = volume1.unsqueeze(dim=1).repeat(1, num_features, 1, 1, 1, 1).contiguous()
+		volume2 = volume2.unsqueeze(dim=2).repeat(1, 1, num_features, 1, 1, 1).contiguous()
+		volume1 = volume1.view(batch_size, num_output_features, volume_size, volume_size, volume_size)
+		volume2 = volume2.view(batch_size, num_output_features, volume_size, volume_size, volume_size)
+		
 		mults = (volume1 * volume2).sum(dim=[2,3,4])
 
 		return mults
