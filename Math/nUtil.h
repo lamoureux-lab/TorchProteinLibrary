@@ -32,6 +32,9 @@ namespace ProtUtil{
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 
+    // assign atom type from 4 elements (C,N,O,S)
+    uint get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal);
+  
 };
 
 template <typename T> void rotate(torch::Tensor &input_coords, cMatrix33<T> &R, torch::Tensor &output_coords, int num_atoms);

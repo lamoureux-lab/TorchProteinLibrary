@@ -709,6 +709,28 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 	return assignedType - 1;
 }
 
+uint ProtUtil::get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal){
+	auto f = [](unsigned char const c) { return std::isspace(c); };
+	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
+	uint assignedType = 0;
+	std::string fullAtomName;
+
+	if(atom_name[0] == 'C'){
+	  assignedType = 0;
+	}else if(atom_name[0] == 'N'){
+	  assignedType = 1;
+	}else if(atom_name[0] == 'O'){
+	  assignedType = 2;
+	}else if(atom_name[0] == 'S'){
+	  assignedType = 3;
+	}else{
+	  throw std::string("Unknown atom type") + res_name + atom_name;
+	}
+	return assignedType;
+}
+	  
+
+
 template void rotate(torch::Tensor&, cMatrix33<float>&, torch::Tensor&, int);
 template void translate(torch::Tensor&, cVector3<float>&, torch::Tensor&, int);
 template void computeBoundingBox(torch::Tensor&, int, cVector3<float>&, cVector3<float>&);
