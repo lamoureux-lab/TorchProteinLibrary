@@ -570,6 +570,27 @@ std::string ProtUtil::convertRes1to3(char resName){
     }
 }
 
+uint ProtUtil::get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal){
+	auto f = [](unsigned char const c) { return std::isspace(c); };
+	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
+	uint assignedType = 0;
+	std::string fullAtomName;
+
+	if(atom_name[0] == 'C'){
+	  assignedType = 0;
+	}else if(atom_name[0] == 'N'){
+	  assignedType = 1;
+	}else if(atom_name[0] == 'O'){
+	  assignedType = 2;
+	}else if(atom_name[0] == 'S'){
+	  assignedType = 3;
+	}else{
+	  throw std::string("Unknown atom type") + res_name + atom_name;
+	}
+	return assignedType;
+}
+
+
 uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool terminal){
 	auto f = [](unsigned char const c) { return std::isspace(c); };
 	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
@@ -709,25 +730,61 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 	return assignedType - 1;
 }
 
-uint ProtUtil::get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal){
+uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, bool terminal){
 	auto f = [](unsigned char const c) { return std::isspace(c); };
 	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
 	uint assignedType = 0;
 	std::string fullAtomName;
 
-	if(atom_name[0] == 'C'){
-	  assignedType = 0;
-	}else if(atom_name[0] == 'N'){
-	  assignedType = 1;
-	}else if(atom_name[0] == 'O'){
-	  assignedType = 2;
-	}else if(atom_name[0] == 'S'){
+	// dealing with backbone & CB atom types
+	if(atom_name==std::string("C")){
+	  assignedType = 0
+	}else if(atom_name==std::string("CA")){
 	  assignedType = 3;
+	}else if(atom_name==std::string("CB")){
+	  assignedType = 4;
+	}else if(atom_name==std::string("N")){
+	  assignedType = 24;
+	}else if(atom_name==std::string("O")){
+	  assignedType = 30;
 	}else{
-	  throw std::string("Unknown atom type") + res_name + atom_name;
+
+	  // dealing with the residue-dependent atom types
+	  fullAtomName = res_name + atom_name;
+
+	  if(fullAtomName == std::string("PROCA")){
+	    assignedType = 11;
+	  }else if(fullAtomName == std::string("ALACB")){
+	    assignedType = 6;
+	  }else if(fullAtomName == std::string("ASPCB") || fullAtomName == std::string("GLUCB")){
+	    assignedType = 5;
+	  }else if(fullAtomName == std::string("ILECB") || fullAtomName == std::string("THRCB") || \
+		   fullAtomName == std::string("VALCB") || fullAtomName == std::string("LEUCG")){
+	    assignedType = 3;
+	  }else if(fullAtomName == std::string("ARGCG") || fullAtomName == std::string("ARGCD") || \
+		   fullAtomName == std::string("GLNCG") || fullAtomName == std::string("ILECG1") || \	
+		   fullAtomName == std::string("GLUCG") || fullAtomName == std::string("LYSCG") || \
+		   fullAtomName == std::string("LYSCD") || fullAtomName == std::string("LYSCE") || \
+		   fullAtomName == std::string("METCG") || fullAtomName == std::string("GLYCA")){
+	    assignedType = 4;
+	  }else if(fullAtomName == std::string("ILECG") || fullAtomName == std::string("THRCG") || fullAtomName == std::string("VALCG") ){
+	    assignedType = 1;
+	  
+	    
+
+	    
+	    //In progresss ....................................
+	    
+	    
+
+	  }else{
+	    throw std::string("Unknown atom type") + res_name + atom_name;
+	  }
+
 	}
-	return assignedType;
+	return assignedType ;
 }
+
 	  
 
 
