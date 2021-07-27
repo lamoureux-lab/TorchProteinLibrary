@@ -738,7 +738,7 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 
 	// dealing with backbone & CB atom types
 	if(atom_name==std::string("C")){
-	  assignedType = 0
+	  assignedType = 0;
 	}else if(atom_name==std::string("CA")){
 	  assignedType = 3;
 	}else if(atom_name==std::string("CB")){
@@ -754,7 +754,11 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 
 	  if(fullAtomName == std::string("PROCA")){
 	    assignedType = 11;
-	  }else if(fullAtomName == std::string("ALACB")){
+	  }else if(fullAtomName == std::string("ALACB") || fullAtomName == std::string("ILECG2") || \
+		   fullAtomName == std::string("ILECD") || fullAtomName == std::string("LEUCD1") || \
+		   fullAtomName == std::string("LEUCD2") || fullAtomName == std::string("METCE") || \
+		   fullAtomName == std::string("THRCG2") || fullAtomName == std::string("VALCG1") || \
+		   fullAtomName == std::string("VALCG2")){
 	    assignedType = 6;
 	  }else if(fullAtomName == std::string("ASPCB") || fullAtomName == std::string("GLUCB")){
 	    assignedType = 5;
@@ -767,14 +771,23 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 		   fullAtomName == std::string("LYSCD") || fullAtomName == std::string("LYSCE") || \
 		   fullAtomName == std::string("METCG") || fullAtomName == std::string("GLYCA")){
 	    assignedType = 4;
-	  }else if(fullAtomName == std::string("ILECG") || fullAtomName == std::string("THRCG") || fullAtomName == std::string("VALCG") ){
+	  }else if(fullAtomName == std::string("AGRNE") || fullAtomName == std::string("ARGNH1") || \
+		   fullAtomName == std::string("ARGNH2") ){
+	    assignedType = 27;
+	  }else if(fullAtomName == std::string("CYSSG") || fullAtomName == std::string("METSD")){
+	    assignedType = 35;
+	  }else if(fullAtomName == std::string("PHECG") || fullAtomName == std::string("PHECD1") || \
+		   fullAtomName == std::string("PHECD2") || fullAtomName == std::string("PHECE1") || \
+		   fullAtomName == std::string("PHECE2") || fullAtomName == std::string("PHECZ") || \
+		   fullAtomName == std::string("TRPCD1") || fullAtomName == std::string("TRPCZ3") || \
+		   fullAtomName == std::string("TYRCG") || fullAtomName == std::string("TYRCD1") || \
+		   fullAtomName == std::string("TYRCE1") || fullAtomName == std::string("TYRCZ") || \
+		   fullAtomName == std::string("TYRCE2") || fullAtomName == std::string("TYRCD2")){
 	    assignedType = 1;
+	    	    
 	  
 	    
-
-	    
 	    //In progresss ....................................
-	    
 	    
 
 	  }else{
