@@ -17,7 +17,6 @@ class Coords2TypedCoordsFunction(Function):
     @staticmethod
     def forward(ctx, input_coords_cpu, input_resnames, input_atomnames, num_atoms, num_atom_types):
         max_num_atoms = torch.max(num_atoms)
-        #num_atom_types = 11
 
         if len(input_coords_cpu.size()) == 2:
             batch_size = input_coords_cpu.size(0)
@@ -29,12 +28,12 @@ class Coords2TypedCoordsFunction(Function):
             raise ValueError('Coords2TypedCoordsFunction: ', 'Incorrect input size:', input_coords_cpu.size())
 
         _FullAtomModel.Coords2TypedCoords_forward(input_coords_cpu, input_resnames, input_atomnames, num_atoms,
-                                                  output_coords_cpu, num_atoms_of_type, ctx.atom_indexes, num_atom_types)
+                                                  output_coords_cpu, num_atoms_of_type, ctx.atom_indexes, num_atom_types.item())
 
         if math.isnan(output_coords_cpu.sum()):
             raise(Exception('Coords2TypedCoordsFunction: forward Nan'))
 
-        ctx.save_for_backward(num_atoms_of_type, input_coords_cpu)
+        ctx.save_for_backward(num_atoms_of_type, input_coords_cpu, num_atom_types)
         ctx.mark_non_differentiable(num_atoms_of_type)
         return output_coords_cpu, num_atoms_of_type
 
@@ -43,8 +42,7 @@ class Coords2TypedCoordsFunction(Function):
         # print('Coords2TypedCoords backward')
         # ATTENTION! It passes non-contiguous tensor
         grad_typed_coords_cpu = grad_typed_coords_cpu.contiguous()
-        #num_atom_types = 11
-        num_atoms_of_type, input_coords_cpu = ctx.saved_tensors
+        num_atoms_of_type, input_coords_cpu, num_atom_types = ctx.saved_tensors
 
         if len(grad_typed_coords_cpu.size()) == 3:
             grad_coords_cpu = torch.zeros_like(input_coords_cpu)
@@ -53,18 +51,18 @@ class Coords2TypedCoordsFunction(Function):
 
         _FullAtomModel.Coords2TypedCoords_backward(	grad_typed_coords_cpu, grad_coords_cpu,
                                                     num_atoms_of_type,
-                                                    ctx.atom_indexes, num_atom_types)
+                                                        ctx.atom_indexes, num_atom_types.item())
 
         if math.isnan(grad_coords_cpu.sum()):
             raise(Exception('Coords2TypedCoordsFunction: backward Nan'))
 
-        return grad_coords_cpu, None, None, None
+        return grad_coords_cpu, None, None, None, None
 
 
 class Coords2TypedCoords(Module):
     def __init__(self, num_atom_types=11):
         super(Coords2TypedCoords, self).__init__()
-        self.num_atom_types = num_atom_types
+        self.num_atom_types = torch.tensor([num_atom_types], dtype=torch.int)
 
     def forward(self, input_coords_cpu, input_resnames, input_atomnames, num_atoms):
         return Coords2TypedCoordsFunction.apply(input_coords_cpu, input_resnames, input_atomnames, num_atoms, self.num_atom_types)

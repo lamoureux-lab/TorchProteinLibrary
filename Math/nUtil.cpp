@@ -735,12 +735,19 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
 	uint assignedType = 0;
 	std::string fullAtomName;
+	fullAtomName = res_name + atom_name;
 
 	// dealing with backbone & CB atom types
 	if(atom_name==std::string("C")){
 	  assignedType = 0;
 	}else if(atom_name==std::string("CA")){
-	  assignedType = 3;
+	  if(res_name==std::string("GLY")){
+	    assignedType = 4;
+	  }else if(res_name==std::string("PRO")){
+	    assignedType = 11;
+	  }else{
+	    assignedType = 3;
+	  }
 	}else if(atom_name==std::string("CB")){
 	  assignedType = 4;
 	}else if(atom_name==std::string("N")){
@@ -769,7 +776,7 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 		   fullAtomName == std::string("GLNCG") || fullAtomName == std::string("ILECG1") || \	
 		   fullAtomName == std::string("GLUCG") || fullAtomName == std::string("LYSCG") || \
 		   fullAtomName == std::string("LYSCD") || fullAtomName == std::string("LYSCE") || \
-		   fullAtomName == std::string("METCG") || fullAtomName == std::string("GLYCA")){
+		   fullAtomName == std::string("METCG")){ // || fullAtomName == std::string("GLYCA")){
 	    assignedType = 4;
 	  }else if(fullAtomName == std::string("ASPCB") || fullAtomName == std::string("GLUCB")){
 	    assignedType = 5;
@@ -787,8 +794,8 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	    assignedType = 9;
 	  }else if(fullAtomName == std::string("TRPCG")){
 	    assignedType = 10;
-	  }else if(fullAtomName == std::string("PROCA")){
-	    assignedType = 11;
+	    //}else if(fullAtomName == std::string("PROCA")){
+	    //assignedType = 11;
 	  }else if(fullAtomName == std::string("PROCB") || fullAtomName == std::string("PROCG")){
 	    assignedType = 12;
 	  }else if(fullAtomName == std::string("PROCD")){
