@@ -735,7 +735,6 @@ uint ProtUtil::get38AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
 	uint assignedType = 0;
 	std::string fullAtomName;
-	fullAtomName = res_name + atom_name;
 
 	// dealing with backbone & CB atom types
 	if(atom_name==std::string("C")){
