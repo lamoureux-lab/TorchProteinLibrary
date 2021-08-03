@@ -49,8 +49,8 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
 	      if(num_atom_types == 4){
                 type = ProtUtil::get4AtomTypeElement(StringUtil::tensor2String(single_res_names[j]), 
 						     StringUtil::tensor2String(single_atom_names[j]), false);
-	      }else if(num_atom_types == 38){
-		type = ProtUtil::get38AtomTypeCharmm(StringUtil::tensor2String(single_res_names[j]), 
+	      }else if(num_atom_types == 29){
+		type = ProtUtil::get29AtomTypeCharmm(StringUtil::tensor2String(single_res_names[j]), 
 						     StringUtil::tensor2String(single_atom_names[j]), false);
 	      }else{
 		type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_names[j]), 

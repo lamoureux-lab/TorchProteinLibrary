@@ -10,7 +10,7 @@ from TorchProteinLibrary.FullAtomModel import Angles2Coords, Coords2TypedCoords
 class TestCoords2TypedCoords(unittest.TestCase):
 
     def setUp(self):
-        self.sequence = ['GGGGGG', 'GGGGGG']
+        self.sequence = ['GGGGGG', 'GGGGGG', 'QQQQQQ']
         angles = torch.zeros(len(self.sequence), 7, len(self.sequence[0]), dtype=torch.double, device='cpu')
         angles[0, 0, :] = -1.047
         angles[0, 1, :] = -0.698
@@ -20,7 +20,7 @@ class TestCoords2TypedCoords(unittest.TestCase):
         self.coords, _, self.res_names, _, self.atom_names, self.num_atoms = a2c(angles, self.sequence)
         self.c2tc = Coords2TypedCoords()          # Default atom types - 11
         self.c2tcElement = Coords2TypedCoords(4)  # Element atom types - 4  (C,N,O,S)
-        self.c2tcCharmm = Coords2TypedCoords(38)  # Charmm  atom types - 38 
+        self.c2tcCharmm = Coords2TypedCoords(29)  # Charmm  atom types - 38 
 
 
 class TestCoords2TypedCoordsForward(TestCoords2TypedCoords):
@@ -38,21 +38,20 @@ class TestCoords2TypedCoordsForward(TestCoords2TypedCoords):
         self.assertEqual(num_atoms_of_type[0, 9].item(), 0)  # carbon sp2
         self.assertEqual(num_atoms_of_type[0, 10].item(), len(self.sequence[0]))  # carbon sp3
 
-        for i in range(1, len(self.sequence)):  # batch check
+        for i in range(1, len(self.sequence)-1):  # batch check
             for j in range(11):
-                self.assertEqual(
-                    num_atoms_of_type[i, j], num_atoms_of_type[i-1, j])
+                self.assertEqual(num_atoms_of_type[i, j], num_atoms_of_type[i-1, j])
 
 
 class TestCoords2TypedCoordsElementForward(TestCoords2TypedCoords):
     def runTest(self):
         tcoords, num_atoms_of_type = self.c2tcElement(self.coords, self.res_names, self.atom_names, self.num_atoms)
         self.assertEqual(num_atoms_of_type[0, 0].item(), 12)  # C 
-        self.assertEqual(num_atoms_of_type[0, 1].item(), len(self.sequence[0]))  # N
+        self.assertEqual(num_atoms_of_type[0, 1].item(), 6)  # N
         self.assertEqual(num_atoms_of_type[0, 2].item(), 6)  # O
         self.assertEqual(num_atoms_of_type[0, 3].item(), 0)  # S
 
-        for i in range(1, len(self.sequence)):  # batch check
+        for i in range(1, len(self.sequence)-1):  # batch check
             for j in range(4):
                 self.assertEqual(num_atoms_of_type[i, j], num_atoms_of_type[i-1, j])
 
@@ -60,6 +59,7 @@ class TestCoords2TypedCoordsElementForward(TestCoords2TypedCoords):
 class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
     def runTest(self):
         tcoords, num_atoms_of_type = self.c2tcCharmm(self.coords, self.res_names, self.atom_names, self.num_atoms)
+        print("--Testing Charmm types on GLY - GLYCINE")
         self.assertEqual(num_atoms_of_type[0, 0].item(), 6)   # C    - carbonyl C, peptide backbone		  
         self.assertEqual(num_atoms_of_type[0, 1].item(), 0)   # CA   - aromatic C				  
         self.assertEqual(num_atoms_of_type[0, 2].item(), 0)   # CT   - aliphatic sp3 C, new LJ params, no hydrogen
@@ -75,34 +75,55 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
         self.assertEqual(num_atoms_of_type[0, 12].item(), 0)  # CP2  - tetrahedral C (proline CB/CG)		  
         self.assertEqual(num_atoms_of_type[0, 13].item(), 0)  # CP3  - tetrahedral C (proline CD)		  
         self.assertEqual(num_atoms_of_type[0, 14].item(), 0)  # CC   - carbonyl C, asn,asp,gln,glu,cter,ct2	  
-        self.assertEqual(num_atoms_of_type[0, 15].item(), 0)  # CD   - carbonyl C, pres aspp,glup,ct1		  
-        self.assertEqual(num_atoms_of_type[0, 16].item(), 0)  # CS   - thiolate carbon				  
-        self.assertEqual(num_atoms_of_type[0, 17].item(), 0)  # CE1  - for alkene; RHC=CR			  
-        self.assertEqual(num_atoms_of_type[0, 18].item(), 0)  # CE2  - for alkene; H2C=CR			  
-        self.assertEqual(num_atoms_of_type[0, 19].item(), 0)  # CAI  - aromatic C next to CPT in trp		  
-        self.assertEqual(num_atoms_of_type[0, 20].item(), 0)  # N    - proline N				  
-        self.assertEqual(num_atoms_of_type[0, 21].item(), 0)  # NR1  - neutral his protonated ring nitrogen	  
-        self.assertEqual(num_atoms_of_type[0, 22].item(), 0)  # NR2  - neutral his unprotonated ring nitrogen	  
-        self.assertEqual(num_atoms_of_type[0, 23].item(), 0)  # NR3  - charged his ring nitrogen		  
-        self.assertEqual(num_atoms_of_type[0, 24].item(), 6)  # NH1  - peptide nitrogen				          
-        self.assertEqual(num_atoms_of_type[0, 25].item(), 0)  # NH2  - amide nitrogen				  
-        self.assertEqual(num_atoms_of_type[0, 26].item(), 0)  # NH3  - ammonium nitrogen			  
-        self.assertEqual(num_atoms_of_type[0, 27].item(), 0)  # NC2  - guanidinium nitrogen			  
-        self.assertEqual(num_atoms_of_type[0, 28].item(), 0)  # NY   - TRP N in pyrrole ring			  
-        self.assertEqual(num_atoms_of_type[0, 29].item(), 0)  # NP   - Proline ring NH2+ (N-terminal)		  
-        self.assertEqual(num_atoms_of_type[0, 30].item(), 6)  # O    - carbonyl oxygen				  
-        self.assertEqual(num_atoms_of_type[0, 31].item(), 0)  # OB   - carbonyl oxygen in acetic acid		  
-        self.assertEqual(num_atoms_of_type[0, 32].item(), 0)  # OC   - carboxylate oxygen			  
-        self.assertEqual(num_atoms_of_type[0, 33].item(), 0)  # OH1  - hydroxyl oxygen				  
-        self.assertEqual(num_atoms_of_type[0, 34].item(), 0)  # OS   - ester oxygen				  
-        self.assertEqual(num_atoms_of_type[0, 35].item(), 0)  # S    - sulphur					  
-        self.assertEqual(num_atoms_of_type[0, 36].item(), 0)  # SM   - sulfur C-S-S-C type			  
-        self.assertEqual(num_atoms_of_type[0, 37].item(), 0)  # SS   - thiolate sulfur                            
+        self.assertEqual(num_atoms_of_type[0, 15].item(), 0)  # CAI  - aromatic C next to CPT in trp		  
+        self.assertEqual(num_atoms_of_type[0, 16].item(), 0)  # N    - proline N				  
+        self.assertEqual(num_atoms_of_type[0, 17].item(), 0)  # NR1  - neutral his protonated ring nitrogen	  
+        self.assertEqual(num_atoms_of_type[0, 18].item(), 0)  # NR2  - neutral his unprotonated ring nitrogen	  
+        self.assertEqual(num_atoms_of_type[0, 19].item(), 0)  # NR3  - charged his ring nitrogen		  
+        self.assertEqual(num_atoms_of_type[0, 20].item(), 6)  # NH1  - peptide nitrogen				          
+        self.assertEqual(num_atoms_of_type[0, 21].item(), 0)  # NH2  - amide nitrogen				  
+        self.assertEqual(num_atoms_of_type[0, 22].item(), 0)  # NH3  - ammonium nitrogen			  
+        self.assertEqual(num_atoms_of_type[0, 23].item(), 0)  # NC2  - guanidinium nitrogen			  
+        self.assertEqual(num_atoms_of_type[0, 24].item(), 0)  # NY   - TRP N in pyrrole ring			  
+        self.assertEqual(num_atoms_of_type[0, 25].item(), 6)  # O    - carbonyl oxygen				  
+        self.assertEqual(num_atoms_of_type[0, 26].item(), 0)  # OC   - carboxylate oxygen			  
+        self.assertEqual(num_atoms_of_type[0, 27].item(), 0)  # OH1  - hydroxyl oxygen				  
+        self.assertEqual(num_atoms_of_type[0, 28].item(), 0)  # S    - sulphur					  
+
+        print("--Testing Charmm types on GLN")
+        self.assertEqual(num_atoms_of_type[2, 0].item(), 6)   # C    - carbonyl C, peptide backbone		  
+        self.assertEqual(num_atoms_of_type[2, 1].item(), 0)   # CA   - aromatic C				  
+        self.assertEqual(num_atoms_of_type[2, 2].item(), 0)   # CT   - aliphatic sp3 C, new LJ params, no hydrogen
+        self.assertEqual(num_atoms_of_type[2, 3].item(), 6)   # CT1  - aliphatic sp3 C for CH			  
+        self.assertEqual(num_atoms_of_type[2, 4].item(), 12)   # CT2  - aliphatic sp3 C for CH2			  
+        self.assertEqual(num_atoms_of_type[2, 5].item(), 0)   # CT2A - from CT2 (asp, glu, hsp chi1/chi2 fitting) 
+        self.assertEqual(num_atoms_of_type[2, 6].item(), 0)   # CT3  - aliphatic sp3 C for CH3			  
+        self.assertEqual(num_atoms_of_type[2, 7].item(), 0)   # CPH1 - his CG and CD2 carbons			  
+        self.assertEqual(num_atoms_of_type[2, 8].item(), 0)   # CPH2 - his CE1 carbon				  
+        self.assertEqual(num_atoms_of_type[2, 9].item(), 0)   # CPT  - trp C between rings			  
+        self.assertEqual(num_atoms_of_type[2, 10].item(), 0)  # CY   - TRP C in pyrrole ring			  
+        self.assertEqual(num_atoms_of_type[2, 11].item(), 0)  # CP1  - tetrahedral C (proline CA)		  
+        self.assertEqual(num_atoms_of_type[2, 12].item(), 0)  # CP2  - tetrahedral C (proline CB/CG)		  
+        self.assertEqual(num_atoms_of_type[2, 13].item(), 0)  # CP3  - tetrahedral C (proline CD)		  
+        self.assertEqual(num_atoms_of_type[2, 14].item(), 6)  # CC   - carbonyl C, asn,asp,gln,glu,cter,ct2	  
+        self.assertEqual(num_atoms_of_type[2, 15].item(), 0)  # CAI  - aromatic C next to CPT in trp		  
+        self.assertEqual(num_atoms_of_type[2, 16].item(), 0)  # N    - proline N				  
+        self.assertEqual(num_atoms_of_type[2, 17].item(), 0)  # NR1  - neutral his protonated ring nitrogen	  
+        self.assertEqual(num_atoms_of_type[2, 18].item(), 0)  # NR2  - neutral his unprotonated ring nitrogen	  
+        self.assertEqual(num_atoms_of_type[2, 19].item(), 0)  # NR3  - charged his ring nitrogen		  
+        self.assertEqual(num_atoms_of_type[2, 20].item(), 6)  # NH1  - peptide nitrogen				          
+        self.assertEqual(num_atoms_of_type[2, 21].item(), 6)  # NH2  - amide nitrogen				  
+        self.assertEqual(num_atoms_of_type[2, 22].item(), 0)  # NH3  - ammonium nitrogen			  
+        self.assertEqual(num_atoms_of_type[2, 23].item(), 0)  # NC2  - guanidinium nitrogen			  
+        self.assertEqual(num_atoms_of_type[2, 24].item(), 0)  # NY   - TRP N in pyrrole ring			  
+        self.assertEqual(num_atoms_of_type[2, 25].item(), 12)  # O    - carbonyl oxygen				  
+        self.assertEqual(num_atoms_of_type[2, 26].item(), 0)  # OC   - carboxylate oxygen			  
+        self.assertEqual(num_atoms_of_type[2, 27].item(), 0)  # OH1  - hydroxyl oxygen				  
+        self.assertEqual(num_atoms_of_type[2, 28].item(), 0)  # S    - sulphur		
         
-        for i in range(1, len(self.sequence)):  # batch check         
-            for j in range(38):
-                self.assertEqual(
-                    num_atoms_of_type[i, j], num_atoms_of_type[i-1, j])
+        for i in range(1, len(self.sequence)-1):  # batch check         
+            for j in range(29):
+                self.assertEqual(num_atoms_of_type[i, j], num_atoms_of_type[i-1, j])
 
 
                 
