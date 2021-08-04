@@ -124,7 +124,6 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                      
             self.assertEqual(j_num_types, i_num_types)      
 
-
                 
 class TestCoords2TypedCoordsBackward(TestCoords2TypedCoords):
     def runTest(self):
@@ -151,5 +150,55 @@ class TestCoords2TypedCoordsBackward(TestCoords2TypedCoords):
         self.assertLess(error, 1E-5)
 
 
+class TestCoords2TypedCoordsElementBackward(TestCoords2TypedCoords):
+    def runTest(self):
+        self.coords.requires_grad_()
+        tcoords, num_atoms_of_type = self.c2tcElement(self.coords, self.res_names, self.atom_names, self.num_atoms)
+        z0 = tcoords.sum()
+        z0.backward()
+        back_grad_x0 = torch.zeros_like(self.coords).copy_(self.coords.grad)
+        error = 0.0
+        N = 0
+        x1 = torch.zeros_like(self.coords)
+        for i in range(0, self.coords.size(0)):
+            for j in range(0, self.coords.size(1)):
+                dx = 0.01
+                x1.copy_(self.coords)
+                x1[i, j] += dx
+                x1coords, num_atoms_of_type = self.c2tc(x1, self.res_names, self.atom_names, self.num_atoms)
+                z1 = x1coords.sum()
+                dy_dx = (z1.item()-z0.item())/(dx)
+                error += torch.abs(dy_dx - back_grad_x0[i, j]).item()
+                N += 1
+
+        error /= float(N)
+        self.assertLess(error, 1E-5)
+
+
+class TestCoords2TypedCoordsCharmmBackward(TestCoords2TypedCoords):
+    def runTest(self):
+        self.coords.requires_grad_()
+        tcoords, num_atoms_of_type = self.c2tcCharmm(self.coords, self.res_names, self.atom_names, self.num_atoms)
+        z0 = tcoords.sum()
+        z0.backward()
+        back_grad_x0 = torch.zeros_like(self.coords).copy_(self.coords.grad)
+        error = 0.0
+        N = 0
+        x1 = torch.zeros_like(self.coords)
+        for i in range(0, self.coords.size(0)):
+            for j in range(0, self.coords.size(1)):
+                dx = 0.01
+                x1.copy_(self.coords)
+                x1[i, j] += dx
+                x1coords, num_atoms_of_type = self.c2tc(x1, self.res_names, self.atom_names, self.num_atoms)
+                z1 = x1coords.sum()
+                dy_dx = (z1.item()-z0.item())/(dx)
+                error += torch.abs(dy_dx - back_grad_x0[i, j]).item()
+                N += 1
+
+        error /= float(N)
+        self.assertLess(error, 1E-5)
+        
+        
 if __name__ == "__main__":
     unittest.main()
