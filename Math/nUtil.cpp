@@ -780,7 +780,8 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 		   fullAtomName == std::string("TRPCD1") || fullAtomName == std::string("TRPCZ3") || \
 		   fullAtomName == std::string("TYRCG") || fullAtomName == std::string("TYRCD1") || \
 		   fullAtomName == std::string("TYRCE1") || fullAtomName == std::string("TYRCZ") || \
-		   fullAtomName == std::string("TYRCE2") || fullAtomName == std::string("TYRCD2")){
+		   fullAtomName == std::string("TYRCE2") || fullAtomName == std::string("TYRCD2") || \
+		   fullAtomName == std::string("TRPCH2")){
 	    assignedType = 1;
 	  }else if(fullAtomName == std::string("LEUCG")){
 	    assignedType = 3;
@@ -793,13 +794,15 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	  }else if(fullAtomName == std::string("ILECG2") || fullAtomName == std::string("VALCG2") || \
 		   fullAtomName == std::string("ILECD") || fullAtomName == std::string("LEUCD1") || \
 		   fullAtomName == std::string("LEUCD2") || fullAtomName == std::string("METCE") || \
-		   fullAtomName == std::string("THRCG2") || fullAtomName == std::string("VALCG1")){
+		   fullAtomName == std::string("THRCG2") || fullAtomName == std::string("VALCG1") || \
+		   fullAtomName == std::string("ILECD1")){  //??????????
 	    assignedType = 6;
 	  }else if(fullAtomName == std::string("HISCG") || fullAtomName == std::string("HISCD2")){
 	    assignedType = 7;
 	  }else if(fullAtomName == std::string("HISCE1")){
 	    assignedType = 8;
-	  }else if(fullAtomName == std::string("TRPCD2") || fullAtomName == std::string("TRPCE3")){
+	  }else if(fullAtomName == std::string("TRPCD2") || fullAtomName == std::string("TRPCE3") || \
+		   fullAtomName == std::string("TRPCE2")){
 	    assignedType = 9;
 	  }else if(fullAtomName == std::string("TRPCG")){
 	    assignedType = 10;
@@ -822,7 +825,7 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	    assignedType = 21;
 	  }else if(fullAtomName == std::string("LYSNZ")){
 	    assignedType = 22;
-	  }else if(fullAtomName == std::string("AGRNE") || fullAtomName == std::string("ARGNH1") || \
+	  }else if(fullAtomName == std::string("ARGNE") || fullAtomName == std::string("ARGNH1") || \
 		   fullAtomName == std::string("ARGNH2") ){
 	    assignedType = 23;
 	  }else if(fullAtomName == std::string("TRPNE1")){
@@ -832,7 +835,7 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	  }else if(fullAtomName == std::string("ASPOD1") || fullAtomName == std::string("ASPOD2") || \
 		   fullAtomName == std::string("GLUOE1") || fullAtomName == std::string("GLUOE2")){
 	    assignedType = 26;
-	  }else if(fullAtomName == std::string("SEROG") || fullAtomName == std::string("THROG1")){
+	  }else if(fullAtomName == std::string("SEROG") || fullAtomName == std::string("THROG1") ||  fullAtomName == std::string("TYROH")){
 	    assignedType = 27;
 	  }else if(fullAtomName == std::string("CYSSG") || fullAtomName == std::string("METSD")){
 	    assignedType = 28;
