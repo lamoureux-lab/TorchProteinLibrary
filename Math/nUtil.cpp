@@ -730,7 +730,7 @@ uint ProtUtil::get11AtomType(std::string res_name, std::string atom_name, bool t
 	return assignedType - 1;
 }
 
-uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, bool terminal){
+uint ProtUtil::getAtomTypeCharmm(std::string res_name, std::string atom_name, bool terminal){
 	auto f = [](unsigned char const c) { return std::isspace(c); };
 	atom_name.erase(std::remove_if(atom_name.begin(), atom_name.end(), f), atom_name.end());
 	uint assignedType = 0;
@@ -763,10 +763,10 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	  if(res_name==std::string("PRO")){
 	    assignedType = 16;
 	  }else{
-	    assignedType = 20;
+	    assignedType = 18;
 	  }
 	}else if(atom_name==std::string("O")){
-	  assignedType = 25;
+	  assignedType = 23;
 	}else{
 
 	  // dealing with the residue-dependent atom types
@@ -792,17 +792,15 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 		   fullAtomName == std::string("METCG")){ 
 	    assignedType = 4;
 	  }else if(fullAtomName == std::string("ILECG2") || fullAtomName == std::string("VALCG2") || \
-		   fullAtomName == std::string("ILECD") || fullAtomName == std::string("LEUCD1") || \
+		   fullAtomName == std::string("ILECD1") || fullAtomName == std::string("LEUCD1") || \
 		   fullAtomName == std::string("LEUCD2") || fullAtomName == std::string("METCE") || \
-		   fullAtomName == std::string("THRCG2") || fullAtomName == std::string("VALCG1") || \
-		   fullAtomName == std::string("ILECD1")){  //??????????
+		   fullAtomName == std::string("THRCG2") || fullAtomName == std::string("VALCG1")){  
 	    assignedType = 6;
 	  }else if(fullAtomName == std::string("HISCG") || fullAtomName == std::string("HISCD2")){
 	    assignedType = 7;
 	  }else if(fullAtomName == std::string("HISCE1")){
 	    assignedType = 8;
-	  }else if(fullAtomName == std::string("TRPCD2") || fullAtomName == std::string("TRPCE3") || \
-		   fullAtomName == std::string("TRPCE2")){
+	  }else if(fullAtomName == std::string("TRPCD2") || fullAtomName == std::string("TRPCE2")){
 	    assignedType = 9;
 	  }else if(fullAtomName == std::string("TRPCG")){
 	    assignedType = 10;
@@ -815,30 +813,26 @@ uint ProtUtil::get29AtomTypeCharmm(std::string res_name, std::string atom_name, 
 	    assignedType = 14;
 	  }else if(fullAtomName == std::string("TRPCE3") || fullAtomName == std::string("TRPCZ2")){
 	    assignedType = 15;
-	  }else if(fullAtomName == std::string("HSEND1") || fullAtomName == std::string("HSDNE2")){
+	  }else if(fullAtomName == std::string("HISND1") || fullAtomName == std::string("HISNE2")){
 	    assignedType = 17;
-	  }else if(fullAtomName == std::string("HSDND1") || fullAtomName == std::string("HSENE2")){
-	    assignedType = 18;
-	  }else if(fullAtomName == std::string("HSPND1") || fullAtomName == std::string("HSPNE2")){
-	    assignedType = 19;
 	  }else if(fullAtomName == std::string("ASNND2") || fullAtomName == std::string("GLNNE2")){
-	    assignedType = 21;
+	    assignedType = 19;
 	  }else if(fullAtomName == std::string("LYSNZ")){
-	    assignedType = 22;
+	    assignedType = 20;
 	  }else if(fullAtomName == std::string("ARGNE") || fullAtomName == std::string("ARGNH1") || \
 		   fullAtomName == std::string("ARGNH2") ){
-	    assignedType = 23;
+	    assignedType = 21;
 	  }else if(fullAtomName == std::string("TRPNE1")){
-	    assignedType = 24;
+	    assignedType = 22;
 	  }else if(fullAtomName == std::string("ASNOD1") || fullAtomName == std::string("GLNOE1")){
-	    assignedType = 25;
+	    assignedType = 23;
 	  }else if(fullAtomName == std::string("ASPOD1") || fullAtomName == std::string("ASPOD2") || \
 		   fullAtomName == std::string("GLUOE1") || fullAtomName == std::string("GLUOE2")){
-	    assignedType = 26;
+	    assignedType = 24;
 	  }else if(fullAtomName == std::string("SEROG") || fullAtomName == std::string("THROG1") ||  fullAtomName == std::string("TYROH")){
-	    assignedType = 27;
+	    assignedType = 25;
 	  }else if(fullAtomName == std::string("CYSSG") || fullAtomName == std::string("METSD")){
-	    assignedType = 28;
+	    assignedType = 26;
 	  }else{
 	    throw std::string("Unknown atom type") + res_name + atom_name;
 	  }
