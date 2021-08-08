@@ -49,7 +49,7 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
 	      if(num_atom_types == 4){
                 type = ProtUtil::get4AtomTypeElement(StringUtil::tensor2String(single_res_names[j]), 
 						     StringUtil::tensor2String(single_atom_names[j]), false);
-	      }else if(num_atom_types == 27){
+	      }else if(num_atom_types == 26){
 		type = ProtUtil::getAtomTypeCharmm(StringUtil::tensor2String(single_res_names[j]), 
 						   StringUtil::tensor2String(single_atom_names[j]), false);
 	      }else{

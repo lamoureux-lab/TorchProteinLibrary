@@ -35,7 +35,7 @@ namespace ProtUtil{
     // assign atom type from 4 elements (C,N,O,S)
     uint get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal);
 
-    // assign atom type from 27 Charmm TopAll36 list
+    // assign atom type from 26 Charmm TopAll36 list
     uint getAtomTypeCharmm(std::string res_name, std::string atom_name, bool terminal);
 };
 

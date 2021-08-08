@@ -21,7 +21,7 @@ class TestCoords2TypedCoords(unittest.TestCase):
 
         self.c2tc = Coords2TypedCoords()          # Default atom types - 11
         self.c2tcElement = Coords2TypedCoords(4)  # Element atom types - 4  (C,N,O,S)
-        self.c2tcCharmm = Coords2TypedCoords(27)  # Charmm  atom types - 38 
+        self.c2tcCharmm = Coords2TypedCoords(26)  # Charmm  atom types - 26 
 
 
 class TestCoords2TypedCoordsForward(TestCoords2TypedCoords):
@@ -58,18 +58,18 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
     def runTest(self):
         tcoords, num_atoms_of_type = self.c2tcCharmm(self.coords, self.res_names, self.atom_names, self.num_atoms)
 
-        n_types = 27
+        n_types = 26
         # Testing GLY
         i_num_types = 0
         for i in range(n_types):
             j_num_types = num_atoms_of_type[1, i].item()
             if i == 0:             # C
                 i_num_types = 6
-            elif i == 4:           # CT2  
+            elif i == 3:           # CT2  
                 i_num_types = 6
-            elif i == 18:          # NH1
+            elif i == 17:          # NH1
                 i_num_types = 6
-            elif i == 23:          # O
+            elif i == 22:          # O
                 i_num_types = 6
             else:
                 i_num_types = 0
@@ -83,17 +83,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
             j_num_types = num_atoms_of_type[2, i].item()
             if i == 0:             # C
                 i_num_types = 6
-            elif i == 3:           # CT1
+            elif i == 2:           # CT1
                 i_num_types = 6    
-            elif i == 4:           # CT2  
+            elif i == 3:           # CT2  
                 i_num_types = 12
-            elif i == 14:          # CC
+            elif i == 13:          # CC
                 i_num_types = 6
-            elif i == 18:          # NH1
+            elif i == 17:          # NH1
                 i_num_types = 6
-            elif i == 19:          # NH2
+            elif i == 18:          # NH2
                 i_num_types = 6
-            elif i == 23:          # O  
+            elif i == 22:          # O  
                 i_num_types = 12
             else:
                 i_num_types = 0
@@ -107,17 +107,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
             j_num_types = num_atoms_of_type[3, i].item()
             if i == 0:             # C
                 i_num_types = 6
-            elif i == 3:           # CT1
+            elif i == 2:           # CT1
                 i_num_types = 6    
-            elif i == 4:           # CT2  
+            elif i == 3:           # CT2  
                 i_num_types = 12
-            elif i == 6:           # CT3
+            elif i == 5:           # CT3
                 i_num_types = 6
-            elif i == 18:          # NH1
+            elif i == 17:          # NH1
                 i_num_types = 6
-            elif i == 23:          # O  
+            elif i == 22:          # O  
                 i_num_types = 6
-            elif i == 26:          # S  
+            elif i == 25:          # S  
                 i_num_types = 6
             else:
                 i_num_types = 0
@@ -130,19 +130,19 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
             j_num_types = num_atoms_of_type[4, i].item()
             if i == 0:             # C
                 i_num_types = 6
-            elif i == 3:             # CT1
+            elif i == 2:           # CT1
                 i_num_types = 6
-            elif i == 4:           # CT2  
+            elif i == 3:           # CT2  
                 i_num_types = 6
-            elif i == 7:             # CPH1
+            elif i == 6:           # CPH1
                 i_num_types = 12
-            elif i == 8:             # CPH2
+            elif i == 7:           # CPH2
                 i_num_types = 6
-            elif i == 17:            # NR
+            elif i == 16:          # NR
                 i_num_types = 12   
-            elif i == 18:          # NH1
+            elif i == 17:          # NH1
                 i_num_types = 6
-            elif i == 23:          # O
+            elif i == 22:          # O
                 i_num_types = 6
             else:
                 i_num_types = 0

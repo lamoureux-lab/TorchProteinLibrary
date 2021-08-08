@@ -30,9 +30,9 @@ class TestCoords2TypedCoords(unittest.TestCase):
         a2c = Angles2Coords()
         self.coords, _, self.res_names, _, self.atom_names, self.num_atoms = a2c(angles, self.sequence)
 
-        self.c2tc = Coords2TypedCoords()          # Default atom types - 11
-        self.c2tcElement = Coords2TypedCoords(4)  # Element atom types - 4  (C,N,O,S)
-        self.c2tcCharmm = Coords2TypedCoords(27)  # Charmm  atom types - 27 
+        #self.c2tc = Coords2TypedCoords()          # Default atom types - 11
+        #self.c2tcElement = Coords2TypedCoords(4)  # Element atom types - 4  (C,N,O,S)
+        self.c2tcCharmm = Coords2TypedCoords(26)  # Charmm  atom types - 26 
 
 
 class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
@@ -41,19 +41,19 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
 
         for i_seq, seq in enumerate(self.sequence):
 
-            n_types = 27
+            n_types = 26
             if seq[0] == 'A':
                 print('Testing ' + seq)
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 6
-                    elif i == 6:           # CT31
+                    elif i == 5:           # CT31
                         i_num_types = 6
-                    elif i == 18:          # NH1  
+                    elif i == 17:          # NH1  
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -64,15 +64,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 12
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 18
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 21:          # NC2  
+                    elif i == 20:          # NC2  
                         i_num_types = 18
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -83,17 +83,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 14:          # CC  
+                    elif i == 13:          # CC  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 19:          # NH2  
+                    elif i == 18:          # NH2  
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 12
                     else:
                         i_num_types = 0
@@ -104,17 +104,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 5:           # CT2A  
+                    elif i == 4:           # CT2A  
                         i_num_types = 6
-                    elif i == 14:          # CC  
+                    elif i == 13:          # CC  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 24:          # OC  
+                    elif i == 23:          # OC  
                         i_num_types = 12
                     else:
                         i_num_types = 0
@@ -125,15 +125,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 26:          # S  
+                    elif i == 25:          # S  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -144,17 +144,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 12
-                    elif i == 14:          # CC
+                    elif i == 13:          # CC
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 19:          # NH2
+                    elif i == 18:          # NH2
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 12
                     else:
                         i_num_types = 0
@@ -165,19 +165,19 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 5:           # CT2A  
+                    elif i == 4:           # CT2A  
                         i_num_types = 6
-                    elif i == 14:          # CC
+                    elif i == 13:          # CC
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 24:          # OC  
+                    elif i == 23:          # OC  
                         i_num_types = 12
                     else:
                         i_num_types = 0
@@ -188,11 +188,11 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -203,19 +203,19 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 7:           # CPH1
+                    elif i == 6:           # CPH1
                         i_num_types = 12
-                    elif i == 8:           # CPH2
+                    elif i == 7:           # CPH2
                         i_num_types = 6
-                    elif i == 17:          # NR
+                    elif i == 16:          # NR
                         i_num_types = 12
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -227,15 +227,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 12
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 6:           # CT3  
+                    elif i == 5:           # CT3  
                         i_num_types = 12
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -246,15 +246,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 12
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 6:           # CT3  
+                    elif i == 5:           # CT3  
                         i_num_types = 12
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -265,15 +265,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 24
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 20:          # NH3
+                    elif i == 19:          # NH3
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -284,17 +284,17 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 12
-                    elif i == 6:           # CT3
+                    elif i == 5:           # CT3
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 26:          # S  
+                    elif i == 25:          # S  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -307,13 +307,13 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                         i_num_types = 6
                     elif i == 1:           # CA
                         i_num_types = 36
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -324,15 +324,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 11:          # CP1
+                    elif i == 10:          # CP1
                         i_num_types = 6
-                    elif i == 12:          # CP2
+                    elif i == 11:          # CP2
                         i_num_types = 12    
-                    elif i == 13:          # CP3  
+                    elif i == 12:          # CP3  
                         i_num_types = 6
-                    elif i == 16:          # N
+                    elif i == 15:          # N
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -343,15 +343,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 25:          # OH1  
+                    elif i == 24:          # OH1  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -362,15 +362,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 12    
-                    elif i == 6:           # CT3
+                    elif i == 5:           # CT3
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 25:          # OH1  
+                    elif i == 24:          # OH1  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -383,21 +383,21 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                         i_num_types = 6
                     elif i == 1:           # CA
                         i_num_types = 18
-                    elif i == 3:           # CT1
+                    elif i == 2:           # CT1
                         i_num_types = 6    
-                    elif i == 4:           # CT2
+                    elif i == 3:           # CT2
                         i_num_types = 6
-                    elif i == 9:           # CPT
+                    elif i == 8:           # CPT
                         i_num_types = 12
-                    elif i == 10:          # CY
+                    elif i == 9:          # CY
                         i_num_types = 6
-                    elif i == 15:          # CAI
+                    elif i == 14:          # CAI
                         i_num_types = 12
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 22:          # NY
+                    elif i == 21:          # NY
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -410,15 +410,15 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                         i_num_types = 6
                     elif i == 1:           # CA
                         i_num_types = 36
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 6
-                    elif i == 4:           # CT2  
+                    elif i == 3:           # CT2  
                         i_num_types = 6
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
-                    elif i == 25:          # OH1  
+                    elif i == 24:          # OH1  
                         i_num_types = 6
                     else:
                         i_num_types = 0
@@ -429,13 +429,13 @@ class TestCoords2TypedCoordsCharmmForward(TestCoords2TypedCoords):
                 for i in range(n_types):
                     if i == 0:             # C
                         i_num_types = 6
-                    elif i == 3:           # CT1  
+                    elif i == 2:           # CT1  
                         i_num_types = 12
-                    elif i == 6:           # CT3  
+                    elif i == 5:           # CT3  
                         i_num_types = 12
-                    elif i == 18:          # NH1
+                    elif i == 17:          # NH1
                         i_num_types = 6
-                    elif i == 23:          # O  
+                    elif i == 22:          # O  
                         i_num_types = 6
                     else:
                         i_num_types = 0
