@@ -11,9 +11,10 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
                                     torch::Tensor input_num_atoms,
                                     torch::Tensor output_coords,
                                     torch::Tensor output_num_atoms_of_type,
-                                    torch::Tensor output_atom_indexes
+                                    torch::Tensor output_atom_indexes,
+				    int num_atom_types
                                 ){
-    const uint num_atom_types = 11;
+    //const uint num_atom_types = 4; 
     CHECK_CPU_INPUT(input_coords);
     CHECK_CPU_INPUT_TYPE(res_names, torch::kByte);
     CHECK_CPU_INPUT_TYPE(atom_names, torch::kByte);
@@ -45,8 +46,17 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
         int type;      
         for(int j=0; j<num_atoms; j++){
             try{
-                type = ProtUtil::get11AtomType( StringUtil::tensor2String(single_res_names[j]), 
-                                                StringUtil::tensor2String(single_atom_names[j]), false);
+	      if(num_atom_types == 4){
+                type = ProtUtil::get4AtomTypeElement(StringUtil::tensor2String(single_res_names[j]), 
+						     StringUtil::tensor2String(single_atom_names[j]), false);
+	      }else if(num_atom_types == 26){
+		type = ProtUtil::getAtomTypeCharmm(StringUtil::tensor2String(single_res_names[j]), 
+						   StringUtil::tensor2String(single_atom_names[j]), false);
+	      }else{
+		type = ProtUtil::get11AtomType(StringUtil::tensor2String(single_res_names[j]), 
+					       StringUtil::tensor2String(single_atom_names[j]), false);
+	      }
+		
             }catch(std::string e){
                 std::cout<<e<<std::endl;
                 std::cout<<StringUtil::tensor2String(single_res_names[j])<<" "<<StringUtil::tensor2String(single_atom_names[j])<<std::endl;
@@ -68,9 +78,10 @@ void Coords2TypedCoords_forward(    torch::Tensor input_coords,
 void Coords2TypedCoords_backward(   torch::Tensor grad_typed_coords,
                                     torch::Tensor grad_flat_coords,
                                     torch::Tensor num_atoms_of_type,
-                                    torch::Tensor atom_indexes
+                                    torch::Tensor atom_indexes,
+				    int num_atom_types
                         ){
-    const uint num_atom_types=11;
+    //const uint num_atom_types=4;
     CHECK_CPU_INPUT(grad_typed_coords);
     CHECK_CPU_INPUT(grad_flat_coords);
     
