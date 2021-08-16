@@ -767,6 +767,8 @@ uint ProtUtil::getAtomTypeCharmm(std::string res_name, std::string atom_name, bo
 	  }
 	}else if(atom_name==std::string("O")){
 	  assignedType = 22;
+	}else if(atom_name==std::string("OXT") || atom_name==std::string("OT2")){
+	  assignedType = 23;
 	}else{
 
 	  // dealing with the residue-dependent atom types
