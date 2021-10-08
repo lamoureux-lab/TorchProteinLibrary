@@ -77,7 +77,7 @@ if __name__=='__main__':
 					'Layers/Volume/HashKernel.cu',
 					'Layers/Volume/VolumeRMSD.cu',
 					'Layers/Volume/main.cpp'],
-					include_dirs = ['Layers/Volume', 'Math', 'cub'],
+					include_dirs = ['Layers/Volume', 'Math'],
 					libraries = ['gomp', 'cufft'],
 					extra_compile_args={'cxx': ['-fopenmp', '-g'],
                                         'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
@@ -147,7 +147,7 @@ if __name__=='__main__':
 					'Layers/Graph/Coords2Neighbours/coords2neighbours_interface.cpp',
 					'Layers/Graph/HashKernel.cu',
 					'Layers/Graph/main.cpp'],
-					include_dirs = ['Layers/Graph', 'Math', 'cub'],
+					include_dirs = ['Layers/Graph', 'Math'],
 					libraries = ['gomp', 'cufft'],
 					extra_compile_args={'cxx': ['-fopenmp', '-g'],
                                         'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
@@ -161,7 +161,7 @@ if __name__=='__main__':
 							FullAtomModel, 
 							Volume, 
 							ReducedModel,
-							Physics,
+							# Physics,
 							# Graph
 						],
 			cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)},

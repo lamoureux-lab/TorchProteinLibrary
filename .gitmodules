@@ -2,6 +2,3 @@
 	path = cusplibrary
 	url = https://github.com/lupoglaz/cusplibrary.git
 	branch = develop
-[submodule "cub"]
-	path = cub
-	url = https://github.com/NVlabs/cub
