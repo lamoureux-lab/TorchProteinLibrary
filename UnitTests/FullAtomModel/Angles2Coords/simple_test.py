@@ -9,4 +9,4 @@ if __name__=="__main__":
     residues = ["AAAAAAAA"]
     angles = torch.zeros(1, 8, len(residues[0]), dtype=torch.double, device='cpu')
     angles[:,2] = 3.14
-    protein, res_names, atom_names, num_atoms = a2c(angles, residues)
+    coords, chain_names, resnames, resnums, anames, num_atoms = a2c(angles, residues)
