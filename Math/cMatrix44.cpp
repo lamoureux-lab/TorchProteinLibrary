@@ -43,7 +43,6 @@ template <typename T> cMatrix44<T>::~cMatrix44(){
     }
 }
 // AS: Need transformation matrices (setDihedral,setDihedralDphi,setDihedralDpsi,setDihedralDr, setRx, setRy, setRz, setDRx)
-
 template <typename T> void cMatrix44<T>::setDihedral(const T phi, const T psi, const T R){
 	m[0]=cos(psi);            	m[1]=sin(phi)*sin(psi);	m[2]=cos(phi)*sin(psi);		m[3]=R*cos(psi);
 	m[4]=0.0;					m[5]=cos(phi); 			m[6]=-sin(phi); 			m[7]=0.0;
