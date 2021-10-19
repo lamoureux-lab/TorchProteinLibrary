@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 
-
+//AS: Rotation and translation functions
 template <typename T> void rotate(torch::Tensor &input_coords, cMatrix33<T> &R, torch::Tensor &output_coords, int num_atoms){
     T *data_in = input_coords.data<T>();
     T *data_out = output_coords.data<T>();
@@ -176,7 +176,7 @@ bool ProtUtil::isHeavyAtom(std::string &atom_name){
         return false;
 }
 
-
+//AS: getNumAtoms returns num_atoms used in line 12 of simple_test.py?
 uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     uint num_atoms = 0;
     std::string lastO("O");

@@ -9,7 +9,7 @@ template <typename T> void cTransform<T>::updateMatrix(){
     Ry.setRy(*beta);
     Tr.setT(d, 'x');
     Rx.setRx(*alpha);
-    mat = Ry*Tr*Rx;
+    mat = Ry*Tr*Rx; // Rx is dihedral angles (rotation/transform this)
 }
 template <typename T> void cTransform<T>::updateDMatrix(){
     cMatrix44<T> Ry, Tr, DRx;
@@ -26,7 +26,7 @@ template <typename T> void cTransform<T>::print(){
 // template <typename T> std::ostream& operator<<(std::ostream& os, const cNode<T>& node){
 //     return os<<*(node.group);
 // }
-
+// AS: need the function below
 template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal){
     cNode<T> *lastC = NULL;
     zero_const = 0.0;
@@ -138,7 +138,7 @@ template <typename T> cConformation<T>::~cConformation(){
     for(int i=0; i<groups.size(); i++)
         delete groups[i];
 }
-
+//AS: The two function for the graphs.(addNode, and update node, backward)
 template <typename T> cNode<T> *cConformation<T>::addNode(cNode<T> *parent, cRigidGroup<T> *group, cTransform<T> *t){
     cNode<T> *new_node = new cNode<T>();
     new_node->group = group;
@@ -224,7 +224,7 @@ template <typename T> void cConformation<T>::print(cNode<T> *node){
     // std::cout<<".\n";
     
 }
-
+//AS: function to save output
 template <typename T> void cConformation<T>::save(std::string filename, const char mode){
     if(mode=='w'){
         std::ofstream pfile(filename, std::ofstream::out);
