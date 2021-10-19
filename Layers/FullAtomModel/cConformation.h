@@ -6,7 +6,7 @@
 #include <string>
 #include <cRigidGroup.h>
 #include <cGeometry.h>
-
+//AS: function for graphs
 template <typename T>
 class cTransform{
     public:

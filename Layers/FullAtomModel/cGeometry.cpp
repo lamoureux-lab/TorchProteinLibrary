@@ -5,7 +5,7 @@
 #define KAPPA2 (3.14159 - 2.061)
 #define KAPPA3 (3.14159 -2.1186)
 #define OMEGACIS -3.1318
-//AS: function for geometry/angles/bondlength?
+//AS: function for geometry/angles/bondlength
 template <typename T> cGeometry<T>::cGeometry(){
      //backbone angles
     C_N_CA_angle = (M_PI - 1.9391);
