@@ -1,9 +1,9 @@
 import math as m
 import numpy as np
-from cMatrix import *
+from Math.cMatrix import *
 
 
-def updateMatrix(x, y,d, alpha, beta):
+def updateMatrix(mat44, x, y,d, alpha, beta):
     '''
     :param x:
     :param y:
@@ -13,10 +13,13 @@ def updateMatrix(x, y,d, alpha, beta):
     :return:
     '''
     Ry = setRy(beta)
+    Tr = setT(mat44, d, "x")
     Rx = setRx(alpha)
-    mat = Ry * d * Rx
+    mat = Ry * Tr * Rx
 
-def updateDMatrix(x, y,d, alpha, beta):
+    return mat
+
+def updateDMatrix(mat44, x, y,d, alpha, beta):
     '''
     :param x:
     :param y:
@@ -26,8 +29,11 @@ def updateDMatrix(x, y,d, alpha, beta):
     :return: matrix for derivates wrt Rx
     '''
     Ry = setRy(beta)
+    Tr = setT(mat44, d, "x")
     DRx = setDRx(alpha)
-    mat = Ry * d * DRx
+    dmat = Ry * Tr * DRx
+
+    return dmat
 
 def conformations(sequence, angle, angle_grad,  angles_length, atoms_global):
     '''
@@ -42,6 +48,26 @@ def conformations(sequence, angle, angle_grad,  angles_length, atoms_global):
         # T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
         #T *psi = angles + i + angles_length*1;T *dpsi = angles_grad + i + angles_length*1;
 
+        #T * omega, *domega;
+        #if (i > 0):
+        #omega = angles + i-1 + angles_length * 2;domega = angles_grad + i-1 + angles_length * 2;
+        #else:
+        #omega = & geo.omega_const;domega = NULL;
+        #// omega = & zero_const;domega = NULL;
+
+        #T * xi1 = angles + i + angles_length * 3;T * dxi1 = angles_grad + i + angles_length * 3;
+        #T * xi2 = angles + i + angles_length * 4;T * dxi2 = angles_grad + i + angles_length * 4;
+        #T * xi3 = angles + i + angles_length * 5;T * dxi3 = angles_grad + i + angles_length * 5;
+        #T * xi4 = angles + i + angles_length * 6;T * dxi4 = angles_grad + i + angles_length * 6;
+        #T * xi5 = angles + i + angles_length * 7;T * dxi5 = angles_grad + i + angles_length * 7;
+        #
+        #
+
+        #if (add_terminal):
+        #    if (i == (len(sequence)-1)):
+        #        terminal = true;
+        #    else:
+        #        terminal = false;
     ## cMatrix needs additional angles info
         pass
 
