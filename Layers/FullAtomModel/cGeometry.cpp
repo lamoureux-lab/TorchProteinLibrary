@@ -7,12 +7,19 @@
 #define OMEGACIS -3.1318
 //AS: function for geometry/angles/bondlength
 template <typename T> cGeometry<T>::cGeometry(){
-     //backbone angles
-    C_N_CA_angle = (M_PI - 1.9391);
-    N_CA_C_angle = (M_PI - 2.061);
-    CA_C_N_angle = (M_PI - 2.1186);
-    CA_C_O_angle = (M_PI - 2.1033);
+     //backbone angles [Original TPL angles]
+//    C_N_CA_angle = (M_PI - 1.9391);
+//    N_CA_C_angle = (M_PI - 2.061);
+//    CA_C_N_angle = (M_PI - 2.1186);
+//    CA_C_O_angle = (M_PI - 2.1033);
+//    omega_const = -3.1318;
+     //backbone angles [Engh & Huber angles]
+    C_N_CA_angle = (M_PI - 2.1241);
+    N_CA_C_angle = (M_PI - 2.0281);
+    CA_C_N_angle = (M_PI - 1.9408);
+    CA_C_O_angle = (M_PI - 2.1084);
     omega_const = -3.1318;
+
     //backbone distatnces
     R_CA_C = 1.525;
     R_C_N = 1.330;

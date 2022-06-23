@@ -1,5 +1,7 @@
 ## function to read in PDB files and extract atom_name, res_names,chain_names,res_nums
 from Bio.PDB import *
+#import barnaba as bb
+#from barnaba import definitions
 
 file = '/u2/home_u2/fam95/Documents/1ffk.pdb'
 
@@ -27,14 +29,13 @@ class PDBLoader:
                     x, y, z = atom.get_coord() ## get xyz coordinates
                     coords.append((x, y, z))
 
-
-    io = PDBIO()
-    io.set_structure(struct)
-    io.save("out.pdb")
+    #io = PDBIO()
+    #io.set_structure(struct)
+    #io.save("out.pdb")
 
     def NAfromPDB(struct):
 
-        Nucleotides = ["A", "C", "G", "U", "I"," DA", " DC", " DG", " DT", "DU", "I", "N"]
+        Nucleotides = ["DA", "DC", "DG", "DT", "DU"]
         residues = []
         resseq = []  # residue sequence number
         atoms = []
@@ -46,7 +47,9 @@ class PDBLoader:
             for chain in model:
                 chain_name.append(chain)  ## get chain info
                 for residue in chain:
-                    if residue.get_resname() in Nucleotides:
+                    res_name = residue.get_resname()
+                    strip_resname = res_name.strip()
+                    if strip_resname in Nucleotides:
                         residues.append(residue)  ## get residue info
                         resseq.append(residue.get_full_id()[3][1])
                         for atom in residue:
@@ -62,8 +65,28 @@ class PDBLoader:
 
         io = PDBIO()
         io.set_structure(struct)
-        io.save("out2.pdb")
+        io.save("out.pdb")
 
+
+    def getNAAngles(file):
+        angles, res = bb.backbone_angles(file)
+        #header = "# Residue " + "".join(["%10s " % aa for aa in definitions.bb_angles])
+        #print(header)
+        for j in range(angles.shape[1]):
+            stri = "%10s" % res[j]
+            for k in range(angles.shape[2]):
+                stri += "%10.3f " % angles[0, j, k]
+            #print(stri)
+
+    def getNAring_ang(file):
+        ring_ang, resid = bb.sugar_angles(file)
+        #header = "# Residue " + "".join(["%10s " % aa for aa in definitions.sugar_angles])
+        #print(header)
+        for j in range(ring_ang.shape[1]):
+            stri = "%10s" % resid[j]
+            for k in range(ring_ang.shape[2]):
+                stri += "%10.3f " % ring_ang[0, j, k]
+            #print(stri)
 
 #checking doc
 # print(PDBLoader.__doc__)
