@@ -26,7 +26,7 @@ def get_sequence(res_names, res_nums, num_atoms, mask):
     sequences = []
     for batch_idx in range(batch_size):
         sequence = ""
-        previous_resnum = res_nums[batch_idx, 0].item()
+        previous_resnum = res_nums[batch_idx, 0].item() - 1
         for atom_idx in range(num_atoms[batch_idx].item()):
             if mask[batch_idx, atom_idx].item() == 0: continue
             if previous_resnum < res_nums[batch_idx, atom_idx].item():
@@ -36,7 +36,7 @@ def get_sequence(res_names, res_nums, num_atoms, mask):
 
         residue_name = _convert2str(res_names[batch_idx, -1, :]).decode("utf-8")
         sequence = sequence + dindex_to_1[d3_to_index[residue_name]]
-        sequences.append(sequence)
+        sequences.append(sequence[:-1])
     return sequences
 
 # PDB2Coords Function Called to Load Struct from File
@@ -77,7 +77,7 @@ epochs = []
 loss = []
 
 #
-for epoch in range(40000):
+for epoch in range(40):
     epochs.append(epoch + 1)
     optimizer.zero_grad()
     coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences2)
@@ -98,7 +98,7 @@ new_coords, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_at
 
 # Name of new PDB file to be written
 pdb2pdbtest = '/u2/home_u2/fam95/Documents/pdb2pdbtest.pdb'
-pdb2wrmsdtest = '/u2/home_u2/fam95/Documents/pdb2pdbopt_e1_lr0,0001.pdb'
+pdb2wrmsdtest = '/u2/home_u2/fam95/Documents/pdb2pdbopt_e4e4_newTPLna_e&h_lr0,0001.pdb'
 
 
 # Creating Epoch vs RMSD plot
@@ -110,7 +110,7 @@ ax.set_ylim([0,1])
 ax.set_xlabel("epochs", fontsize=12)
 ax.set_ylabel("rmsd (A)", fontsize=12)
 
-plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt_ylim1_test4e4.png')
+# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt_ylim1_newTPLna_test4e4.png')
 
 #Creating DeltaAngle Plot
 befDet = torch.Tensor.detach(beforeAng)
@@ -173,7 +173,7 @@ ax.plot(x_labels[:-2], n_d_psi[:-2], "b.-")
 ax.set_xlabel("Residue", fontsize=12)
 ax.set_ylabel("Change in Angle", fontsize=12)
 
-# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_angleplt_e&h_test4e3.png')
+# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_angleplt_e&h_newTPLna_test4e4.png')
 
 # Save New PDB
 # FullAtomModel.writePDB(pdb2wrmsdtest, coords_src, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_atoms)
