@@ -98,7 +98,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
     }
 
     else{
-    std::cerr << "Error Polymer Type Is Not Valid"
+    std::cerr << "Error Polymer Type Is Not Valid";
     }
 }
 
