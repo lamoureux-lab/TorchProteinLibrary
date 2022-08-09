@@ -170,7 +170,7 @@ std::string StringUtil::tensor2String(torch::Tensor T){
     return str;
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
-    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S')
+    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S' ) // || atom_name[0] == 'P')
         return true;
     else
         return false;
@@ -518,6 +518,183 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
         if(atom_name == std::string("OXT"))
             return 14;
     }
+
+    if(res_name == std::string(" DA") || res_name == std::string("O")){
+        if(atom_name == std::string("P"))
+            return 1;
+        if(atom_name == std::string("OP1"))
+            return 2;
+        if(atom_name == std::string("OP2"))
+            return 3;
+        if(atom_name == std::string("O5'"))
+            return 4;
+        if(atom_name == std::string("C5'"))
+            return 5;
+        if(atom_name == std::string("C4'"))
+            return 6;
+        if(atom_name == std::string("O4'"))
+            return 7;
+        if(atom_name == std::string("C3'"))
+            return 8;
+        if(atom_name == std::string("O3'"))
+            return 9;
+        if(atom_name == std::string("C2'"))
+            return 10;
+        if(atom_name == std::string("C1'"))
+            return 11;
+        if(atom_name == std::string("N9"))
+            return 12;
+        if(atom_name == std::string("C8"))
+            return 13;
+        if(atom_name == std::string("N7"))
+            return 14;
+        if(atom_name == std::string("C5"))
+            return 15;
+        if(atom_name == std::string("C6"))
+            return 16;
+        if(atom_name == std::string("N6"))
+            return 17;
+        if(atom_name == std::string("N1"))
+            return 18;
+        if(atom_name == std::string("C2"))
+            return 19;
+        if(atom_name == std::string("N3"))
+            return 20;
+        if(atom_name == std::string("C4"))
+            return 21;
+    }
+
+     if(res_name == std::string(" DG") || res_name == std::string("U")){
+        if(atom_name == std::string("P"))
+            return 1;
+        if(atom_name == std::string("OP1"))
+            return 2;
+        if(atom_name == std::string("OP2"))
+            return 3;
+        if(atom_name == std::string("O5'"))
+            return 4;
+        if(atom_name == std::string("C5'"))
+            return 5;
+        if(atom_name == std::string("C4'"))
+            return 6;
+        if(atom_name == std::string("O4'"))
+            return 7;
+        if(atom_name == std::string("C3'"))
+            return 8;
+        if(atom_name == std::string("O3'"))
+            return 9;
+        if(atom_name == std::string("C2'"))
+            return 10;
+        if(atom_name == std::string("C1'"))
+            return 11;
+        if(atom_name == std::string("N9"))
+            return 12;
+        if(atom_name == std::string("C8"))
+            return 13;
+        if(atom_name == std::string("N7"))
+            return 14;
+        if(atom_name == std::string("C5"))
+            return 15;
+        if(atom_name == std::string("C6"))
+            return 16;
+        if(atom_name == std::string("O6"))
+            return 17;
+        if(atom_name == std::string("N1"))
+            return 18;
+        if(atom_name == std::string("C2"))
+            return 19;
+        if(atom_name == std::string("N2"))
+            return 20;
+        if(atom_name == std::string("N3"))
+            return 21;
+        if(atom_name == std::string("C4"))
+            return 22;
+    }
+
+    if(res_name == std::string(" DT") || res_name == std::string("Z")){
+        if(atom_name == std::string("P"))
+            return 1;
+        if(atom_name == std::string("OP1"))
+            return 2;
+        if(atom_name == std::string("OP2"))
+            return 3;
+        if(atom_name == std::string("O5'"))
+            return 4;
+        if(atom_name == std::string("C5'"))
+            return 5;
+        if(atom_name == std::string("C4'"))
+            return 6;
+        if(atom_name == std::string("O4'"))
+            return 7;
+        if(atom_name == std::string("C3'"))
+            return 8;
+        if(atom_name == std::string("O3'"))
+            return 9;
+        if(atom_name == std::string("C2'"))
+            return 10;
+        if(atom_name == std::string("C1'"))
+            return 11;
+        if(atom_name == std::string("N1"))
+            return 12;
+        if(atom_name == std::string("C2"))
+            return 13;
+        if(atom_name == std::string("O2"))
+            return 14;
+        if(atom_name == std::string("N3"))
+            return 15;
+        if(atom_name == std::string("C4"))
+            return 16;
+        if(atom_name == std::string("O4"))
+            return 17;
+        if(atom_name == std::string("C5"))
+            return 18;
+        if(atom_name == std::string("C7"))
+            return 19;
+        if(atom_name == std::string("C6"))
+            return 20;
+        }
+
+    if(res_name == std::string(" DT") || res_name == std::string("B")){
+        if(atom_name == std::string("P"))
+            return 1;
+        if(atom_name == std::string("OP1"))
+            return 2;
+        if(atom_name == std::string("OP2"))
+            return 3;
+        if(atom_name == std::string("O5'"))
+            return 4;
+        if(atom_name == std::string("C5'"))
+            return 5;
+        if(atom_name == std::string("C4'"))
+            return 6;
+        if(atom_name == std::string("O4'"))
+            return 7;
+        if(atom_name == std::string("C3'"))
+            return 8;
+        if(atom_name == std::string("O3'"))
+            return 9;
+        if(atom_name == std::string("C2'"))
+            return 10;
+        if(atom_name == std::string("C1'"))
+            return 11;
+        if(atom_name == std::string("N1"))
+            return 12;
+        if(atom_name == std::string("C2"))
+            return 13;
+        if(atom_name == std::string("O2"))
+            return 14;
+        if(atom_name == std::string("N3"))
+            return 15;
+        if(atom_name == std::string("C4"))
+            return 16;
+        if(atom_name == std::string("N4"))
+            return 17;
+        if(atom_name == std::string("C5"))
+            return 18;
+        if(atom_name == std::string("C6"))
+            return 19;
+        }
+
     std::cout<<"Unknown atom/res names"<<std::endl;
     throw(std::string("Unknown atom/res names"));
 }

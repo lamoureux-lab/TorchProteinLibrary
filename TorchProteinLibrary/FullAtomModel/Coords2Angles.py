@@ -63,18 +63,21 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 
 	return structures, length
 
-def BioStructure2Dihedrals(structure):
-	residues = list(structure.get_residues())
-	angles = torch.zeros(8, len(residues), dtype=torch.double, device='cpu')
-	phi, psi, omega = getBackbone(residues)
-	for i, residue in enumerate(residues):
-		angles[0, i] = phi[i]
-		angles[1, i] = psi[i]
-		angles[2, i] = omega[i]
-		xis = getRotamer(residue)
-		for j, xi in enumerate(xis):
-			angles[3+j, i] = xis[j]
-	return angles
+def BioStructure2Dihedrals(structure, polymer_type):
+	if polymer_type == 0:
+		residues = list(structure.get_residues())
+		angles = torch.zeros(8, len(residues), dtype=torch.double, device='cpu')
+		phi, psi, omega = getBackbone(residues)
+		for i, residue in enumerate(residues):
+			angles[0, i] = phi[i]
+			angles[1, i] = psi[i]
+			angles[2, i] = omega[i]
+			xis = getRotamer(residue)
+			for j, xi in enumerate(xis):
+				angles[3+j, i] = xis[j]
+		return angles
+	if polymer_type == 1:
+		print("Error Polymer Type 1 Not Implemented for TPL/TPL/FullAtomModel/Coords2PDB.py/Biostructure2Dihedrals")
 
 def getBackbone(residues):
 	phi = [0.0]
@@ -330,15 +333,30 @@ def getTrpRot(residue):
 	return [xi1, xi2]
 
 
-def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms):
-	structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
-	max_seq_length = max(length)
-	batch_size = length.size(0)
-	angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
-	for batch_idx, structure in enumerate(structures):
-		dihedrals = BioStructure2Dihedrals(structure)
-		angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
-	
+def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type):
+	if polymer_type == 0:
+
+		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
+		max_seq_length = max(length)
+		batch_size = length.size(0)
+		angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
+		for batch_idx, structure in enumerate(structures):
+			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
+			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
+
+	elif polymer_type == 1:
+		length = 0
+		angles = 0
+		print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
+
+	elif polymer_type == 2:
+		length = 0
+		angles = 0
+		print("Error Polymer Type 2 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
+
+	else:
+		print("Polymer Type is Not Valid")
+
 	return angles, length
 
 

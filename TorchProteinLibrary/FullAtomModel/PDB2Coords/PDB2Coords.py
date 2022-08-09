@@ -53,7 +53,7 @@ def tensor2string(tensor):
 
 class PDB2CoordsOrdered:
 					
-	def __call__(self, filenames):
+	def __call__(self, filenames, polymer_type):
 		
 		filenamesTensor = convertStringList(filenames)
 		batch_size = len(filenames)
@@ -65,8 +65,8 @@ class PDB2CoordsOrdered:
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 		mask = torch.zeros(batch_size, 1, dtype=torch.uint8)
 
-		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, 
-										output_resnums_cpu, output_atomnames_cpu, mask, num_atoms)
+		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu,
+										output_resnums_cpu, output_atomnames_cpu, mask, num_atoms, polymer_type)
 	
 		return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, mask, num_atoms
 
