@@ -170,10 +170,23 @@ std::string StringUtil::tensor2String(torch::Tensor T){
     return str;
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
-    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S' ) // || atom_name[0] == 'P')
+    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S' )// || atom_name[0] == 'P')
         return true;
     else
         return false;
+}
+
+bool ProtUtil::isNucelotide(std::string &res_name, polymer_type){
+    if(polymer_type == 1)
+        if(res_name == ' DA' || res_name == ' DT' || res_name == ' DC' || res_name == ' DG')
+            return true;
+        else
+            return false;
+    if(polymer_type == 2)
+        if(res_name == ' A' || res_name == '  U' || res_name == '  C' || res_name == '  G')
+            return true;
+        else
+            return false;
 }
 
 //AS: getNumAtoms returns num_atoms used in line 12 of simple_test.py?

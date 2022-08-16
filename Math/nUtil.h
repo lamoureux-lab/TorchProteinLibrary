@@ -26,6 +26,9 @@ namespace ProtUtil{
     // heavy atoms
     bool isHeavyAtom(std::string &atom_name);
 
+    //Nucleotides
+    bool isNucleotide(std::string &res_name, int polymer_type);
+
     // convert 1-letter aa code to 3-letter code
     std::string convertRes1to3(char resName);
 

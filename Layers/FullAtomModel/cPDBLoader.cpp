@@ -22,34 +22,85 @@ using namespace StringUtil;
 cPDBLoader::cPDBLoader(){
 
 }
-cPDBLoader::cPDBLoader(std::string filename) {
+cPDBLoader::cPDBLoader(std::string filename, polymer_type) {
     std::ifstream pfile(filename);
 	std::string line, header, xStr, yStr, zStr, atom_name, res_name, chain_name;
     int res_num;
 	// reading raw file
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
-                
-        if( header.compare("ATOM")==0){
-            atom_name = trim(line.substr(12,4));
-            // std::cout<<atom_name<<" ";
-            if(isHeavyAtom(atom_name)){
-                xStr = line.substr(30,8);
-                yStr = line.substr(38,8);
-                zStr = line.substr(46,8);
-                res_name = trim(line.substr(17,3));
-                chain_name = line.substr(21, 1);
-                res_num = std::stoi(line.substr(22,4));
-                r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
-                chain_names.push_back(chain_name);
-                res_names.push_back(res_name);
-                res_nums.push_back(res_num);
-                atom_names.push_back(atom_name);
-                // std::cout<<res_name<<" "<<atom_name;
+
+        if(polymer_type == 0){
+            if( header.compare("ATOM")==0){
+                atom_name = trim(line.substr(12,4));
+                // std::cout<<atom_name<<" ";
+                if(isHeavyAtom(atom_name)){
+                    xStr = line.substr(30,8);
+                    yStr = line.substr(38,8);
+                    zStr = line.substr(46,8);
+                    res_name = trim(line.substr(17,3));
+                    chain_name = line.substr(21, 1);
+                    res_num = std::stoi(line.substr(22,4));
+                    r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                    chain_names.push_back(chain_name);
+                    res_names.push_back(res_name);
+                    res_nums.push_back(res_num);
+                    atom_names.push_back(atom_name);
+                    // std::cout<<res_name<<" "<<atom_name;
+                }
             }
-            // std::cout<<std::endl;
-            
-		}
+                // std::cout<<std::endl;
+
+	    }
+
+	    if(polymer_type == 1){
+            if( header.compare("ATOM")==0){
+                atom_name = trim(line.substr(12,4));
+                // std::cout<<atom_name<<" ";
+                if(isHeavyAtom(atom_name)){
+                    res_name = trim(line.substr(17,3));
+                    if(isNucleotide(res_name, polymer_type)){
+                        xStr = line.substr(30,8);
+                        yStr = line.substr(38,8);
+                        zStr = line.substr(46,8);
+                        chain_name = line.substr(21, 1);
+                        res_num = std::stoi(line.substr(22,4));
+                        r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                        chain_names.push_back(chain_name);
+                        res_names.push_back(res_name);
+                        res_nums.push_back(res_num);
+                        atom_names.push_back(atom_name);
+                        // std::cout<<res_name<<" "<<atom_name;
+                    }
+                }
+            }
+                // std::cout<<std::endl;
+
+	    }
+	    if(polymer_type == 2){
+            if( header.compare("ATOM")==0){
+                atom_name = trim(line.substr(12,4));
+                 std::cout<<atom_name<<" ";
+                if(isHeavyAtom(atom_name)){
+                    res_name = trim(line.substr(17,3));
+                    if(isNucleotide(res_name, polymer_type)){
+                        xStr = line.substr(30,8);
+                        yStr = line.substr(38,8);
+                        zStr = line.substr(46,8);
+                        chain_name = line.substr(21, 1);
+                        res_num = std::stoi(line.substr(22,4));
+                        r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                        chain_names.push_back(chain_name);
+                        res_names.push_back(res_name);
+                        res_nums.push_back(res_num);
+                        atom_names.push_back(atom_name);
+                        // std::cout<<res_name<<" "<<atom_name;
+                    }
+                }
+            }
+                // std::cout<<std::endl;
+
+	    }
 	}
     
 }
