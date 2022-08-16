@@ -183,12 +183,14 @@ bool ProtUtil::isNucelotide(std::string &res_name, int polymer_type){
         else
             return false;
             }
-    if(polymer_type == 2){
+    else if(polymer_type == 2){
         if(res_name == ' A' || res_name == '  U' || res_name == '  C' || res_name == '  G')
             return true;
         else
             return false;
             }
+    else
+        return false;
 }
 
 //AS: getNumAtoms returns num_atoms used in line 12 of simple_test.py?
