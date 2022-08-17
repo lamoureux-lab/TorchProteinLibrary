@@ -170,7 +170,7 @@ std::string StringUtil::tensor2String(torch::Tensor T){
     return str;
 }
 bool ProtUtil::isHeavyAtom(std::string &atom_name){
-    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S' )// || atom_name[0] == 'P')
+    if(atom_name[0] == 'C' || atom_name[0] == 'N' || atom_name[0] == 'O' || atom_name[0] == 'S' || atom_name[0] == 'P')
         return true;
     else
         return false;

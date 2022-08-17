@@ -54,6 +54,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 	    }
 
 	    if(polymer_type == 1){
+	        std::cout << "PDBLoader polymer_tyoe 1 Test";
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
                 std::cout<<atom_name<<" "; //PDBLoader "if polymer_type = 1" test
