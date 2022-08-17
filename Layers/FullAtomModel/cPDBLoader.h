@@ -24,7 +24,7 @@ public:
 	cVector3<double> b0, b1;
 public:
     cPDBLoader();
-	cPDBLoader(std::string filename, polymer_type);
+	cPDBLoader(std::string filename, int polymer_type);
 	virtual ~cPDBLoader();
   
     //order according to cConformation

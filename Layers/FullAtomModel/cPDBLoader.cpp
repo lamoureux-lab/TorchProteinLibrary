@@ -22,7 +22,7 @@ using namespace StringUtil;
 cPDBLoader::cPDBLoader(){
 
 }
-cPDBLoader::cPDBLoader(std::string filename, polymer_type) {
+cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
     std::ifstream pfile(filename);
 	std::string line, header, xStr, yStr, zStr, atom_name, res_name, chain_name;
     int res_num;
