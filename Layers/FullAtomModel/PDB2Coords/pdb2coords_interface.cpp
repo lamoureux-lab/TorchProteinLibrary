@@ -123,7 +123,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //        atom_mask.resize_(torch::IntList(size_nums, 2)).fill_(0);
 //
 //
-//        #pragma omp parallel for
+//        pragma omp parallel for
 //        for(int i=0; i<batch_size; i++){
 //            torch::Tensor single_coords = coords[i];
 //            torch::Tensor single_filename = filenames[i];
@@ -190,7 +190,7 @@ void PDB2CoordsUnordered(   torch::Tensor filenames, torch::Tensor coords, torch
     for(int i=0; i<batch_size; i++){
         torch::Tensor single_filename = filenames[i];
         std::string filename = StringUtil::tensor2String(single_filename);
-        cPDBLoader pdb(filename);
+        cPDBLoader pdb(filename, 0);
         num_atoms[i] = int(pdb.r.size());
     }
     int max_num_atoms = num_atoms.max().data<int>()[0];
@@ -214,7 +214,7 @@ void PDB2CoordsUnordered(   torch::Tensor filenames, torch::Tensor coords, torch
         torch::Tensor single_atom_names = atom_names[i];
         
         std::string filename = StringUtil::tensor2String(single_filename);
-        cPDBLoader pdb(filename);
+        cPDBLoader pdb(filename, 0);
         for(int j=0; j<pdb.r.size(); j++){
             AT_DISPATCH_FLOATING_TYPES(coords.type(), "PDB2CoordsUnordered", ([&]{
                 cVector3<scalar_t> r_target(single_coords.data<scalar_t>() + 3*j);
