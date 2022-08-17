@@ -28,7 +28,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             torch::Tensor single_filename = filenames[i];
             std::string filename = StringUtil::tensor2String(single_filename);
 
-            cPDBLoader pdb(filename);
+            cPDBLoader pdb(filename, polymer_type);
             num_atoms[i] = 0;
             int previous_res_num = pdb.res_nums[0];
             for(int j=0; j<pdb.r.size(); j++){
@@ -98,6 +98,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             std::string filename = StringUtil::tensor2String(single_filename);
 
             cPDBLoader pdb(filename, polymer_type);
+            std::cout << res_names
 //            num_atoms[i] = 0;
 //            int previous_res_num = pdb.res_nums[0];
 //            for(int j=0; j<pdb.r.size(); j++){
