@@ -30,6 +30,8 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
 
+        std::cerr << "cPDBLoader call Test"
+
         if(polymer_type == 0){
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
