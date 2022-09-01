@@ -44,8 +44,8 @@ p2c = FullAtomModel.PDB2CoordsOrdered()
 loaded_prot = p2c([file], polymer_type=1)
 
 # Coords, Chains, Residue names and numbers, Atoms, and total number of atoms loaded from structure
-# coords_dst, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
-# coords_dst = coords_dst.to(dtype=torch.float)
+coords_dst, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
+coords_dst = coords_dst.to(dtype=torch.float)
 
-# sequences = get_sequence(resnames, resnums, num_atoms, mask)
-# print(sequences)
+sequences = get_sequence(resnames, resnums, num_atoms, mask)
+print(sequences)
