@@ -30,12 +30,12 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
     int res_num;
 	// reading raw file
 
-	std::cout << "Before while Test cPDBLoader call \n";
+//	std::cout << "Before while Test cPDBLoader call \n";
 
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
 
-        std::cout << header << "cPDBLoader call Test \n";
+//        std::cout << header << "cPDBLoader call Test \n";
 
         if(polymer_type == 0){
             if( header.compare("ATOM")==0){
@@ -61,10 +61,10 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 	    }
 
 	    if(polymer_type == 1){
-	        std::cout << "PDBLoader polymer_tyoe 1 Test";
+//	        std::cout << "PDBLoader polymer_tyoe 1 Test";
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
-                std::cout<<atom_name<<" "; //PDBLoader "if polymer_type = 1" test
+                std::cout << atom_name <<" "; //PDBLoader "if polymer_type = 1" test
                 if(isHeavyAtom(atom_name)){
                     res_name = trim(line.substr(17,3));
                     if(isNucleotide(res_name, polymer_type)){
