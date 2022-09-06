@@ -47,5 +47,5 @@ loaded_prot = p2c([file], polymer_type=1)
 coords_dst, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
 coords_dst = coords_dst.to(dtype=torch.float)
 
-sequences = get_sequence(resnames, resnums, num_atoms, mask)
-print(sequences)
+# sequences = get_sequence(resnames, resnums, num_atoms, mask)
+# print(sequences)
