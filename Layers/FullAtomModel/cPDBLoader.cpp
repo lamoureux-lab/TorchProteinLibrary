@@ -23,19 +23,19 @@ cPDBLoader::cPDBLoader(){
 
 }
 cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
-    std::cout << "Before File Open Test cPDBLoader call";
+//    std::cout << "Before File Open Test cPDBLoader call \n";
 
     std::ifstream pfile(filename);
 	std::string line, header, xStr, yStr, zStr, atom_name, res_name, chain_name;
     int res_num;
 	// reading raw file
 
-	std::cout << "Before while Test cPDBLoader call";
+	std::cout << "Before while Test cPDBLoader call \n";
 
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
 
-        std::cout << "cPDBLoader call Test";
+        std::cout << header << "cPDBLoader call Test \n";
 
         if(polymer_type == 0){
             if( header.compare("ATOM")==0){
