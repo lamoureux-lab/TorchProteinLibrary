@@ -65,7 +65,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
 //                std::cout << atom_name <<" "; //PDBLoader "if polymer_type = 1" test
-                if(isHeavyAtom(atom_name)){
+//                if(isHeavyAtom(atom_name)){ //Needs to be adjusted for NA's
                     res_name = trim(line.substr(17,3));
                     if(isNucleotide(res_name, polymer_type)){
                         xStr = line.substr(30,8);
@@ -80,7 +80,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
                         atom_names.push_back(atom_name);
                         std::cout<<res_name<<" "<<atom_name << "\n"; //PDBLoader isNucleotide Test
                     }
-                }
+//                }
             }
                 // std::cout<<std::endl;
 
