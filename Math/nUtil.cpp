@@ -178,13 +178,13 @@ bool ProtUtil::isHeavyAtom(std::string &atom_name){
 
 bool ProtUtil::isNucleotide(std::string &res_name, int polymer_type){
     if(polymer_type == 1){
-        if(res_name == " DA" || res_name == " DT" || res_name == " DC" || res_name == " DG")
+        if(res_name == "DA" || res_name == "DT" || res_name == "DC" || res_name == "DG")
             return true;
         else
             return false;
             }
     else if(polymer_type == 2){
-        if(res_name == "  A" || res_name == "  U" || res_name == "  C" || res_name == "  G")
+        if(res_name == " A" || res_name == " U" || res_name == " C" || res_name == " G")
             return true;
         else
             return false;
