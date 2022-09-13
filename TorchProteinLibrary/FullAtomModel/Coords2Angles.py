@@ -333,7 +333,7 @@ def getTrpRot(residue):
 	return [xi1, xi2]
 
 
-def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type):
+def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type=0):
 	if polymer_type == 0:
 
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
