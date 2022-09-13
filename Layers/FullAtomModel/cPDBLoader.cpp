@@ -64,7 +64,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 //	        std::cout << "PDBLoader polymer_tyoe 1 Test";
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
-//                std::cout << atom_name <<" "; //PDBLoader "if polymer_type = 1" test
+                std::cout << atom_name <<" "; //PDBLoader "if polymer_type = 1" test
                 if(isHeavyAtom(atom_name)){ //Needs to be adjusted for NA's
                     res_name = trim(line.substr(17,3));
 //                    if(isNucleotide(res_name, polymer_type)){
