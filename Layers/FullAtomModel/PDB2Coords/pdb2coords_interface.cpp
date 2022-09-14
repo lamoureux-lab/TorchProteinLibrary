@@ -38,11 +38,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 }
             }
             num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
+
+       // Num_atoms Test 1
+        std::cout << "\n atoms names:" << pdb.atom_names << "\n res_names:" << pdb.res_names;
+        std::cout << "\n size atom names:" << pdb.atom_names.size();
         }
 
-        // Num_atoms Test
-        std::cout << "\n atoms names:" << atom_names << "\n res_names:" << res_names;
-//        std::cout << "\n type atom names:" << typeid(atom_names);
+        // Num_atoms Test 2
         std::cout << "\n num_atoms:" << num_atoms << "\n";
 
         int max_num_atoms = num_atoms.max().data<int>()[0];
@@ -82,6 +84,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
 //                Why resLastAtom
+                std::cout << "\n res num[j]:" << pdb.res_nums[j];
                 std::cout << "\n global_ind:" << global_ind;
                 std::cout << "\n idx:" << idx;
 
@@ -114,6 +117,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             // Num_atoms and res_num Test
             std::cout << "num atoms:" << num_atoms << "\n res_nums: " << pdb.res_nums << "\n";
+            std::cout << "size res_nums:" << pdb.res_nums.size() << "size atom names" << pdb.atom_names.size();
 
 //          Get Num_atoms another way
 
