@@ -105,16 +105,22 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //            std::cout << res_names << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 2
 //            std::cout << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 3
             num_atoms[i] = 0;
-            int previous_res_num = pdb.res_nums[0];
-            for(int j=0; j<pdb.r.size(); j++){
-                if (previous_res_num < pdb.res_nums[j]) {
-                    previous_res_num = pdb.res_nums[j];
-                    num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom));
-                }
-}
-            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
+
+            // Num_atoms and res_num Test
+            std::cout << num_atoms << "\n" << res_nums << "\n";
+
+
+//            int previous_res_num = pdb.res_nums[0];
+//            for(int j=0; j<pdb.r.size(); j++){
+//                if (previous_res_num < pdb.res_nums[j]) {
+//                    previous_res_num = pdb.res_nums[j];
+//                    num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom));
+//                }
+//          }
+//            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
         }
-        std::cout << num_atoms << "\n";
+        //Num_atoms Test
+//        std::cout << num_atoms << "\n";
 //
 //        int max_num_atoms = num_atoms.max().data<int>()[0];
 //        int64_t size_nums[] = {batch_size, max_num_atoms};
