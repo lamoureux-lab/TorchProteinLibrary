@@ -41,7 +41,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
         }
 
         // Num_atoms Test
-        std::cout << "\n" << num_atoms << "\n";
+        std::cout << "\n atoms names:" << pdb.atom_names << "\n res_names:" << pdb.res_names;
+        std::cout << "\n type atom names:" << typeid.atom_names;
+        std::cout << "\n num_atoms:" << num_atoms << "\n";
 
         int max_num_atoms = num_atoms.max().data<int>()[0];
         int64_t size_nums[] = {batch_size, max_num_atoms};
@@ -79,6 +81,10 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 }
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
+//                Why resLastAtom
+                std::cout << "\n global_ind:" << global_ind;
+                std::cout << "\n idx:" << idx;
+
                 StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                 StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
                 StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
@@ -107,8 +113,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             num_atoms[i] = 0;
 
             // Num_atoms and res_num Test
-            std::cout << num_atoms << "\n" << res_nums << "\n";
+            std::cout << "num atoms:" << num_atoms << "\n res_nums: " << pdb.res_nums << "\n";
 
+//          Get Num_atoms another way
 
 //            int previous_res_num = pdb.res_nums[0];
 //            for(int j=0; j<pdb.r.size(); j++){
