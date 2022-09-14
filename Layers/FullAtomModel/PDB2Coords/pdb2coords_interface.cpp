@@ -42,7 +42,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
         // Num_atoms Test
         std::cout << "\n atoms names:" << atom_names << "\n res_names:" << res_names;
-        std::cout << "\n type atom names:" << typeid(atom_names);
+//        std::cout << "\n type atom names:" << typeid(atom_names);
         std::cout << "\n num_atoms:" << num_atoms << "\n";
 
         int max_num_atoms = num_atoms.max().data<int>()[0];
