@@ -6,7 +6,7 @@ from torch import optim
 
 from TorchProteinLibrary import FullAtomModel
 from TorchProteinLibrary import RMSD
-import PDBloader
+# import PDBloader
 from Bio.PDB import *
 import numpy as np
 

@@ -40,6 +40,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
         }
 
+        // Num_atoms Test
+        std::cout << "\n" << num_atoms << "\n"
+
         int max_num_atoms = num_atoms.max().data<int>()[0];
         int64_t size_nums[] = {batch_size, max_num_atoms};
         int64_t size_coords[] = {batch_size, max_num_atoms*3};
@@ -101,16 +104,17 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             std::cout << pdb.res_names << " \n cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 1
 //            std::cout << res_names << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 2
 //            std::cout << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 3
-//            num_atoms[i] = 0;
-//            int previous_res_num = pdb.res_nums[0];
-//            for(int j=0; j<pdb.r.size(); j++){
-//                if (previous_res_num < pdb.res_nums[j]) {
-//                    previous_res_num = pdb.res_nums[j];
-//                    num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom));
-//                }
-//}
-//            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
-//        }
+            num_atoms[i] = 0;
+            int previous_res_num = pdb.res_nums[0];
+            for(int j=0; j<pdb.r.size(); j++){
+                if (previous_res_num < pdb.res_nums[j]) {
+                    previous_res_num = pdb.res_nums[j];
+                    num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom));
+                }
+}
+            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
+        }
+        std::cout << num_atoms << "\n"
 //
 //        int max_num_atoms = num_atoms.max().data<int>()[0];
 //        int64_t size_nums[] = {batch_size, max_num_atoms};
@@ -159,7 +163,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //                single_mask[idx] = 1;
 //            }
 //        }
-    }
+//    }
         std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
     }
 //    }
