@@ -119,6 +119,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             std::cout << "num atoms:" << num_atoms << "\n res_nums: " << pdb.res_nums << "\n";
             std::cout << "size res_nums:" << pdb.res_nums.size() << "size atom names" << pdb.atom_names.size();
 
+            num_atoms = pdb.atom_names.size();
+
 //          Get Num_atoms another way
 
 //            int previous_res_num = pdb.res_nums[0];
@@ -134,35 +136,36 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //        std::cout << num_atoms << "\n";
 //
 //        int max_num_atoms = num_atoms.max().data<int>()[0];
-//        int64_t size_nums[] = {batch_size, max_num_atoms};
-//        int64_t size_coords[] = {batch_size, max_num_atoms*3};
-//        int64_t size_names[] = {batch_size, max_num_atoms, 4};
+        int max_num_atoms = num_atoms
+        int64_t size_nums[] = {batch_size, max_num_atoms};
+        int64_t size_coords[] = {batch_size, max_num_atoms*3};
+        int64_t size_names[] = {batch_size, max_num_atoms, 4};
 //
-//        coords.resize_(torch::IntList(size_coords, 2)).fill_(0.0);
-//        chain_names.resize_(torch::IntList(size_names, 3)).fill_(0);
-//        res_names.resize_(torch::IntList(size_names, 3)).fill_(0);
-//        res_nums.resize_(torch::IntList(size_nums, 2)).fill_(0);
-//        atom_names.resize_(torch::IntList(size_names, 3)).fill_(0);
-//        atom_mask.resize_(torch::IntList(size_nums, 2)).fill_(0);
+        coords.resize_(torch::IntList(size_coords, 2)).fill_(0.0);
+        chain_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+        res_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+        res_nums.resize_(torch::IntList(size_nums, 2)).fill_(0);
+        atom_names.resize_(torch::IntList(size_names, 3)).fill_(0);
+        atom_mask.resize_(torch::IntList(size_nums, 2)).fill_(0);
 //
 //
-//        #pragma omp parallel for
-//        for(int i=0; i<batch_size; i++){
-//            torch::Tensor single_coords = coords[i];
-//            torch::Tensor single_filename = filenames[i];
-//            torch::Tensor single_chain_names = chain_names[i];
-//            torch::Tensor single_res_names = res_names[i];
-//            torch::Tensor single_res_nums = res_nums[i];
-//            torch::Tensor single_atom_names = atom_names[i];
-//            torch::Tensor single_mask = atom_mask[i];
-//
-//            std::string filename = StringUtil::tensor2String(single_filename);
-//
-//            cPDBLoader pdb(filename);
-//
-//            int global_ind = 0;
-//            int previous_res_num = pdb.res_nums[0];
-//            for(int j=0; j<pdb.r.size(); j++){
+        #pragma omp parallel for
+        for(int i=0; i<batch_size; i++){
+            torch::Tensor single_coords = coords[i];
+            torch::Tensor single_filename = filenames[i];
+            torch::Tensor single_chain_names = chain_names[i];
+            torch::Tensor single_res_names = res_names[i];
+            torch::Tensor single_res_nums = res_nums[i];
+            torch::Tensor single_atom_names = atom_names[i];
+            torch::Tensor single_mask = atom_mask[i];
+
+            std::string filename = StringUtil::tensor2String(single_filename);
+
+            cPDBLoader pdb(filename, 1);
+
+            int global_ind = 0;
+            int previous_res_num = pdb.res_nums[0];
+            for(int j=0; j<pdb.r.size(); j++){
 //                if (previous_res_num < pdb.res_nums[j]) {
 //                    previous_res_num = pdb.res_nums[j];
 //                    global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
@@ -179,8 +182,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //                single_coords[3*idx + 2] = pdb.r[j].v[2];
 //                single_mask[idx] = 1;
 //            }
-//        }
-//    }
+        }
+    }
         std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
     }
 //    }
