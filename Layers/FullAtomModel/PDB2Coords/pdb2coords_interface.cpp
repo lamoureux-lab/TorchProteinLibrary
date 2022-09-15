@@ -119,7 +119,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             std::cout << "num atoms:" << num_atoms << "\n res_nums: " << pdb.res_nums << "\n";
             std::cout << "size res_nums:" << pdb.res_nums.size() << "size atom names" << pdb.atom_names.size();
 
-            num_atoms = pdb.atom_names.size();
+            num_atoms[i] = pdb.atom_names.size();
 
 //          Get Num_atoms another way
 
