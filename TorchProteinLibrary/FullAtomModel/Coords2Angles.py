@@ -52,6 +52,8 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 
 			atom_name = _tensor2str(atomnames[batch_idx, atom_idx, :])
 			coord = coords[batch_idx, 3*atom_idx:3*atom_idx+3].numpy()
+
+			#error from pdb.atom
 			atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 			current_residue.add(atom)
 			
@@ -346,13 +348,13 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 
 	if polymer_type == 1:
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
-		print("length", length)
-		max_seq_length = max(length)
-		batch_size = length.size(0)
-		angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
-		for batch_idx, structure in enumerate(structures):
-			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
-			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
+		# print("length", length)
+		# max_seq_length = max(length)
+		# batch_size = length.size(0)
+		# angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
+		# for batch_idx, structure in enumerate(structures):
+		# 	dihedrals = BioStructure2Dihedrals(structure, polymer_type)
+		# 	angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
 		print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	elif polymer_type == 2:

@@ -38,6 +38,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
         std::string seq = StringUtil::tensor2String(single_sequence);
         
         int length = single_angles.sizes()[1];
+//        get Num atoms
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
         if( single_coords.sizes()[0]<3*num_atoms){
@@ -56,6 +57,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             ERROR("incorrect atom names tensor length");
         }
         torch::Tensor dummy_grad = torch::zeros_like(single_angles);
+//        Conformation and convertRes1to3
         AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
             cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>());
             for(int j=0; j<conf.groups.size(); j++){
@@ -101,10 +103,12 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
         torch::Tensor single_grad_atoms = grad_atoms[i];
         
         std::string seq = StringUtil::tensor2String(single_sequence);
-                
+
+//      Get Num Atoms
         uint length = single_angles.sizes()[1];
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         
+//      Conformation
         torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
         AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
             cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>());
