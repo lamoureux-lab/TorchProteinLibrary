@@ -536,7 +536,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
             return 14;
     }
 
-    if(res_name == std::string(" DA") || res_name == std::string("O")){
+    if(res_name == std::string("DA") || res_name == std::string("O")){
         if(atom_name == std::string("P"))
             return 1;
         if(atom_name == std::string("OP1"))
@@ -581,7 +581,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
             return 21;
     }
 
-     if(res_name == std::string(" DG") || res_name == std::string("U")){
+     if(res_name == std::string("DG") || res_name == std::string("U")){
         if(atom_name == std::string("P"))
             return 1;
         if(atom_name == std::string("OP1"))
@@ -628,7 +628,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
             return 22;
     }
 
-    if(res_name == std::string(" DT") || res_name == std::string("Z")){
+    if(res_name == std::string("DT") || res_name == std::string("Z")){
         if(atom_name == std::string("P"))
             return 1;
         if(atom_name == std::string("OP1"))
@@ -671,7 +671,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name){
             return 20;
         }
 
-    if(res_name == std::string(" DT") || res_name == std::string("B")){
+    if(res_name == std::string("DC") || res_name == std::string("B")){
         if(atom_name == std::string("P"))
             return 1;
         if(atom_name == std::string("OP1"))
