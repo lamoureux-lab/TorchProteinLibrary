@@ -32,13 +32,13 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 		current_chain = Chain(chain_name)
 		
 		residue_3name = _tensor2str(resnames[batch_idx, atom_idx, :])
-		residue_1name = dindex_to_1[d3_to_index[residue_3name]]
+		# residue_1name = dindex_to_1[d3_to_index[residue_3name]]
 		current_residue = Residue((" ", resnums[batch_idx, atom_idx].item(), " "), residue_3name, current_chain.get_id())
 		
 		for atom_idx in range(num_atoms[batch_idx].item()):
 			if previous_resnum < resnums[batch_idx, atom_idx].item():
 				residue_3name = _tensor2str(resnames[batch_idx, atom_idx, :])
-				residue_1name = dindex_to_1[d3_to_index[residue_3name]]
+				# residue_1name = dindex_to_1[d3_to_index[residue_3name]]
 				
 				current_chain.add(current_residue)
 				current_residue = Residue((" ", resnums[batch_idx, atom_idx].item(), " "), residue_3name, current_chain.get_id())
@@ -344,9 +344,15 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
-	elif polymer_type == 1:
-		length = 0
-		angles = 0
+	if polymer_type == 1:
+		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
+		print("length", length)
+		max_seq_length = max(length)
+		batch_size = length.size(0)
+		angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
+		for batch_idx, structure in enumerate(structures):
+			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
+			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
 		print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	elif polymer_type == 2:
