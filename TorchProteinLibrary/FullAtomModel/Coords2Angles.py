@@ -16,7 +16,7 @@ warnings.simplefilter('ignore', BiopythonWarning)
 def _tensor2str(tensor):
 	return (tensor.numpy().astype(dtype=np.uint8).tostring().split(b'\00')[0]).decode("utf-8")
 
-def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms):
+def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type):
 	batch_size = coords.size(0)
 	structures = []
 	length = torch.zeros(batch_size, dtype=torch.int, device='cpu')
@@ -53,9 +53,18 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 			atom_name = _tensor2str(atomnames[batch_idx, atom_idx, :])
 			coord = coords[batch_idx, 3*atom_idx:3*atom_idx+3].numpy()
 
-			#error from pdb.atom
-			atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
-			current_residue.add(atom)
+			if polymer_type == 0:
+				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				current_residue.add(atom)
+			if polymer_type == 1:
+				#error from pdb.atom [for poly type: change how atom is saved and then save as pdb to be read by barnaba]
+				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				current_residue.add(atom)
+				return
+			if polymer_type == 2:
+				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				current_residue.add(atom)
+				return
 			
 		current_chain.add(current_residue)
 		model.add(current_chain)
@@ -338,7 +347,7 @@ def getTrpRot(residue):
 def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type=0):
 	if polymer_type == 0:
 
-		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
+		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
 		max_seq_length = max(length)
 		batch_size = length.size(0)
 		angles = torch.zeros(batch_size, 8, max_seq_length, dtype=torch.float32, device='cpu')
@@ -347,7 +356,7 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
 	if polymer_type == 1:
-		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms)
+		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
 		# print("length", length)
 		# max_seq_length = max(length)
 		# batch_size = length.size(0)
