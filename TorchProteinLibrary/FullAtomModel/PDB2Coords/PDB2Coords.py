@@ -137,6 +137,6 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 
 
 				if add_model:
-				fout.write("ENDMDL\n")
+					fout.write("ENDMDL\n")
 
 
