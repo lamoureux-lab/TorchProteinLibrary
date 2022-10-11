@@ -132,7 +132,8 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 				
 				# fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f           %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
 				# fout.write("%3s \n")
-				fout.write("%3s \n" %(atom_name[0]))
+				# fout.write("%3s \n" %(atom_name[0]))
+				print(atom_name)
 
 
 
