@@ -58,8 +58,9 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 				current_residue.add(atom)
 			if polymer_type == 1:
 				#error from pdb.atom [for poly type: change how atom is saved and then save as pdb to be read by barnaba]
-				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
-				current_residue.add(atom)
+				print(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				#atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				#current_residue.add(atom)
 				return
 			if polymer_type == 2:
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
