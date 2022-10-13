@@ -59,13 +59,13 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 			if polymer_type == 1:
 				#error from pdb.atom [for poly type: change how atom is saved and then save as pdb to be read by barnaba]
 				print(atom_name, coord, 0.0, 1.0, "", atom_name, None)
-				#atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
-				#current_residue.add(atom)
-				return
+				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				current_residue.add(atom)
+
 			if polymer_type == 2:
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				current_residue.add(atom)
-				return
+
 			
 		current_chain.add(current_residue)
 		model.add(current_chain)
@@ -357,13 +357,6 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
 	if polymer_type == 1:
-		print(type(coords))
-		print(type(chainnames))
-		print(type(resnames))
-		print(type(resnums))
-		print(type(atomnames))
-		print(type(num_atoms))
-		print(type(polymer_type))
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
 		# print("length", length)
 		# max_seq_length = max(length)
