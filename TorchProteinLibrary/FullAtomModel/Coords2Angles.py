@@ -357,6 +357,13 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
 	if polymer_type == 1:
+		print(type(coords))
+		print(type(chainnames))
+		print(type(resnames))
+		print(type(resnums))
+		print(type(atomnames))
+		print(type(num_atoms))
+		print(type(polymer_type))
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
 		# print("length", length)
 		# max_seq_length = max(length)
