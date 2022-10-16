@@ -81,11 +81,11 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
                         res_names.push_back(res_name);
                         res_nums.push_back(res_num);
                         atom_names.push_back(atom_name);
-                        std::cout<<res_name<<" "<<atom_name << "\n"; //PDBLoader isNucleotide Test
+//                        std::cout<<res_name<<" "<<atom_name << "\n"; //PDBLoader isNucleotide Test
                     }
                 }
             }
-                 std::cout<<std::endl;
+//                 std::cout<<std::endl;
 
 	    }
 	    if(polymer_type == 2){

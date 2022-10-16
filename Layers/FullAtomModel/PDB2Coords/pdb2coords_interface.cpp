@@ -193,6 +193,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
         }
     }
 //        std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
+        std::cout << atom_names;
     }
 //    }
 
