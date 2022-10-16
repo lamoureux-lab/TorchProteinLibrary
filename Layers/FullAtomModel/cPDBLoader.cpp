@@ -70,7 +70,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
                     res_name = trim(line.substr(17,3));
 //                    std::cout << res_name << " ";
                     if(isNucleotide(res_name, polymer_type)){
-                        std::cout << atom_name <<" "; //PDBLoader "is nucleotide" test
+//                        std::cout << atom_name <<" "; //PDBLoader "is nucleotide" test
                         xStr = line.substr(30,8);
                         yStr = line.substr(38,8);
                         zStr = line.substr(46,8);
@@ -81,7 +81,7 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
                         res_names.push_back(res_name);
                         res_nums.push_back(res_num);
                         atom_names.push_back(atom_name);
-//                        std::cout<<res_name<<" "<<atom_name << "\n"; //PDBLoader isNucleotide Test
+                        std::cout<<res_name<<" "<<atom_name << "\n"; //PDBLoader isNucleotide Test
                     }
                 }
             }
