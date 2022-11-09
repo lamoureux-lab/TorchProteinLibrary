@@ -166,7 +166,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
-            std::string chain_idx = 0;
+            std::string chain_idx;
 
 
             for(int j=0; j<pdb.r.size(); j++){
