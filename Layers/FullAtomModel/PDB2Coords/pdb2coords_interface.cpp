@@ -172,7 +172,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
 
             for(int j=0; j<pdb.r.size(); j++){
-                if (pdb.chain_names[j] > chain_idx && pdb.atom_name[j] == "O5'"){
+                if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
                     chain_idx = pdb.chain_names[j]
                     int res_idx = pdb.res_num[j]
                     for pdb.res_nums[res_idx]{
