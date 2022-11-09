@@ -85,9 +85,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
 //                Why resLastAtom
-                std::cout << "\n res num[j]:" << pdb.res_nums[j];
-                std::cout << "\n global_ind:" << global_ind;
-                std::cout << "\n idx:" << idx;
+//                std::cout << "\n res num[j]:" << pdb.res_nums[j];
+//                std::cout << "\n global_ind:" << global_ind;
+//                std::cout << "\n idx:" << idx;
 
                 StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                 StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
@@ -166,34 +166,68 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
+            char chain_idx = 0
+            int five_primeidx = 0
+
+
+
             for(int j=0; j<pdb.r.size(); j++){
-                if (previous_res_num < pdb.res_nums[j]) {
-                    previous_res_num = pdb.res_nums[j];
-                    if (pdb.res_names[j] == "DA" || pdb.res_names[j] == "DG") {
-                        std::string resLastAtom("C4");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                if (pdb.chain_names[j] > chain_idx && pdb.atom_name[j] == "O5'"){
+                    chain_idx = pdb.chain_names[j]
+                    int res_idx = pdb.res_num[j]
+                    for pdb.res_nums[res_idx]{
+                    five_primeidx = 3
+
+                    if (previous_res_num < pdb.res_nums[j]) {
+                        previous_res_num = pdb.res_nums[j];
+                        if (pdb.res_names[j] == "DA" || pdb.res_names[j] == "DG") {
+                            std::string resLastAtom("C4");
+                            global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                        }
+                        if (pdb.res_names[j] == "DT" || pdb.res_names[j] == "DC") {
+                            std::string resLastAtom("C6");
+                            global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                        }
                     }
-                    if (pdb.res_names[j] == "DT" || pdb.res_names[j] == "DC") {
-                        std::string resLastAtom("C6");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                    uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind - five_primeidx;
+
+                    StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
+                    StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
+                    StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
+                    single_res_nums[idx] = pdb.res_nums[j];
+
+                    single_coords[3*idx + 0] = pdb.r[j].v[0];
+                    single_coords[3*idx + 1] = pdb.r[j].v[1];
+                    single_coords[3*idx + 2] = pdb.r[j].v[2];
+                    single_mask[idx] = 1;}
                     }
+                    if (previous_res_num < pdb.res_nums[j]) {
+                        previous_res_num = pdb.res_nums[j];
+                        if (pdb.res_names[j] == "DA" || pdb.res_names[j] == "DG") {
+                            std::string resLastAtom("C4");
+                            global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                        }
+                        if (pdb.res_names[j] == "DT" || pdb.res_names[j] == "DC") {
+                            std::string resLastAtom("C6");
+                            global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                        }
+                    }
+                    uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
+
+                    StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
+                    StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
+                    StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
+                    single_res_nums[idx] = pdb.res_nums[j];
+
+                    single_coords[3*idx + 0] = pdb.r[j].v[0];
+                    single_coords[3*idx + 1] = pdb.r[j].v[1];
+                    single_coords[3*idx + 2] = pdb.r[j].v[2];
+                    single_mask[idx] = 1;
                 }
-                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
-
-                StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
-                StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
-                StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
-                single_res_nums[idx] = pdb.res_nums[j];
-
-                single_coords[3*idx + 0] = pdb.r[j].v[0];
-                single_coords[3*idx + 1] = pdb.r[j].v[1];
-                single_coords[3*idx + 2] = pdb.r[j].v[2];
-                single_mask[idx] = 1;
-//            }
         }
     }
 //        std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
-        std::cout << atom_names;
+//        std::cout << atom_names;
     }
 //    }
 
