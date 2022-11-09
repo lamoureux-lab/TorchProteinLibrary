@@ -166,8 +166,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
-            char chain_idx = 0
-            int five_primeidx = 0
+            char chain_idx = 0;
+            int five_primeidx = 0;
 
 
 
@@ -228,7 +228,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
     }
 //        std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
 //        std::cout << atom_names;
-    }
+//    }
 //    }
 
     else if (polymer_type == 2){
