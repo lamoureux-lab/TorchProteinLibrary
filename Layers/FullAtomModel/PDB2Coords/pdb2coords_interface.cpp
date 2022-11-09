@@ -166,19 +166,17 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
-            char chain_idx = 0;
-            int five_primeidx = 0;
-
+            std::string chain_idx = 0;
 
 
             for(int j=0; j<pdb.r.size(); j++){
 //            std::cout << pdb.chain_names[j];
 //            std::cout << pdb.res_nums[j];
                 if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
-                    chain_idx = static_cast<char>(pdb.chain_names[j])
+                    chain_idx = pdb.chain_names[j]
                     int res_idx = static_cast<int>(pdb.res_nums[j])
                     for pdb.res_nums[res_idx]{
-                    five_primeidx = 3
+                    int five_primeidx = 3;
 
                     if (previous_res_num < pdb.res_nums[j]) {
                         previous_res_num = pdb.res_nums[j];
