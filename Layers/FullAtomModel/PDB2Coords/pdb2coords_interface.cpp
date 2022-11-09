@@ -175,7 +175,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
                     chain_idx = pdb.chain_names[j];
                     int res_idx = static_cast<int>(pdb.res_nums[j]);
-                    for pdb.res_nums[res_idx]{
+                    while pdb.res_nums[j] == pdb.res_nums[res_idx]{
                     int five_primeidx = 3;
 
                     if (previous_res_num < pdb.res_nums[j]) {
@@ -199,7 +199,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                     single_coords[3*idx + 0] = pdb.r[j].v[0];
                     single_coords[3*idx + 1] = pdb.r[j].v[1];
                     single_coords[3*idx + 2] = pdb.r[j].v[2];
-                    single_mask[idx] = 1;}
+                    single_mask[idx] = 1;
+                    }
                     }
                     if (previous_res_num < pdb.res_nums[j]) {
                         previous_res_num = pdb.res_nums[j];
