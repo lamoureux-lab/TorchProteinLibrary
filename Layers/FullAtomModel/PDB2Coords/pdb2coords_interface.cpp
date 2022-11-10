@@ -200,6 +200,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                     single_coords[3*idx + 1] = pdb.r[j].v[1];
                     single_coords[3*idx + 2] = pdb.r[j].v[2];
                     single_mask[idx] = 1;
+                    ++j;
                     }
                     }
                     if (previous_res_num < pdb.res_nums[j]) {
