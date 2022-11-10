@@ -204,7 +204,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                         std::cout << "chain: " << chain_names[j] << "single: " << single_chain_names[idx] << "\n";
                         std::cout << "res: " << res_names[j - five_primeidx] << "single: " << single_res_names[idx - five_primeidx] << "\n";
                         std::cout << "atom: " << atom_names[j - five_primeidx] << "single: " << single_atom_names[idx - five_primeidx] << "\n";
-                        std::cout << "coords: " << pdb.r[j - five_primeidx].v[0] << pdb.r[j - five_primeidx].v[1] << pdb.r[j - five_primeidx].v[2] << "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
+                        std::cout << "coords: " << pdb.r[j - five_primeidx].v[0] << pdb.r[j - five_primeidx].v[1] << pdb.r[j - five_primeidx].v[2] << "single: " << single_coords[3 * idx - five_primeidx] << single_coords[3 * idx +1 - five_primeidx] << single_coords[3 * idx + 2 - five_primeidx] << "\n";
 
                         ++j;
                     }
@@ -233,9 +233,10 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 single_mask[idx] = 1;
 
                 std::cout << "chain: " << chain_names[j] << "single: " << single_chain_names[idx] << "\n";
-                std::cout << "res: " << res_names[j - five_primeidx] << "single: " << single_res_names[idx - five_primeidx] << "\n";
-                std::cout << "atom: " << atom_names[j - five_primeidx] << "single: " << single_atom_names[idx - five_primeidx] << "\n";
-                std::cout << "coords: " << pdb.r[j - five_primeidx].v[0] << pdb.r[j - five_primeidx].v[1] << pdb.r[j - five_primeidx].v[2] << "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
+                std::cout << "res: " << res_names[j] << "single: " << single_res_names[idx] << "\n";
+                std::cout << "atom: " << atom_names[j] << "single: " << single_atom_names[idx] << "\n";
+                std::cout << "coords: " << pdb.r[j].v[0] << pdb.r[j].v[1] << pdb.r[j].v[2] << "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
+
 
             }
         }
