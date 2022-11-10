@@ -189,12 +189,12 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                             global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
                         }
                     }
-                    uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind - five_primeidx;
+                    uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
                     StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                     StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
                     StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
-                    single_res_nums[idx] = pdb.res_nums[j];
+                    single_res_nums[idx- five_primeidx] = pdb.res_nums[j];
 
                     single_coords[3*idx + 0] = pdb.r[j].v[0];
                     single_coords[3*idx + 1] = pdb.r[j].v[1];
