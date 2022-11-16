@@ -212,7 +212,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
     return num_atoms;
 }
 
-uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind = 0, int polymer_type = 0){
+uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind, int polymer_type){
 
     if (polymer_type == 0){
 
@@ -864,7 +864,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
         }
 
         if (polymer_type == 2){
-        std::cout << "Get Atom Index not implemented for Polymer Type 2 \n"
+        std::cout << "Get Atom Index not implemented for Polymer Type 2 \n";
         }
 
     std::cout<<"Unknown atom/res names"<<std::endl;
