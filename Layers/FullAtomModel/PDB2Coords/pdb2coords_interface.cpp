@@ -172,8 +172,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             for(int j=0; j<pdb.r.size(); j++){
 //            std::cout << pdb.chain_names[j];
 //            std::cout << pdb.res_nums[j];
-                if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
-                    chain_idx = pdb.chain_names[j];
+                if (pdb.chain_names[0,j] > chain_idx && pdb.atom_names[j] == "O5'"){
+                    chain_idx = pdb.chain_names[0,j];
                     int res_idx = static_cast<int>(pdb.res_nums[j]);
                     while (pdb.res_nums[j] == pdb.res_nums[res_idx]){
                         bool fiveprime_ind;
@@ -191,7 +191,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                         }
                         uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], fiveprime_ind) + global_ind;
 
-                        StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
+                        StringUtil::string2Tensor(pdb.chain_names[0,j], single_chain_names[idx]);
                         StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
                         StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
                         single_res_nums[idx] = pdb.res_nums[j];
