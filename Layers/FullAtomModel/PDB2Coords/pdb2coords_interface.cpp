@@ -80,7 +80,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             for(int j=0; j<pdb.r.size(); j++){
                 if (previous_res_num < pdb.res_nums[j]) {
                     previous_res_num = pdb.res_nums[j];
-                    global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, 0, 1);
+                    global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
                 }
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
