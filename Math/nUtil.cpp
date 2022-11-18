@@ -692,7 +692,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
         if(atom_name == std::string("C6"))
             return 15;
     }
-    if((res_name == std::string("DA") && !fiveprime_ind )){//|| res_name == std::string("O")){
+    if((res_name == std::string("DA") && fiveprime_ind == 0)){//|| res_name == std::string("O")){
         if(atom_name == std::string("O5'"))
             return 3;
         if(atom_name == std::string("C5'"))
@@ -731,7 +731,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 20;
     }
 
-     if(res_name == std::string("DG") && !fiveprime_ind){// || res_name == std::string("U")){
+     if(res_name == std::string("DG") && fiveprime_ind == 0){// || res_name == std::string("U")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
@@ -778,7 +778,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 21;
     }
 
-    if(res_name == std::string("DT") && !fiveprime_ind){// || res_name == std::string("Z")){
+    if(res_name == std::string("DT") && fiveprime_ind == 0){// || res_name == std::string("Z")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
@@ -821,7 +821,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 19;
         }
 
-    if(res_name == std::string("DC") && !fiveprime_ind){ // || res_name == std::string("B")){
+    if(res_name == std::string("DC") && fiveprime_ind == 0){ // || res_name == std::string("B")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
