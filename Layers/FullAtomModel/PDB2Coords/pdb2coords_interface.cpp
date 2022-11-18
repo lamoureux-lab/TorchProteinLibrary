@@ -40,13 +40,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
 
        // Num_atoms Test 1
-        std::cout << "\n atoms names:" << pdb.atom_names << "\n res_names:" << pdb.res_names;
-        std::cout << "\n size atom names:" << pdb.atom_names.size();
+//        std::cout << "\n atoms names:" << pdb.atom_names << "\n res_names:" << pdb.res_names;
+//        std::cout << "\n size atom names:" << pdb.atom_names.size();
 //        std::cout << "\n res_nums:" << pdb.res_nums;
         }
 
         // Num_atoms Test 2
-        std::cout << "\n num_atoms:" << num_atoms << "\n";
+//        std::cout << "\n num_atoms:" << num_atoms << "\n";
 
         int max_num_atoms = num_atoms.max().data<int>()[0];
         int64_t size_nums[] = {batch_size, max_num_atoms};
@@ -80,7 +80,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             for(int j=0; j<pdb.r.size(); j++){
                 if (previous_res_num < pdb.res_nums[j]) {
                     previous_res_num = pdb.res_nums[j];
-                    global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom);
+                    global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, 0, 1);
                 }
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j]) + global_ind;
 
