@@ -692,7 +692,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
         if(atom_name == std::string("C6"))
             return 15;
     }
-    if((res_name == std::string("DA") && !fiveprime_ind ))}{//|| res_name == std::string("O")){
+    if((res_name == std::string("DA") && !fiveprime_ind )){//|| res_name == std::string("O")){
         if(atom_name == std::string("O5'"))
             return 3;
         if(atom_name == std::string("C5'"))
