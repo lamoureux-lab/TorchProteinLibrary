@@ -213,14 +213,14 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                     previous_res_num = pdb.res_nums[j];
                     if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG") {
                         std::string resLastAtom("C4");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, 0, 1);
+                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, int 1);
                     }
                     if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC") {
                         std::string resLastAtom("C6");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, 0, 1);
+                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, int 1);
                     }
                 }
-                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], 0, 1) + global_ind;
+                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, int 1) + global_ind;
 
                 StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                 StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);

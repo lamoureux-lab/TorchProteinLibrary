@@ -18,7 +18,7 @@ namespace StringUtil{
 
 namespace ProtUtil{
     // atom indexing common for cConformation and cPDBLoader
-    uint getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind = 0, int polymer_type = 0);
+    uint getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind = false, int polymer_type = 0);
     
     // number of atoms in a sequence
     uint getNumAtoms(std::string &sequence, bool add_terminal);
