@@ -172,24 +172,24 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             for(int j=0; j<pdb.r.size(); j++){
 ////            std::cout << pdb.chain_names[j];
 ////            std::cout << pdb.res_nums[j];
-                if (pdb.chain_names[j] > chain_idx){ // && pdb.atom_names[0,j] == "O5'"){
+                if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
                     chain_idx = pdb.chain_names[j];
                     int res_idx = static_cast<int>(pdb.res_nums[j]);
                     while (pdb.res_nums[j] == pdb.res_nums[res_idx]){
-                        bool fiveprime_ind;
+                        bool fiveprime_ind = true;
 
                         if (previous_res_num < pdb.res_nums[j]) {
                             previous_res_num = pdb.res_nums[j];
                             if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG") {
                                 std::string resLastAtom("C4");
-                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, fiveprime_ind, 1);
+                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, 1);
                             }
                             if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC") {
                                 std::string resLastAtom("C6");
-                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, fiveprime_ind, 1);
+                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, 1);
                             }
                         }
-                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], fiveprime_ind, 1) + global_ind;
+                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], true, 1) + global_ind;
 
                         StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                         StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
