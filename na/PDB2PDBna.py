@@ -51,7 +51,7 @@ def get_sequence(res_names, res_nums, num_atoms, mask, polymer_type):
             sequence = sequence + dindex_to_1[d3_to_index[residue_name]]
             sequences.append(sequence[:-1])
         elif polymer_type == 1:
-            print(residue_name)
+            # print(residue_name)
             # one_from_three = residue_name[1]
             # print(one_from_three)
             # sequence = sequence + one_from_three
