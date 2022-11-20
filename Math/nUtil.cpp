@@ -615,7 +615,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 15;
         if(atom_name == std::string("N2"))
             return 16;
-        if(atom_name == std::string("N3"))
+    if(atom_name == std::string("N3"))
             return 17;
         if(atom_name == std::string("C4"))
             return 18;
