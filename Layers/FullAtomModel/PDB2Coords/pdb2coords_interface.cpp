@@ -134,7 +134,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
         }
         //Num_atoms Test
-//        std::cout << num_atoms << "\n";
+        std::cout << num_atoms << "\n";
 //
         int max_num_atoms = num_atoms.max().data<int>()[0];
 //        int max_num_atoms = num_atoms
@@ -203,10 +203,10 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                         single_coords[3*idx + 2] = pdb.r[j].v[2];
                         single_mask[idx] = 1;
 
-                        std::cout << "chain: " << pdb.chain_names[j] << "\n"; //<< "single: " << single_chain_names[idx] << "\n";
-                        std::cout << "res: " << pdb.res_names[j] << "\n";// << "single: " << single_res_names[idx] << "\n";
-                        std::cout << "atom: " << pdb.atom_names[j] << "\n";// << "single: " << single_atom_names[idx] << "\n";
-                        std::cout << "coords: " << pdb.r[j].v[0] << pdb.r[j].v[1] << pdb.r[j].v[2] << "\n";// << "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
+//                        std::cout << "chain: " << pdb.chain_names[j] << "\n"; //<< "single: " << single_chain_names[idx] << "\n";
+//                        std::cout << "res: " << pdb.res_names[j] << "\n";// << "single: " << single_res_names[idx] << "\n";
+//                        std::cout << "atom: " << pdb.atom_names[j] << "\n";// << "single: " << single_atom_names[idx] << "\n";
+//                        std::cout << "coords: " << pdb.r[j].v[0] << pdb.r[j].v[1] << pdb.r[j].v[2] << "\n";// << "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
 
                         ++j;
                     }
@@ -236,10 +236,10 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 single_coords[3*idx + 2] = pdb.r[j].v[2];
                 single_mask[idx] = 1;
 
-                std::cout << "chain: " << pdb.chain_names[j] << "\n"; //<< "single: " << single_chain_names[idx] << "\n";
-                std::cout << "res: " << pdb.res_names[j] << "\n"; //<< "single: " << single_res_names[idx] << "\n";
-                std::cout << "atom: " << pdb.atom_names[j] << "\n"; //<< "single: " << single_atom_names[idx] << "\n";
-                std::cout << "coords: " << pdb.r[j].v[0] << pdb.r[j].v[1] << pdb.r[j].v[2] << "\n"; //<< "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
+//                std::cout << "chain: " << pdb.chain_names[j] << "\n"; //<< "single: " << single_chain_names[idx] << "\n";
+//                std::cout << "res: " << pdb.res_names[j] << "\n"; //<< "single: " << single_res_names[idx] << "\n";
+//                std::cout << "atom: " << pdb.atom_names[j] << "\n"; //<< "single: " << single_atom_names[idx] << "\n";
+//                std::cout << "coords: " << pdb.r[j].v[0] << pdb.r[j].v[1] << pdb.r[j].v[2] << "\n"; //<< "single: " << single_coords[3 * idx] << single_coords[3 * idx +1] << single_coords[3 * idx + 2] << "\n";
 
 
             }
