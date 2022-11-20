@@ -224,6 +224,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 }
                 uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, 1) + global_ind - (2 * chain_num);
 
+                std::cout << "chain num variable:" << chain_num << "\n";
+
                 StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                 StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
                 StringUtil::string2Tensor(pdb.atom_names[j], single_atom_names[idx]);
