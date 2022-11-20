@@ -175,7 +175,6 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
                     chain_idx = pdb.chain_names[j];
                     int res_idx = static_cast<int>(pdb.res_nums[j]);
-                    ++chain_num;
 
                     while (pdb.res_nums[j] == pdb.res_nums[res_idx]){
                         bool fiveprime_ind = true;
@@ -191,7 +190,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                                 global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, 1) + 1;
                             }
                         }
-                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], true, 1) + global_ind - (2 * (chain_num - 1));
+                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], true, 1) + global_ind - (2 * chain_num);
 
                         StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                         StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
@@ -210,6 +209,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
                         ++j;
                     }
+                    ++chain_num;
                 }
                 if (previous_res_num < pdb.res_nums[j]) {
                     previous_res_num = pdb.res_nums[j];
@@ -222,7 +222,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                         global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, 1) + 1;
                     }
                 }
-                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, 1) + global_ind - (2 * chain_num);
+                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, 1) + global_ind - (2 * chain_num) - 1;
 
 //                std::cout << "chain num variable:" << chain_num << "\n";
 
