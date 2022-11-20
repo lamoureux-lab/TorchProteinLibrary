@@ -71,15 +71,17 @@ loaded_prot = p2c([file], polymer_type=polymerType)
 coords_dst, chainnames, resnames, resnums, atomnames, mask, num_atoms = loaded_prot
 coords_dst = coords_dst.to(dtype=torch.float)
 
-# for i in range(num_atoms):
-#     print(_convert2str(atomnames[0,i]).decode("utf-8"))
+# print(chainnames)
+for i in range(num_atoms):
+    print(_convert2str(atomnames[0,i]).decode("utf-8"))
+    # print((atomnames[0, i]))
 # print(num_atoms)
 
 sequences = get_sequence(resnames, resnums, num_atoms, mask, polymerType)
-print(sequences)
+# print(sequences)
 
 # Coords2Angles function Called
-angles, lengths = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms, polymerType)
+# angles, lengths = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms, polymerType)
 
 
 # Angles Saved as beforeAng for deltaAngle plot
@@ -90,3 +92,12 @@ angles, lengths = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomn
 # angles.requires_grad_()
 # optimizer = optim.Adam([angles], lr=0.00001)
 # a2c = FullAtomModel.Angles2Coords()
+
+
+
+
+# Name of new PDB file to be written
+pdb2pdbNAtest = '/u2/home_u2/fam95/Documents/pdb2pdbnatest.pdb'
+
+# Save New PDB [turned off for test]
+# FullAtomModel.writePDB(pdb2pdbNAtest, coords_dst, chainnames, resnames, resnums, atomnames, num_atoms)

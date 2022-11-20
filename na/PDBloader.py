@@ -1,9 +1,10 @@
 ## function to read in PDB files and extract atom_name, res_names,chain_names,res_nums
 from Bio.PDB import *
-#import barnaba as bb
+import barnaba as bb
 #from barnaba import definitions
 
-file = '/u2/home_u2/fam95/Documents/1ffk.pdb'
+# file = '/u2/home_u2/fam95/Documents/1ffk.pdb'
+file = '/u2/home_u2/fam95/Documents/119d.pdb'
 
 class PDBLoader:
     '''
@@ -28,14 +29,14 @@ class PDBLoader:
                     atoms.append(atom)
                     x, y, z = atom.get_coord() ## get xyz coordinates
                     coords.append((x, y, z))
-
+    # print(residues)
     #io = PDBIO()
     #io.set_structure(struct)
     #io.save("out.pdb")
 
     def NAfromPDB(struct):
 
-        Nucleotides = ["DA", "DC", "DG", "DT", "DU"]
+        Nucleotides = ["DA", "DC", "DG", "DT"]  # , "DU"]
         residues = []
         resseq = []  # residue sequence number
         atoms = []
@@ -76,7 +77,7 @@ class PDBLoader:
             stri = "%10s" % res[j]
             for k in range(angles.shape[2]):
                 stri += "%10.3f " % angles[0, j, k]
-            #print(stri)
+            print(stri)
 
     def getNAring_ang(file):
         ring_ang, resid = bb.sugar_angles(file)
@@ -86,7 +87,7 @@ class PDBLoader:
             stri = "%10s" % resid[j]
             for k in range(ring_ang.shape[2]):
                 stri += "%10.3f " % ring_ang[0, j, k]
-            #print(stri)
+            print(stri)
 
 #checking doc
 # print(PDBLoader.__doc__)

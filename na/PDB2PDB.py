@@ -7,7 +7,7 @@ from torch import optim
 from TorchProteinLibrary import FullAtomModel
 from TorchProteinLibrary import RMSD
 
-import PDBloader
+# import PDBloader
 from Bio.PDB import *
 import numpy as np
 
@@ -51,7 +51,7 @@ coords_dst = coords_dst.to(dtype=torch.float)
 #Sequence Entered Manually until get sequence is fixed
 sequences2 = [
     'KSEALLDIPMLEQYLELVGPKLITDGLAVFEKMMPGYVSVLESNLTAQDKKGIVEEGHKIKGAAGSVGLRHLQQLGQQIQSPDLPAWEDNVGEWIEEMKEEWRHDVEVLKAWVAKAT']
-sequences = get_sequence(resnames, resnums, num_atoms, mask)
+# sequences = get_sequence(resnames, resnums, num_atoms, mask)
 # print(sequences)
 # print(sequences2)
 
@@ -67,7 +67,7 @@ angles = angles.to(dtype=torch.float)
 angles.requires_grad_()
 optimizer = optim.Adam([angles], lr=0.00001)
 a2c = FullAtomModel.Angles2Coords()
-pred_prot = a2c(angles, sequences)
+pred_prot = a2c(angles, sequences2)
 # print(angles, lengths)
 # print(coords_dst)
 rmsd = RMSD.Coords2RMSD()
@@ -78,7 +78,7 @@ epochs = []
 loss = []
 
 #
-for epoch in range(10000):
+for epoch in range(10): #At 10 fo test
     epochs.append(epoch + 1)
     optimizer.zero_grad()
     coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences2)
@@ -94,7 +94,7 @@ for epoch in range(10000):
 coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences2)
 coordsAft = torch.Tensor.detach(coords_src)
 afterAng, lengths = Coords2Angles(coordsAft, chainnames, resnames, resnums, atomnames,
-                                  num_atoms, 0)  # Does this step introduce new error?
+                                  num_atoms)  # Does this step introduce new error?
 
 new_coords, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_atoms = a2c(angles, sequences2)
 
@@ -104,7 +104,7 @@ pdb2wrmsdtest = '/u2/home_u2/fam95/Documents/pdb2pdbopt_e1e6_TPLna_e&hbb_lr0,000
 
 
 # Creating Epoch vs RMSD plot
-print(epoch, lossPer)
+# print(epoch, lossPer)
 
 
 ax.plot(epochs, loss)
@@ -112,7 +112,7 @@ ax.set_ylim([0,1])
 ax.set_xlabel("epochs", fontsize=12)
 ax.set_ylabel("rmsd (A)", fontsize=12)
 
-plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt_ylim1_TPLna_ehbb_test1e6.png')
+# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt_ylim1_TPLna_ehbb_test1e6.png') [turned off for test]
 
 #Creating DeltaAngle Plot
 befDet = torch.Tensor.detach(beforeAng)
@@ -150,7 +150,7 @@ for i in range(len(delta_phi)):
 
 x_labels = []
 
-for i in range(len(sequences[0])):
+for i in range(len(sequences2[0])):
     sequence = sequences2[0]
     # x_labels.append(sequence[i] + i)
     x_labels.append(i)
@@ -175,7 +175,7 @@ ax.plot(x_labels[:-2], n_d_psi[:-2], "b.-")
 ax.set_xlabel("Residue", fontsize=12)
 ax.set_ylabel("Change in Angle", fontsize=12)
 
-plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_angleplt_e&hbb_PLna_test1e6.png')
+# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_angleplt_e&hbb_PLna_test1e6.png') [turned off for test]
 
 # Save New PDB
-FullAtomModel.writePDB(pdb2wrmsdtest, coords_src, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_atoms)
+# FullAtomModel.writePDB(pdb2wrmsdtest, coords_src, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_atoms) [turned off for test]
