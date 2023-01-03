@@ -134,7 +134,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
         }
         //Num_atoms Test
-        std::cout << num_atoms << "\n";
+//        std::cout << num_atoms << "\n";
 //
         int max_num_atoms = num_atoms.max().data<int>()[0];
 //        int max_num_atoms = num_atoms
