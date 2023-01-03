@@ -143,7 +143,7 @@ def getBackbone(residues, polymer_type= 0):
 		chain_idx = str(0)
 
 		for i, res_i in enumerate(residues):
-			print(res_i)
+			# print(res_i)
 			print(res_i.get_parent())
 			if str(res_i.get_parent()) > chain_idx:  #& res_i.get_atom() == "O5'":
 				chain_idx = str(res_i.get_parent())
@@ -176,7 +176,7 @@ def getBackbone(residues, polymer_type= 0):
 
 
 
-
+			print(res_i)
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
 			C5_i = res_i["C5'"].get_vector()
