@@ -141,6 +141,9 @@ def getBackbone(residues, polymer_type= 0):
 		epsilon = []
 		zeta = []
 		for i, res_i in enumerate(residues):
+
+			print(res_i.get_list())
+
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
 			C5_i = res_i["C5'"].get_vector()
@@ -419,7 +422,7 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 
 	if polymer_type == 1:
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
-		print("length", length)
+		# print("length", length)
 		max_seq_length = max(length)
 		batch_size = length.size(0)
 		angles = torch.zeros(batch_size, 12, max_seq_length, dtype=torch.float32, device='cpu')
