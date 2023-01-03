@@ -89,6 +89,9 @@ def BioStructure2Dihedrals(structure, polymer_type):
 				angles[3+j, i] = xis[j]
 		return angles
 	if polymer_type == 1:
+		chains = list(structure.get_chains())
+		print(chains)
+
 		residues = list(structure.get_residues())
 		angles = torch.zeros(12, len(residues), dtype=torch.double, device='cpu')
 		alpha, beta, gamma, delta, epsilon, zeta = getBackbone(residues, polymer_type)
