@@ -89,9 +89,6 @@ def BioStructure2Dihedrals(structure, polymer_type):
 				angles[3+j, i] = xis[j]
 		return angles
 	if polymer_type == 1:
-		chains = list(structure.get_chains())
-		print(chains)
-
 		residues = list(structure.get_residues())
 		angles = torch.zeros(12, len(residues), dtype=torch.double, device='cpu')
 		alpha, beta, gamma, delta, epsilon, zeta = getBackbone(residues, polymer_type)
@@ -143,9 +140,36 @@ def getBackbone(residues, polymer_type= 0):
 		delta = []
 		epsilon = []
 		zeta = []
+		chain_idx = 0
+
 		for i, res_i in enumerate(residues):
-			print(res_i.get_parent())
-			print(res_i.get_list())
+			if res_i.get_parent() > chain_idx & res_i.get_atom() == "O5'":
+				chain_idx = res_i.get_parent()
+				res_idx = res_i
+
+				while res_i == res_idx:
+					O5_i = res_i["O5'"].get_vector()
+					C5_i = res_i["C5'"].get_vector()
+					C4_i = res_i["C4'"].get_vector()
+					C3_i = res_i["C3'"].get_vector()
+					O3_i = res_i["O3'"].get_vector()
+
+					if i < (len(residues) - 1):
+						gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+
+					if i < (len(residues) - 1):
+						delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
+
+					if i < (len(residues) - 1):
+						res_ip1 = residues[i + 1]
+						P_ip1 = res_ip1["P"].get_vector()
+						epsilon.append(calc_dihedral(C4_i, C3_i, O3_i, P_ip1))
+
+					if i < (len(residues) - 1):
+						res_ip1 = residues[i + 1]
+						P_ip1 = res_ip1["P"].get_vector()
+						O5_ip1 = res_ip1["O5'"].get_vector()
+						zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
