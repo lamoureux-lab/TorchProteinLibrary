@@ -144,7 +144,7 @@ def getBackbone(residues, polymer_type= 0):
 		epsilon = []
 		zeta = []
 		for i, res_i in enumerate(residues):
-
+			print(res_i.get_parent())
 			print(res_i.get_list())
 
 			P_i = res_i["P"].get_vector()
