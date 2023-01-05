@@ -328,13 +328,13 @@ def getRotamer(residue, polymer_type = 0):
 			return getTrpRot(residue)
 
 	if polymer_type == 1:
-		if residue.get_resname() == 'DA':
+		if residue[10] == 'A':
 			return getDARot(residue)
-		if residue.get_resname() == 'DC':
+		if residue[10] == 'C':
 			return getDCRot(residue)
-		if residue.get_resname() == 'DG':
+		if residue[10] == 'G':
 			return getDGRot(residue)
-		if residue.get_resname() == 'DT':
+		if residue[10] == 'T':
 			return getDTRot(residue)
 
 def getCysRot(residue):
