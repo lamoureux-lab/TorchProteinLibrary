@@ -106,7 +106,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[10, i] = nu4[i]
 			angles[11, i] = chi[i]
 			# print(str(residue)[10])
-			xis = getRotamer(residue)
+			xis = getRotamer(residue, 1)
 			for j, xi in enumerate(xis):
 				angles[12 + j, i] = xis[j]
 		return angles
@@ -549,7 +549,6 @@ def getDARot(residue):
 	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9, xi10, xi11]
 
 def getDCRot(residue):
-	print(residue)
 	C1 = residue["C1'"].get_vector()
 	N1 = residue["N1"].get_vector()
 	C2 = residue["C2"].get_vector()
