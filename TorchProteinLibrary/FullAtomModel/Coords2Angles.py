@@ -171,9 +171,13 @@ def getBackbone(residues, polymer_type= 0):
 				C1_i = res_i["C1'"].get_vector()
 				C2_i = res_i["C2'"].get_vector()
 				O4_i = res_i["O4'"].get_vector()
-				N9_i = res_i["N9"].get_vector()
 				C4_i = res_i["C4"].get_vector()
 
+				if str(res_i)[10] == "A" or str(res_i)[11] == "G":
+					N_i = res_i["N9"].get_vector()
+
+				if str(res_i)[10] == "C" or str(res_i)[11] == "T":
+					N_i = res_i["N1"].get_vector()
 
 				alpha.append(0.0)
 				beta.append(0.0)
@@ -198,7 +202,7 @@ def getBackbone(residues, polymer_type= 0):
 				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 				nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 				nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-				chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
+				chi.append(calc_dihedral(O4_i, C1_i, N_i, C4_i))
 
 				continue
 
@@ -214,8 +218,13 @@ def getBackbone(residues, polymer_type= 0):
 			C1_i = res_i["C1'"].get_vector()
 			C2_i = res_i["C2'"].get_vector()
 			O4_i = res_i["O4'"].get_vector()
-			N9_i = res_i["N9"].get_vector()
 			C4_i = res_i["C4"].get_vector()
+
+			if str(res_i)[10] == "A" or str(res_i)[11] == "G":
+				N_i = res_i["N9"].get_vector()
+
+			if str(res_i)[10] == "C" or str(res_i)[11] == "T":
+				N_i = res_i["N1"].get_vector()
 
 			if i > 0:
 				res_im1 = residues[i - 1]
@@ -241,7 +250,7 @@ def getBackbone(residues, polymer_type= 0):
 					nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 					nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 					nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-					chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
+					chi.append(calc_dihedral(O4_i, C1_i, N_i, C4_i))
 					continue
 
 			if i < (len(residues) - 1):
@@ -264,7 +273,7 @@ def getBackbone(residues, polymer_type= 0):
 			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 			nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-			chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
+			chi.append(calc_dihedral(O4_i, C1_i, N_i, C4_i))
 
 			print(chi)
 
