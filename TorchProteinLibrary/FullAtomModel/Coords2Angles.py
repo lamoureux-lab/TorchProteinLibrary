@@ -90,7 +90,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 		return angles
 	if polymer_type == 1:
 		residues = list(structure.get_residues())
-		angles = torch.zeros(12, len(residues), dtype=torch.double, device='cpu')
+		angles = torch.zeros(24, len(residues), dtype=torch.double, device='cpu')
 		alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi = getBackbone(residues, polymer_type)
 		for i, residue in enumerate(residues):
 			angles[0, i] = alpha[i]
@@ -106,8 +106,8 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[10, i] = nu4[i]
 			angles[11, i] = chi[i]
 			xis = getRotamer(residue)
-			# for j, xi in enumerate(xis):
-			# 	angles[3 + j, i] = xis[j]
+			for j, xi in enumerate(xis):
+				angles[12 + j, i] = xis[j]
 		return angles
 		# print("Error Polymer Type 1 Not Implemented for TPL/TPL/FullAtomModel/Coords2PDB.py/Biostructure2Dihedrals")
 
@@ -521,16 +521,104 @@ def getTrpRot(residue):
 	return [xi1, xi2]
 
 def getDARot(residue):
-	return []
+	C1 = residue["C1'"].get_vector()
+	N9 = residue["N9"].get_vector()
+	C4 = residue["C4"].get_vector()
+	N3 = residue["N3"].get_vector()
+	C2 = residue["C2"].get_vector()
+	N1 = residue["N1"].get_vector()
+	C6 = residue["C6"].get_vector()
+	N6 = residue["N6"].get_vector()
+	C5 = residue["C5"].get_vector()
+	C4 = residue["C4"].get_vector()
+	N7 = residue["N7"].get_vector()
+	C8 = residue["C8"].get_vector()
+	xi1 = calc_dihedral(C1, N9, C4, N3)
+	xi2 = calc_dihedral(N9, C4, N3, C2)
+	xi3 = calc_dihedral(C4, N3, C2, N1)
+	xi4 = calc_dihedral(N3, C2, N1, C6)
+	xi5 = calc_dihedral(C2, N1, C6, C5)
+	xi6 = calc_dihedral(C2, N1, C6, N6)
+	xi7 = calc_dihedral(N1, C6, C5, C4) #or N7
+	xi8 = calc_dihedral(C6, C5, C4, N9) #or N3
+	xi9 = calc_dihedral(C6, C5, N7, C8)
+	xi10 = calc_dihedral(C5, N7, C8, N9)
+	xi11 = calc_dihedral(N7, C8, N9, C1) #or C4
+
+	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9, xi10, xi11]
 
 def getDCRot(residue):
-	return []
+	C1 = residue["C1'"].get_vector()
+	N1 = residue["N1"].get_vector()
+	C2 = residue["C2"].get_vector()
+	O2 = residue["O2"].get_vector()
+	N3 = residue["N3"].get_vector()
+	C4 = residue["C4"].get_vector()
+	N4 = residue["N4"].get_vector()
+	C5 = residue["C5"].get_vector()
+	C6 = residue["C6"].get_vector()
+	xi1 = calc_dihedral(C1, N1, C2, N3)
+	xi2 = calc_dihedral(C1, N1, C2, O2)
+	xi3 = calc_dihedral(N1, C2, N3, C4)
+	xi4 = calc_dihedral(C2, N3, C4, C5)
+	xi5 = calc_dihedral(C2, N3, C4, N4)
+	xi6 = calc_dihedral(N3, C4, C5, C6)
+	xi7 = calc_dihedral(C4, C5, C6, N1)
+	xi8 = calc_dihedral(C5,C6, N1, C1)
+
+	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8]
 
 def getDGRot(residue):
-	return []
+	C1 = residue["C1'"].get_vector()
+	N9 = residue["N9"].get_vector()
+	C4 = residue["C4"].get_vector()
+	N3 = residue["N3"].get_vector()
+	C2 = residue["C2"].get_vector()
+	N2 = residue["N2"].get_vector()
+	N1 = residue["N1"].get_vector()
+	C6 = residue["C6"].get_vector()
+	O6 = residue["O6"].get_vector()
+	C5 = residue["C5"].get_vector()
+	C4 = residue["C4"].get_vector()
+	N7 = residue["N7"].get_vector()
+	C8 = residue["C8"].get_vector()
+	xi1 = calc_dihedral(C1, N9, C4, N3)
+	xi2 = calc_dihedral(N9, C4, N3, C2)
+	xi3 = calc_dihedral(C4, N3, C2, N1)
+	xi4 = calc_dihedral(C4, N3, C2, N2)
+	xi5 = calc_dihedral(N3, C2, N1, C6)
+	xi6 = calc_dihedral(C2, N1, C6, C5)
+	xi7 = calc_dihedral(C2, N1, C6, O6)
+	xi8 = calc_dihedral(N1, C6, C5, C4)  # or N7
+	xi9 = calc_dihedral(C6, C5, C4, N9)  # or N3
+	xi10 = calc_dihedral(C6, C5, N7, C8)
+	xi11 = calc_dihedral(C5, N7, C8, N9)
+	xi12 = calc_dihedral(N7, C8, N9, C1)  # or C4
+
+	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9, xi10, xi11, xi12]
 
 def getDTRot(residue):
-	return []
+	C1 = residue["C1'"].get_vector()
+	N1 = residue["N1"].get_vector()
+	C2 = residue["C2"].get_vector()
+	O2 = residue["O2"].get_vector()
+	N3 = residue["N3"].get_vector()
+	C4 = residue["C4"].get_vector()
+	O4 = residue["O4"].get_vector()
+	C5 = residue["C5"].get_vector()
+	C6 = residue["C6"].get_vector()
+	C7 = residue["C7"].get_vector()
+	xi1 = calc_dihedral(C1, N1, C2, N3)
+	xi2 = calc_dihedral(C1, N1, C2, O2)
+	xi3 = calc_dihedral(N1, C2, N3, C4)
+	xi4 = calc_dihedral(C2, N3, C4, C5)
+	xi5 = calc_dihedral(C2, N3, C4, O4)
+	xi6 = calc_dihedral(N3, C4, C5, C6)
+	xi7 = calc_dihedral(N3, C4, C5, C7)
+	xi8 = calc_dihedral(C4, C5, C6, N1)
+	xi9 = calc_dihedral(C5, C6, N1, C1)
+
+	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9]
 
 def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type=0):
 	if polymer_type == 0:
