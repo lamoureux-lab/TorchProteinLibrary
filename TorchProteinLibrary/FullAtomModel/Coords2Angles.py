@@ -105,7 +105,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[9, i] = nu3[i]
 			angles[10, i] = nu4[i]
 			angles[11, i] = chi[i]
-			print(residue)
+			print(residue[10])
 			xis = getRotamer(residue)
 			for j, xi in enumerate(xis):
 				angles[12 + j, i] = xis[j]
