@@ -209,7 +209,7 @@ def getBackbone(residues, polymer_type= 0):
 
 
 
-			print(res_i)
+			# print(res_i)
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
 			C5_i = res_i["C5'"].get_vector()
@@ -278,7 +278,7 @@ def getBackbone(residues, polymer_type= 0):
 			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
 			chi.append(calc_dihedral(O4_i, C1_i, N_i, C_i))
 
-			print(chi)
+			# print(chi)
 
 		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi
 
@@ -327,6 +327,7 @@ def getRotamer(residue, polymer_type = 0):
 			return getTrpRot(residue)
 
 	if polymer_type == 1:
+		print(residue.get_resname)
 		if residue.get_resname() == 'DA':
 			return getDARot(residue)
 		if residue.get_resname() == 'DC':
