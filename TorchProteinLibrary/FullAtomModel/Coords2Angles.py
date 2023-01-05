@@ -91,7 +91,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 	if polymer_type == 1:
 		residues = list(structure.get_residues())
 		angles = torch.zeros(12, len(residues), dtype=torch.double, device='cpu')
-		alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4 = getBackbone(residues, polymer_type)
+		alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi = getBackbone(residues, polymer_type)
 		for i, residue in enumerate(residues):
 			angles[0, i] = alpha[i]
 			angles[1, i] = beta[i]
@@ -104,6 +104,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[8, i] = nu2[i]
 			angles[9, i] = nu3[i]
 			angles[10, i] = nu4[i]
+			angles[11, i] = chi[i]
 			xis = getRotamer(residue)
 			# for j, xi in enumerate(xis):
 			# 	angles[3 + j, i] = xis[j]
@@ -150,6 +151,7 @@ def getBackbone(residues, polymer_type= 0):
 		nu2 = []
 		nu3 = []
 		nu4 = []
+		chi = []
 
 		chain_idx = str(0)
 
@@ -163,24 +165,27 @@ def getBackbone(residues, polymer_type= 0):
 				#if res_i == res_idx:
 				O5_i = res_i["O5'"].get_vector()
 				C5_i = res_i["C5'"].get_vector()
-				C4_i = res_i["C4'"].get_vector()
+				C4p_i = res_i["C4'"].get_vector()
 				C3_i = res_i["C3'"].get_vector()
 				O3_i = res_i["O3'"].get_vector()
 				C1_i = res_i["C1'"].get_vector()
 				C2_i = res_i["C2'"].get_vector()
 				O4_i = res_i["O4'"].get_vector()
+				N9_i = res_i["N9"].get_vector()
+				C4_i = res_i["C4"].get_vector()
+
 
 				alpha.append(0.0)
 				beta.append(0.0)
 
-				gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+				gamma.append(calc_dihedral(O5_i, C5_i, C4p_i, C3_i))
 
-				delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
+				delta.append(calc_dihedral(C5_i, C4p_i, C3_i, O3_i))
 
 				if i < (len(residues) - 1):
 					res_ip1 = residues[i + 1]
 					P_ip1 = res_ip1["P"].get_vector()
-					epsilon.append(calc_dihedral(C4_i, C3_i, O3_i, P_ip1))
+					epsilon.append(calc_dihedral(C4p_i, C3_i, O3_i, P_ip1))
 
 				if i < (len(residues) - 1):
 					res_ip1 = residues[i + 1]
@@ -188,26 +193,29 @@ def getBackbone(residues, polymer_type= 0):
 					O5_ip1 = res_ip1["O5'"].get_vector()
 					zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
-				nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
+				nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
 				nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
-				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
-				nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
-				nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
+				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
+				nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+				nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
+				chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
 
 				continue
 
 
 
-			# print(res_i)
+			print(res_i)
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
 			C5_i = res_i["C5'"].get_vector()
-			C4_i = res_i["C4'"].get_vector()
+			C4p_i = res_i["C4'"].get_vector()
 			C3_i = res_i["C3'"].get_vector()
 			O3_i = res_i["O3'"].get_vector()
 			C1_i = res_i["C1'"].get_vector()
 			C2_i = res_i["C2'"].get_vector()
 			O4_i = res_i["O4'"].get_vector()
+			N9_i = res_i["N9"].get_vector()
+			C4_i = res_i["C4"].get_vector()
 
 			if i > 0:
 				res_im1 = residues[i - 1]
@@ -215,11 +223,11 @@ def getBackbone(residues, polymer_type= 0):
 				alpha.append(calc_dihedral(O3_im1, P_i, O5_i, C5_i))
 
 
-			beta.append(calc_dihedral(P_i, O5_i, C5_i, C4_i))
+			beta.append(calc_dihedral(P_i, O5_i, C5_i, C4p_i))
 
-			gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+			gamma.append(calc_dihedral(O5_i, C5_i, C4p_i, C3_i))
 
-			delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
+			delta.append(calc_dihedral(C5_i, C4p_i, C3_i, O3_i))
 
 
 
@@ -228,17 +236,18 @@ def getBackbone(residues, polymer_type= 0):
 				if str(res_ip1.get_parent()) > chain_idx:
 					epsilon.append(0.0)
 					zeta.append(0.0)
-					nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
+					nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
 					nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
-					nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
-					nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
-					nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
+					nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
+					nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+					nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
+					chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
 					continue
 
 			if i < (len(residues) - 1):
 				res_ip1 = residues[i + 1]
 				P_ip1 = res_ip1["P"].get_vector()
-				epsilon.append(calc_dihedral(C4_i, C3_i, O3_i, P_ip1))
+				epsilon.append(calc_dihedral(C4p_i, C3_i, O3_i, P_ip1))
 
 			if i < (len(residues) - 1):
 				res_ip1 = residues[i + 1]
@@ -250,15 +259,16 @@ def getBackbone(residues, polymer_type= 0):
 				epsilon.append(0.0)
 				zeta.append(0.0)
 
-			nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
+			nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
 			nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
-			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
-			nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
-			nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
+			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
+			nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
+			chi.append(calc_dihedral(O4_i, C1_i, N9_i, C4_i))
 
-			# print(epsilon)
+			print(chi)
 
-		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4
+		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi
 
 def getRotamer(residue, polymer_type = 0):
 	if polymer_type == 0:
