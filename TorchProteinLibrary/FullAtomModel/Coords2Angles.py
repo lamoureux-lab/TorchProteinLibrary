@@ -246,13 +246,17 @@ def getBackbone(residues, polymer_type= 0):
 				O5_ip1 = res_ip1["O5'"].get_vector()
 				zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
+			if i == len(residues):
+				epsilon.append(0.0)
+				zeta.append(0.0)
+
 			nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
 			nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
 			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
 			nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
 			nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
 
-			print(beta)
+			print(epsilon)
 
 		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4
 
