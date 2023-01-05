@@ -154,8 +154,8 @@ def getBackbone(residues, polymer_type= 0):
 		chain_idx = str(0)
 
 		for i, res_i in enumerate(residues):
-			print(res_i.get_list())
-			print(res_i.get_parent())
+			# print(res_i.get_list())
+			# print(res_i.get_parent())
 			if str(res_i.get_parent()) > chain_idx:  #& res_i.get_atom() == "O5'":
 				chain_idx = str(res_i.get_parent())
 				#res_idx = res_i
@@ -198,7 +198,7 @@ def getBackbone(residues, polymer_type= 0):
 
 
 
-			print(res_i)
+			# print(res_i)
 			P_i = res_i["P"].get_vector()
 			O5_i = res_i["O5'"].get_vector()
 			C5_i = res_i["C5'"].get_vector()
@@ -256,7 +256,7 @@ def getBackbone(residues, polymer_type= 0):
 			nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
 			nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
 
-			print(epsilon)
+			# print(epsilon)
 
 		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4
 
@@ -530,6 +530,7 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
+		print(angles)
 		print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	elif polymer_type == 2:
