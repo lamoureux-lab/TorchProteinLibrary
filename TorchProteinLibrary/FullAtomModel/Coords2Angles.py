@@ -91,7 +91,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 	if polymer_type == 1:
 		residues = list(structure.get_residues())
 		angles = torch.zeros(12, len(residues), dtype=torch.double, device='cpu')
-		alpha, beta, gamma, delta, epsilon, zeta = getBackbone(residues, polymer_type)
+		alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4 = getBackbone(residues, polymer_type)
 		for i, residue in enumerate(residues):
 			angles[0, i] = alpha[i]
 			angles[1, i] = beta[i]
@@ -99,9 +99,14 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[3, i] = delta[i]
 			angles[4, i] = epsilon[i]
 			angles[5, i] = zeta[i]
+			angles[6, i] = nu0[i]
+			angles[7, i] = nu1[i]
+			angles[8, i] = nu2[i]
+			angles[9, i] = nu3[i]
+			angles[10, i] = nu4[i]
 			xis = getRotamer(residue)
-			for j, xi in enumerate(xis):
-				angles[3 + j, i] = xis[j]
+			# for j, xi in enumerate(xis):
+			# 	angles[3 + j, i] = xis[j]
 		return angles
 		# print("Error Polymer Type 1 Not Implemented for TPL/TPL/FullAtomModel/Coords2PDB.py/Biostructure2Dihedrals")
 
@@ -140,6 +145,12 @@ def getBackbone(residues, polymer_type= 0):
 		delta = []
 		epsilon = []
 		zeta = []
+		nu0 = []
+		nu1 = []
+		nu2 = []
+		nu3 = []
+		nu4 = []
+
 		chain_idx = str(0)
 
 		for i, res_i in enumerate(residues):
@@ -155,6 +166,9 @@ def getBackbone(residues, polymer_type= 0):
 				C4_i = res_i["C4'"].get_vector()
 				C3_i = res_i["C3'"].get_vector()
 				O3_i = res_i["O3'"].get_vector()
+				C1_i = res_i["C1'"].get_vector()
+				C2_i = res_i["C2'"].get_vector()
+				O4_i = res_i["O4'"].get_vector()
 
 				alpha.append(0.0)
 				beta.append(0.0)
@@ -175,6 +189,13 @@ def getBackbone(residues, polymer_type= 0):
 					P_ip1 = res_ip1["P"].get_vector()
 					O5_ip1 = res_ip1["O5'"].get_vector()
 					zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
+
+				nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
+				nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
+				nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
+				nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
+
 				continue
 
 
@@ -186,6 +207,10 @@ def getBackbone(residues, polymer_type= 0):
 			C4_i = res_i["C4'"].get_vector()
 			C3_i = res_i["C3'"].get_vector()
 			O3_i = res_i["O3'"].get_vector()
+			C1_i = res_i["C1'"].get_vector()
+			C2_i = res_i["C2'"].get_vector()
+			O4_i = res_i["O4'"].get_vector()
+
 			if i > 0:
 				res_im1 = residues[i - 1]
 				O3_im1 = res_im1["O3'"].get_vector()
@@ -219,9 +244,16 @@ def getBackbone(residues, polymer_type= 0):
 				P_ip1 = res_ip1["P"].get_vector()
 				O5_ip1 = res_ip1["O5'"].get_vector()
 				zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
-			print(alpha)
 
-		return alpha, beta, gamma, delta, epsilon, zeta
+				nu0.append(calc_dihedral(C4_i, O4_i, C1_i, C2_i))
+				nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4_i))
+				nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
+				nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
+
+			print(nu0)
+
+		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4
 
 def getRotamer(residue, polymer_type = 0):
 	if polymer_type == 0:
@@ -268,7 +300,14 @@ def getRotamer(residue, polymer_type = 0):
 			return getTrpRot(residue)
 
 	if polymer_type == 1:
-		return []
+		if residue.get_resname() == 'DA':
+			return getDARot(residue)
+		if residue.get_resname() == 'DC':
+			return getDCRot(residue)
+		if residue.get_resname() == 'DG':
+			return getDGRot(residue)
+		if residue.get_resname() == 'DT':
+			return getDTRot(residue)
 
 def getCysRot(residue):
 	N = residue["N"].get_vector()
@@ -454,6 +493,17 @@ def getTrpRot(residue):
 	xi2 = calc_dihedral(CA, CB, CG, CD1)-np.pi/2.0
 	return [xi1, xi2]
 
+def getDARot(residue):
+	return []
+
+def getDCRot(residue):
+	return []
+
+def getDGRot(residue):
+	return []
+
+def getDTRot(residue):
+	return []
 
 def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type=0):
 	if polymer_type == 0:
