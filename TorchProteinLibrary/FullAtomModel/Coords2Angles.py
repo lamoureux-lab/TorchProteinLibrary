@@ -256,7 +256,7 @@ def getBackbone(residues, polymer_type= 0):
 			nu3.append(calc_dihedral(C2_i, C3_i, C4_i, O4_i))
 			nu4.append(calc_dihedral(C3_i, C4_i, O4_i, C1_i))
 
-			print(nu0)
+			print(beta)
 
 		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4
 
