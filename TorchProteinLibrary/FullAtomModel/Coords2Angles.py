@@ -201,8 +201,9 @@ def getBackbone(residues, polymer_type= 0):
 				delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
 
 
-			res_ip1 = residues[i + 1]
+
 			if i <(len(residues) - 1):
+				res_ip1 = residues[i + 1]
 				if str(res_ip1.get_parent()) > chain_idx:
 					epsilon.append(0.0)
 					zeta.append(0.0)
