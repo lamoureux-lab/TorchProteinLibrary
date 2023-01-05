@@ -636,7 +636,7 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 		# print("length", length)
 		max_seq_length = max(length)
 		batch_size = length.size(0)
-		angles = torch.zeros(batch_size, 12, max_seq_length, dtype=torch.float32, device='cpu')
+		angles = torch.zeros(batch_size, 24, max_seq_length, dtype=torch.float32, device='cpu')
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
