@@ -172,11 +172,11 @@ def getBackbone(residues, polymer_type= 0):
 				C2_i = res_i["C2'"].get_vector()
 				O4_i = res_i["O4'"].get_vector()
 
-				if str(res_i)[10] == "A" or str(res_i)[11] == "G":
+				if str(res_i)[10] == "A" or str(res_i)[10] == "G":
 					N_i = res_i["N9"].get_vector()
 					C_i = res_i["C4"].get_vector()
 
-				if str(res_i)[10] == "C" or str(res_i)[11] == "T":
+				if str(res_i)[10] == "C" or str(res_i)[10] == "T":
 					N_i = res_i["N1"].get_vector()
 					C_i = res_i["C2"].get_vector()
 
@@ -221,11 +221,11 @@ def getBackbone(residues, polymer_type= 0):
 			O4_i = res_i["O4'"].get_vector()
 
 
-			if str(res_i)[10] == "A" or str(res_i)[11] == "G":
+			if str(res_i)[10] == "A" or str(res_i)[10] == "G":
 				N_i = res_i["N9"].get_vector()
 				C_i = res_i["C4"].get_vector()
 
-			if str(res_i)[10] == "C" or str(res_i)[11] == "T":
+			if str(res_i)[10] == "C" or str(res_i)[10] == "T":
 				N_i = res_i["N1"].get_vector()
 				C_i = res_i["C2"].get_vector()
 
