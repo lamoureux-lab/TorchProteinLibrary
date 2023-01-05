@@ -173,11 +173,9 @@ def getBackbone(residues, polymer_type= 0):
 				alpha.append(0.0)
 				beta.append(0.0)
 
-				if i < (len(residues) - 1):
-					gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+				gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
 
-				if i < (len(residues) - 1):
-					delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
+				delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
 
 				if i < (len(residues) - 1):
 					res_ip1 = residues[i + 1]
@@ -216,14 +214,12 @@ def getBackbone(residues, polymer_type= 0):
 				O3_im1 = res_im1["O3'"].get_vector()
 				alpha.append(calc_dihedral(O3_im1, P_i, O5_i, C5_i))
 
-			if i < (len(residues) - 1):
-				beta.append(calc_dihedral(P_i, O5_i, C5_i, C4_i))
 
-			if i < (len(residues) - 1):
-				gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+			beta.append(calc_dihedral(P_i, O5_i, C5_i, C4_i))
 
-			if i < (len(residues) - 1):
-				delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
+			gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
+
+			delta.append(calc_dihedral(C5_i, C4_i, C3_i, O3_i))
 
 
 
