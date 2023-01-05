@@ -134,8 +134,8 @@ def getBackbone(residues, polymer_type= 0):
 		return phi, psi, omega
 
 	if polymer_type == 1:
-		alpha = [0.0]
-		beta = [0.0]
+		alpha = []
+		beta = []
 		gamma = []
 		delta = []
 		epsilon = []
@@ -155,6 +155,9 @@ def getBackbone(residues, polymer_type= 0):
 				C4_i = res_i["C4'"].get_vector()
 				C3_i = res_i["C3'"].get_vector()
 				O3_i = res_i["O3'"].get_vector()
+
+				alpha.append(0.0)
+				beta.append(0.0)
 
 				if i < (len(residues) - 1):
 					gamma.append(calc_dihedral(O5_i, C5_i, C4_i, C3_i))
@@ -199,10 +202,11 @@ def getBackbone(residues, polymer_type= 0):
 
 
 			res_ip1 = residues[i + 1]
-			if str(res_ip1.get_parent()) > chain_idx:
-				epsilon.append(0.0)
-				zeta.append(0.0)
-				continue
+			if i <(len(residues) - 1):
+				if str(res_ip1.get_parent()) > chain_idx:
+					epsilon.append(0.0)
+					zeta.append(0.0)
+					continue
 
 			if i < (len(residues) - 1):
 				res_ip1 = residues[i + 1]
