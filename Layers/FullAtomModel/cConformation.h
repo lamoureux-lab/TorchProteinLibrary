@@ -62,7 +62,7 @@ class cConformation{
         cNode<T> *root;
 
         // Construct protein graph and bind grad to the angles
-        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal=false);    
+        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, polymer_type = 0, bool add_terminal=false);
         ~cConformation();
         
         void print(cNode<T> *node);

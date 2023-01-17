@@ -27,7 +27,7 @@ template <typename T> void cTransform<T>::print(){
 //     return os<<*(node.group);
 // }
 // AS: need the function below
-template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal){
+template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, polymer_type, bool add_terminal){
     cNode<T> *lastC = NULL;
     zero_const = 0.0;
     this->atoms_global = atoms_global;
