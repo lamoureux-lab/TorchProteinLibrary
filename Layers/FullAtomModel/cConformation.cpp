@@ -32,6 +32,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
+    if( polymer_type == 0){
     for(int i=0; i<aa.length(); i++){
         T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
         T *psi = angles + i + angles_length*1;T *dpsi = angles_grad + i + angles_length*1;
@@ -119,6 +120,65 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 lastC = addTrp(lastC, params, params_grad, terminal);
                 break;
         }
+    }
+    }
+    if( polymer_type == 1){
+    for(int i=0; i<aa.length(); i++){
+        T *alpha = angles + i + angles_length*0;T *dalpha = angles_grad + i + angles_length*0;
+        T *beta = angles + i + angles_length*1;T *dbeta = angles_grad + i + angles_length*1;
+        T *gamma = angles + i + angles_length*2;T *dgamma = angles_grad + i + angles_length*2;
+        T *delta = angles + i + angles_length*3;T *ddelta = angles_grad + i + angles_length*3;
+        T *epsilon = angles + i + angles_length*4;T *depsilon = angles_grad + i + angles_length*4;
+        T *zeta = angles + i + angles_length*5;T *dzeta = angles_grad + i + angles_length*5;
+        T *nu0 = angles + i + angles_length*6;T *dnu0 = angles_grad + i + angles_length*6;
+        T *nu1 = angles + i + angles_length*7;T *dnu1 = angles_grad + i + angles_length*7;
+        T *nu2 = angles + i + angles_length*8;T *dnu2 = angles_grad + i + angles_length*8;
+        T *nu3 = angles + i + angles_length*9;T *dnu3 = angles_grad + i + angles_length*9;
+        T *nu4 = angles + i + angles_length*10;T *dnu4 = angles_grad + i + angles_length*10;
+        T *chi = angles + i + angles_length*11;T *dchi = angles_grad + i + angles_length*11;
+//        T *gamma, *dgamma;
+//        if(i>0){
+//            gamma = angles + i-1 + angles_length*2;dgamma = angles_grad + i-1 + angles_length*2;
+//        }else{
+//            gamma = &geo.omega_const;dgamma = NULL;
+//            // omega = &zero_const;domega = NULL;
+//        }
+
+        T *xi1 = angles + i + angles_length*12;T *dxi1 = angles_grad + i + angles_length*12;
+        T *xi2 = angles + i + angles_length*13;T *dxi2 = angles_grad + i + angles_length*13;
+        T *xi3 = angles + i + angles_length*14;T *dxi3 = angles_grad + i + angles_length*14;
+        T *xi4 = angles + i + angles_length*15;T *dxi4 = angles_grad + i + angles_length*15;
+        T *xi5 = angles + i + angles_length*16;T *dxi5 = angles_grad + i + angles_length*16;
+        T *xi6 = angles + i + angles_length*17;T *dxi6 = angles_grad + i + angles_length*17;
+        T *xi7 = angles + i + angles_length*18;T *dxi7 = angles_grad + i + angles_length*18;
+        T *xi8 = angles + i + angles_length*19;T *dxi8 = angles_grad + i + angles_length*19;
+        T *xi9 = angles + i + angles_length*20;T *dxi9 = angles_grad + i + angles_length*20;
+        T *xi10 = angles + i + angles_length*21;T *dxi10 = angles_grad + i + angles_length*21;
+        T *xi11 = angles + i + angles_length*22;T *dxi11 = angles_grad + i + angles_length*22;
+        T *xi12 = angles + i + angles_length*23;T *dxi12 = angles_grad + i + angles_length*23;
+        std::vector<T*> params({alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi, xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9, xi10, xi11, xi12});
+        std::vector<T*> params_grad({dalpha, dbeta, dgamma, ddelta, depsilon, dzeta, dnu0, dnu1, dnu2, dnu3, dnu4, dchi, dxi1, dxi2, dxi3, dxi4, dxi5, dxi6, dxi7, dxi8, dxi9, dxi10, dxi11, dxi12});
+        if(add_terminal){
+            if(i == (aa.length()-1))
+                terminal = true;
+            else
+                terminal = false;
+        }
+        switch(aa[i]){
+            case 'DG':
+                lastC = addDG(lastC, params, params_grad, terminal);
+                break;
+            case 'DA':
+                lastC = addDA(lastC, params, params_grad, terminal);
+                break;
+            case 'DT':
+                lastC = addDT(lastC, params, params_grad, terminal);
+                break;
+            case 'DC':
+                lastC = addDC(lastC, params, params_grad, terminal);
+                break;
+        }
+    }
     }
     
     //Computing conformation

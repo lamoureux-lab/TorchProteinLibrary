@@ -194,23 +194,37 @@ bool ProtUtil::isNucleotide(std::string &res_name, int polymer_type){
 }
 
 //AS: getNumAtoms returns num_atoms used in line 12 of simple_test.py?
-uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal){
+uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer_type){
     uint num_atoms = 0;
-    std::string lastO("O");
-    for(int i=0; i<sequence.length(); i++){
-        std::string AA(1, sequence[i]);
-        if(add_terminal){
-            if( i<(sequence.length()-1) )
+
+     if (polymer_type == 0){
+        std::string lastO("O");
+        for(int i=0; i<sequence.length(); i++){
+            std::string AA(1, sequence[i]);
+            if(add_terminal){
+                if( i<(sequence.length()-1) )
+                    lastO = "O";
+                else
+                    lastO = "OXT";
+            }else{
                 lastO = "O";
-            else
-                lastO = "OXT";
-        }else{
-            lastO = "O";
+                }
+            num_atoms += getAtomIndex(AA, lastO) + 1;
+            }
+        return num_atoms;
         }
-        num_atoms += getAtomIndex(AA, lastO) + 1;
-    }
-    return num_atoms;
-}
+
+//     if (polymer_type == 1){
+//        std::cout << sequence
+//         for(int i=0; i<sequence.length(); i++){
+//            std::cout << "sequence[i]" << sequence[i]
+//            std::string NA(1,sequence[i])
+//
+//            }
+//        std::cout << "num atoms:" << num_atoms;
+//        return num_atoms;
+//        }
+     }
 
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind, int polymer_type){
 

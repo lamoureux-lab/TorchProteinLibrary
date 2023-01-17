@@ -328,7 +328,7 @@ def getRotamer(residue, polymer_type = 0):
 			return getTrpRot(residue)
 
 	if polymer_type == 1:
-		print(str(residue)[10])
+		# print(str(residue)[10])
 		if str(residue)[10] == 'A':
 			return getDARot(residue)
 		if str(residue)[10] == 'C':
@@ -640,8 +640,8 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
-		print(angles)
-		print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
+		# print(angles)
+		# print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	elif polymer_type == 2:
 		length = 0

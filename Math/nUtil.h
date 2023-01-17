@@ -21,7 +21,7 @@ namespace ProtUtil{
     uint getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind = false, int polymer_type = 0);
     
     // number of atoms in a sequence
-    uint getNumAtoms(std::string &sequence, bool add_terminal);
+    uint getNumAtoms(std::string &sequence, bool add_terminal, int polymer_type = 0);
     
     // heavy atoms
     bool isHeavyAtom(std::string &atom_name);
