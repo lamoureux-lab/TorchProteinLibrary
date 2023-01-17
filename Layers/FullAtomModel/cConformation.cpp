@@ -27,11 +27,12 @@ template <typename T> void cTransform<T>::print(){
 //     return os<<*(node.group);
 // }
 // AS: need the function below
-template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, polymer_type, bool add_terminal){
+template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type, bool add_terminal){
     cNode<T> *lastC = NULL;
     zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
+    int polymer_type = polymer_type
     if( polymer_type == 0){
     for(int i=0; i<aa.length(); i++){
         T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
@@ -165,16 +166,16 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 terminal = false;
         }
         switch(aa[i]){
-            case 'DG':
+            case 'G':
                 lastC = addGly(lastC, params, params_grad, terminal); //addDG
                 break;
-            case 'DA':
+            case 'A':
                 lastC = addGly(lastC, params, params_grad, terminal); //addDA
                 break;
-            case 'DT':
+            case 'T':
                 lastC = addGly(lastC, params, params_grad, terminal); //addDT
                 break;
-            case 'DC':
+            case 'C':
                 lastC = addGly(lastC, params, params_grad, terminal); //addDC
                 break;
         }
