@@ -45,7 +45,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
         }
         if (polymertype == 1){
-            int num_atoms = NAnumAtoms
+            int num_atoms = NAnumAtoms;
         }
 
         if( single_coords.sizes()[0]<3*num_atoms){
