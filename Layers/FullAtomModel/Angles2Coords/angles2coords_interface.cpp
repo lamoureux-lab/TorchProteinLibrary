@@ -82,7 +82,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
         if(polymertype == 1){
             std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp \n";
             int num_atoms = NAnumAtoms;
-            std::cout << "num_atoms" << num_atoms
+            std::cout << "num_atoms" << num_atoms;
 
             if( single_coords.sizes()[0]<3*num_atoms){
                 ERROR("incorrect coordinates tensor length");
