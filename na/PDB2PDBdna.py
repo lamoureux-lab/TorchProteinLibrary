@@ -101,7 +101,7 @@ beforeAng = angles
 angles = angles.to(dtype=torch.float)
 angles.requires_grad_()
 optimizer = optim.Adam([angles], lr=0.00001)
-a2c = FullAtomModel.Angles2Coords() #Current Work
+a2c = FullAtomModel.Angles2Coords(polymer_type = polymerType) #Current Work
 pred_prot = a2c(angles, sequences, polymerType, num_atoms)
 
 rmsd = RMSD.Coords2RMSD()
