@@ -114,7 +114,7 @@ loss = []
 for epoch in range(10): #At 10 fo test
     epochs.append(epoch + 1)
     optimizer.zero_grad()
-    coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences)
+    coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences, polymerType, num_atoms)
     L = rmsd(coords_src, coords_dst, num_atoms)
     L.backward()
     optimizer.step()
