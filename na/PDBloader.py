@@ -13,7 +13,7 @@ class PDBLoader:
     parser = PDBParser()
     struct = parser.get_structure('na', file)
     residues = []
-    resseq = [] # residue sequence number
+    res_seq = [] # residue sequence number
     atoms = []
     res_names = []
     chain_name = []
@@ -24,7 +24,7 @@ class PDBLoader:
             chain_name.append(chain) ## get chain info
             for residue in chain:
                 residues.append(residue) ## get residue info
-                resseq.append(residue.get_full_id()[3][1])
+                res_seq.append(residue.get_full_id()[3][1])
                 for atom in residue:
                     atoms.append(atom)
                     x, y, z = atom.get_coord() ## get xyz coordinates
@@ -36,9 +36,9 @@ class PDBLoader:
 
     def NAfromPDB(struct):
 
-        Nucleotides = ["DA", "DC", "DG", "DT"]  # , "DU"]
+        nucleotides = ["DA", "DC", "DG", "DT"]  # , "DU"]
         residues = []
-        resseq = []  # residue sequence number
+        res_seq = []  # residue sequence number
         atoms = []
         res_names = []
         chain_name = []
@@ -50,9 +50,9 @@ class PDBLoader:
                 for residue in chain:
                     res_name = residue.get_resname()
                     strip_resname = res_name.strip()
-                    if strip_resname in Nucleotides:
+                    if strip_resname in nucleotides:
                         residues.append(residue)  ## get residue info
-                        resseq.append(residue.get_full_id()[3][1])
+                        res_seq.append(residue.get_full_id()[3][1])
                         for atom in residue:
                             atoms.append(atom)
                             x, y, z = atom.get_coord()  ## get xyz coordinates

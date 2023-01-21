@@ -156,7 +156,7 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 //      Conformation
         torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
         AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-            cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>(), polymertype);
+            cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>(), polymer_type);
             conf.backward(conf.root, single_grad_atoms.data<scalar_t>());
         }));
         // cConformation<double> conf( seq, single_angles.data<double>(), single_grad_angles.data<double>(),
