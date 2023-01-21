@@ -220,11 +220,11 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
             std::cout << "sequence[i]" << sequence[i];
             std::string NA(1,sequence[i]);
             if(NA == std::string("A") || NA == std::string("G")){
-                term_atom = std::string("C4");
+                std::string term_atom("C4");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
                 }
             if(NA == std::string("T") || NA == std::string("C")){
-                term_atom = std::string("C6");
+                std::string term_atom("C6");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
                 }
             }
