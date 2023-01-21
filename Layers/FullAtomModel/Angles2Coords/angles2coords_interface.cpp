@@ -80,8 +80,8 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             //Output atom names and residue names
           }
         if(polymer_type == 1){
-            std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp";
-//            std::cout << "na_num_atoms"; //<< na_num_atoms;
+            std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp \n";
+            std::cout << "na_num_atoms \n"; //<< na_num_atoms;
             int num_atoms = na_num_atoms;
 //            std::cout << "num_atoms" << num_atoms;
 
