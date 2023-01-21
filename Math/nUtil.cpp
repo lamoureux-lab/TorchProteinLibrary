@@ -214,16 +214,23 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         return num_atoms;
         }
 
-//     if (polymer_type == 1){
-//        std::cout << sequence
-//         for(int i=0; i<sequence.length(); i++){
-//            std::cout << "sequence[i]" << sequence[i]
-//            std::string NA(1,sequence[i])
-//
-//            }
-//        std::cout << "num atoms:" << num_atoms;
-//        return num_atoms;
-//        }
+     if (polymer_type == 1){
+        std::cout << sequence
+         for(int i=0; i<sequence.length(); i++){
+            std::cout << "sequence[i]" << sequence[i];
+            std::string NA(1,sequence[i]);
+            if(NA == std::string("A") || NA == std::string("G"){
+                term_atom = std::string("C4");
+                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
+                }
+            if(NA == std::string("T") || NA == std::string("C"){
+                term_atom = std::string("C6");
+                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
+                }
+            }
+        std::cout << "num atoms:" << num_atoms;
+        return num_atoms;
+        }
      }
 
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind, int polymer_type){
