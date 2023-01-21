@@ -177,7 +177,7 @@ void Angles2Coords_save(    const char* sequence,
     }
     std::string aa(sequence);
     uint length = aa.length();
-    int num_atoms = ProtUtil::getNumAtoms(aa, add_terminal);
+    int num_atoms = ProtUtil::getNumAtoms(aa, add_terminal, int 1);
     torch::Tensor dummy_grad = torch::zeros_like(input_angles);
     torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(input_angles.dtype()));
     AT_DISPATCH_FLOATING_TYPES(input_angles.type(), "cConformation.save", ([&]{
@@ -191,6 +191,6 @@ void Angles2Coords_save(    const char* sequence,
 int getSeqNumAtoms( const char *sequence){
     bool add_terminal = false;
     std::string seq(sequence);
-    int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
+    int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, int 1);
     return num_atoms;
 }
