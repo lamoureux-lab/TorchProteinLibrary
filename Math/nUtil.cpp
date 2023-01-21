@@ -215,7 +215,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         }
 
      if (polymer_type == 1){
-        std::cout << sequence
+        std::cout << sequence;
          for(int i=0; i<sequence.length(); i++){
             std::cout << "sequence[i]" << sequence[i];
             std::string NA(1,sequence[i]);
