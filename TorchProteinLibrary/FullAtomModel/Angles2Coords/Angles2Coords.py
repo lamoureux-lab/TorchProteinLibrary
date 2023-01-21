@@ -56,7 +56,8 @@ class Angles2CoordsFunction(Function):
 												 output_resnames_cpu,
 												 output_resnums_cpu,
 												 output_atomnames_cpu,
-												 polymer_type)
+												 polymer_type,
+												 na_num_atoms)
 
 			if math.isnan(output_coords_cpu.sum()):
 				raise(Exception('Angles2CoordsFunction: forward Nan'))
