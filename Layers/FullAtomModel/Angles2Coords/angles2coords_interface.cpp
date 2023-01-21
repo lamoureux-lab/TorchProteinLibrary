@@ -11,8 +11,8 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                                 torch::Tensor res_names,
                                 torch::Tensor res_nums,
                                 torch::Tensor atom_names,
-                                int polymertype,
-                                int NA_num_atoms
+                                int polymer_type,
+                                int na_num_atoms
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
@@ -41,7 +41,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
         
         int length = single_angles.sizes()[1];
 
-        if(polymertype == 0){
+        if(polymer_type == 0){
             int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal);
 
             if( single_coords.sizes()[0]<3*num_atoms){
@@ -63,7 +63,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             torch::Tensor dummy_grad = torch::zeros_like(single_angles);
     //        Conformation and convertRes1to3
             AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymertype);
+                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type);
                 for(int j=0; j<conf.groups.size(); j++){
                     for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                         int idx = conf.groups[j]->atomIndexes[k];
@@ -79,11 +79,11 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             //                     length, single_coords.data<double>());
             //Output atom names and residue names
           }
-        if(polymertype == 1){
-            std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp \n";
-            std::cout << "NA_num_atoms"; //<< NA_num_atoms;
-            int num_atoms = NA_num_atoms;
-            std::cout << "num_atoms" << num_atoms;
+        if(polymer_type == 1){
+            std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp \n" << "na_num_atoms"; //<< na_num_atoms;;
+//            std::cout
+            int num_atoms = na_num_atoms;
+//            std::cout << "num_atoms" << num_atoms;
 
             if( single_coords.sizes()[0]<3*num_atoms){
                 ERROR("incorrect coordinates tensor length");
@@ -103,7 +103,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             torch::Tensor dummy_grad = torch::zeros_like(single_angles);
     //        Conformation and convertRes1to3
             AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymertype);
+                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type);
                 for(int j=0; j<conf.groups.size(); j++){
                     for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                         int idx = conf.groups[j]->atomIndexes[k];
@@ -116,7 +116,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                 }
             }));
         }
-//      if(polymertype == 2){
+//      if(polymer_type == 2){
 //      std::cout << "Error Polymer Type 2 Not Implemented in angles2coords_interface.cpp \n";
 //      }
     }
@@ -126,7 +126,7 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
                                 torch::Tensor grad_angles,
                                 torch::Tensor sequences,
                                 torch::Tensor input_angles,
-                                int polymertype
+                                int polymer_type
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);

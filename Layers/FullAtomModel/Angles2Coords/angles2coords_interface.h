@@ -5,15 +5,15 @@ void Angles2Coords_forward(     at::Tensor sequences,
                                 at::Tensor res_names,
                                 torch::Tensor res_nums,
                                 at::Tensor atom_names,
-                                int polymertype,
-                                int NAnumAtoms
+                                int polymer_type,
+                                int na_num_atoms = 0
                         );
 
 void Angles2Coords_backward(    at::Tensor grad_atoms,
                                 at::Tensor grad_angles,
                                 at::Tensor sequences,
                                 at::Tensor input_angles,
-                                int polymertype
+                                int polymer_type
                         );
 void Angles2Coords_save(    const char* sequence,
                             at::Tensor input_angles, 

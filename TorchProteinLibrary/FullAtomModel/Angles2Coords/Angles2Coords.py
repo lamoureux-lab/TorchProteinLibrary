@@ -36,9 +36,9 @@ class Angles2CoordsFunction(Function):
 	"""
 	# @profile	
 	@staticmethod
-	def forward(ctx, input_angles_cpu, sequenceTensor, num_atoms, polymertype, NAnumAtoms):
+	def forward(ctx, input_angles_cpu, sequenceTensor, num_atoms, polymer_type, na_num_atoms):
 
-		if polymertype == 0:
+		if polymer_type == 0:
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
@@ -50,13 +50,13 @@ class Angles2CoordsFunction(Function):
 			output_resnums_cpu = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
 			output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-			_FullAtomModel.Angles2Coords_forward( 	sequenceTensor,
-													input_angles_cpu,
-													output_coords_cpu,
-													output_resnames_cpu,
-													output_resnums_cpu,
-													output_atomnames_cpu,
-													polymertype)
+			_FullAtomModel.Angles2Coords_forward(sequenceTensor,
+												 input_angles_cpu,
+												 output_coords_cpu,
+												 output_resnames_cpu,
+												 output_resnums_cpu,
+												 output_atomnames_cpu,
+												 polymer_type)
 
 			if math.isnan(output_coords_cpu.sum()):
 				raise(Exception('Angles2CoordsFunction: forward Nan'))
@@ -64,11 +64,11 @@ class Angles2CoordsFunction(Function):
 			ctx.mark_non_differentiable(output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
 			return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 
-		if polymertype == 1:
+		if polymer_type == 1:
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
-			max_num_atoms = NAnumAtoms
+			max_num_atoms = na_num_atoms
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
 			output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A'))
@@ -76,14 +76,14 @@ class Angles2CoordsFunction(Function):
 			output_resnums_cpu = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
 			output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-			_FullAtomModel.Angles2Coords_forward( sequenceTensor,
-													 input_angles_cpu,
-													 output_coords_cpu,
-													 output_resnames_cpu,
-													 output_resnums_cpu,
-													 output_atomnames_cpu,
-												  	 polymertype,
-												  	 NAnumAtoms)
+			_FullAtomModel.Angles2Coords_forward(sequenceTensor,
+												 input_angles_cpu,
+												 output_coords_cpu,
+												 output_resnames_cpu,
+												 output_resnums_cpu,
+												 output_atomnames_cpu,
+												 polymer_type,
+												 na_num_atoms)
 
 			if math.isnan(output_coords_cpu.sum()):
 				raise(Exception('Angles2CoordsFunction: forward Nan'))
@@ -93,13 +93,13 @@ class Angles2CoordsFunction(Function):
 	
 	# @profile
 	@staticmethod 
-	def backward(ctx, grad_atoms_cpu, *kwargs, polymertype):
+	def backward(ctx, grad_atoms_cpu, *kwargs, polymer_type):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()		
 		input_angles_cpu, sequenceTensor = ctx.saved_tensors
 		grad_angles_cpu = torch.zeros_like(input_angles_cpu)
 				
-		_FullAtomModel.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, sequenceTensor, input_angles_cpu, polymertype)
+		_FullAtomModel.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, sequenceTensor, input_angles_cpu, polymer_type)
 
 		if math.isnan(grad_angles_cpu.sum()):
 			raise(Exception('Angles2CoordsFunction: backward Nan'))		
@@ -107,13 +107,13 @@ class Angles2CoordsFunction(Function):
 		return grad_angles_cpu, None, None
 
 class Angles2Coords(Module):
-	def __init__(self, polymer_type = 0, NA_num_atoms = 0):
+	def __init__(self, polymer_type=0, na_num_atoms=0):
 		super(Angles2Coords, self).__init__()
 		self.num_atoms = None
 		self.polymer_type = polymer_type
-		self.NA_num_atoms = NA_num_atoms
+		self.na_num_atoms = na_num_atoms
 		
-	def forward(self, input_angles_cpu, sequences, polymertype, NA_num_atoms):
+	def forward(self, input_angles_cpu, sequences, polymer_type, na_num_atoms):
 		stringListTensor = convertStringList(sequences)
 				
 		self.num_atoms = []
@@ -121,4 +121,4 @@ class Angles2Coords(Module):
 			self.num_atoms.append(_FullAtomModel.getSeqNumAtoms(seq))
 		num_atoms = torch.IntTensor(self.num_atoms)
 		
-		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms, self.polymer_type, self.NA_num_atoms)
+		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms, self.polymer_type, self.na_num_atoms)

@@ -235,7 +235,6 @@ def getBackbone(residues, polymer_type= 0):
 				O3_im1 = res_im1["O3'"].get_vector()
 				alpha.append(calc_dihedral(O3_im1, P_i, O5_i, C5_i))
 
-
 			beta.append(calc_dihedral(P_i, O5_i, C5_i, C4p_i))
 
 			gamma.append(calc_dihedral(O5_i, C5_i, C4p_i, C3_i))
