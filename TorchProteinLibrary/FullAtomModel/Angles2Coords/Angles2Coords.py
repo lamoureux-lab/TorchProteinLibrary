@@ -113,7 +113,7 @@ class Angles2Coords(Module):
 		self.num_atoms = None
 		self.polymer_type = polymer_type
 		self.na_num_atoms = na_num_atoms
-		
+
 	def forward(self, input_angles_cpu, sequences, polymer_type, na_num_atoms):
 		stringListTensor = convertStringList(sequences)
 				
@@ -122,4 +122,4 @@ class Angles2Coords(Module):
 			self.num_atoms.append(_FullAtomModel.getSeqNumAtoms(seq))
 		num_atoms = torch.IntTensor(self.num_atoms)
 		
-		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms, self.polymer_type, self.na_num_atoms)
+		return Angles2CoordsFunction.apply(input_angles_cpu, stringListTensor, num_atoms, self.polymer_type, na_num_atoms)
