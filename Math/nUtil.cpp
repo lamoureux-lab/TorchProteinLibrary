@@ -218,7 +218,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         std::cout << sequence;
          for(int i=0; i<sequence.length(); i++){
             std::cout << "sequence[i]" << sequence[i];
-            std::string NA(1,sequence[i]);
+            std::string NA(sequence[i]);
             if(NA == std::string("A") || NA == std::string("G")){
                 std::string term_atom("C4");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
@@ -562,7 +562,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
     }
 
     if( polymer_type == 1){
-    if (res_name == std::string("DA") && fiveprime_ind == true){
+    if (res_name == std::string("DA") && fiveprime_ind == true || res_name == std::string("A") && fiveprime_ind == true){
         if(atom_name == std::string("O5'"))
             return 0;
         if(atom_name == std::string("C5'"))
@@ -601,7 +601,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 17;
     }
 
-     if(res_name == std::string("DG") && fiveprime_ind == true){
+     if(res_name == std::string("DG") && fiveprime_ind == true || res_name == std::string("G") && fiveprime_ind == true){
         if(atom_name == std::string("O5'"))
             return 0;
         if(atom_name == std::string("C5'"))
@@ -642,7 +642,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 18;
     }
 
-    if(res_name == std::string("DT") && fiveprime_ind == true){
+    if(res_name == std::string("DT") && fiveprime_ind == true || res_name == std::string("T") && fiveprime_ind == true){
         if(atom_name == std::string("O5'"))
             return 0;
         if(atom_name == std::string("C5'"))
@@ -679,7 +679,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 16;
         }
 
-    if(res_name == std::string("DC") && fiveprime_ind == true){
+    if(res_name == std::string("DC") && fiveprime_ind == true || res_name == std::string("C") && fiveprime_ind == true){
         if(atom_name == std::string("O5'"))
             return 0;
         if(atom_name == std::string("C5'"))
@@ -713,7 +713,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
         if(atom_name == std::string("C6"))
             return 15;
     }
-    if((res_name == std::string("DA") && fiveprime_ind == false)){//|| res_name == std::string("O")){
+    if(res_name == std::string("DA") && fiveprime_ind == false || res_name == std::string("A") && fiveprime_ind == false){//|| res_name == std::string("O")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
@@ -758,7 +758,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 20;
     }
 
-     if(res_name == std::string("DG") && fiveprime_ind == false){// || res_name == std::string("U")){
+     if(res_name == std::string("DG") && fiveprime_ind == false || res_name == std::string("G") && fiveprime_ind == false){// || res_name == std::string("U")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
@@ -805,7 +805,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 21;
     }
 
-    if(res_name == std::string("DT") && fiveprime_ind == false){// || res_name == std::string("Z")){
+    if(res_name == std::string("DT") && fiveprime_ind == false || res_name == std::string("T") && fiveprime_ind == false){// || res_name == std::string("Z")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
@@ -848,7 +848,7 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
             return 19;
         }
 
-    if(res_name == std::string("DC") && fiveprime_ind == false){ // || res_name == std::string("B")){
+    if(res_name == std::string("DC") && fiveprime_ind == false || res_name == std::string("C") && fiveprime_ind == false){ // || res_name == std::string("B")){
         if(atom_name == std::string("P"))
             return 0;
         if(atom_name == std::string("OP1"))
