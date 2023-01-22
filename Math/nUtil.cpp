@@ -218,7 +218,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         std::cout << sequence;
          for(int i=0; i<sequence.length(); i++){
             std::cout << "sequence[i]" << sequence[i];
-            std::string NA(sequence[i]);
+            std::string NA(1, sequence[i]);
             if(NA == std::string("A") || NA == std::string("G")){
                 std::string term_atom("C4");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
