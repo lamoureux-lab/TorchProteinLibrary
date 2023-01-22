@@ -215,17 +215,16 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         }
 
      if (polymer_type == 1){
-        std::cout << sequence;
          for(int i=0; i<sequence.length(); i++){
-            std::cout << "sequence[i]" << sequence[i];
+            std::cout << sequence[i];
             std::string NA(1, sequence[i]);
             if(NA == std::string("A") || NA == std::string("G")){
                 std::string term_atom("C4");
-                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
+                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
                 }
             if(NA == std::string("T") || NA == std::string("C")){
                 std::string term_atom("C6");
-                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type);
+                num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
                 }
             }
         std::cout << "num atoms:" << num_atoms;
