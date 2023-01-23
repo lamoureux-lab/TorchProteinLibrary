@@ -227,6 +227,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
                 }
             }
+            num_atoms -= 6 // 3 for 1 chain (need function or arg to get number of chains)
         std::cout << "num atoms:" << num_atoms;
         return num_atoms;
         }
