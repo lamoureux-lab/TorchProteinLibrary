@@ -166,16 +166,16 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
         }
         switch(aa[i]){
             case 'G':
-                lastC = addGly(lastC, params, params_grad, terminal); //addDG
+                lastC = addDG(lastC, params, params_grad, terminal); //addDG
                 break;
             case 'A':
-                lastC = addGly(lastC, params, params_grad, terminal); //addDA
+                lastC = addDA(lastC, params, params_grad, terminal); //addDA
                 break;
             case 'T':
-                lastC = addGly(lastC, params, params_grad, terminal); //addDT
+                lastC = addDT(lastC, params, params_grad, terminal); //addDT
                 break;
             case 'C':
-                lastC = addGly(lastC, params, params_grad, terminal); //addDC
+                lastC = addDC(lastC, params, params_grad, terminal); //addDC
                 break;
         }
     }
