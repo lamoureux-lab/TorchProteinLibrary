@@ -606,7 +606,7 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     ADD_C5
     ADD_C4
     ADD_C3
-    ADD_03
+    ADD_O3
     //    ADD_...
 //    ADD_DUMMY_TRANSFORM
 //    ADD_CARBON_BETA(params[3], params_grad[3])
@@ -633,7 +633,7 @@ template <typename T> cNode<T> *cConformation<T>::addDA(cNode<T> *parentC, std::
     ADD_C5
     ADD_C4
     ADD_C3
-    ADD_03
+    ADD_O3
 //    ADD_...
 //    ADD_DUMMY_TRANSFORM
 //    ADD_CARBON_BETA(params[3], params_grad[3])
@@ -660,7 +660,7 @@ template <typename T> cNode<T> *cConformation<T>::addDT(cNode<T> *parentC, std::
     ADD_C5
     ADD_C4
     ADD_C3
-    ADD_03
+    ADD_O3
 //    ADD_...
 //    ADD_DUMMY_TRANSFORM
 //    ADD_CARBON_BETA(params[3], params_grad[3])
@@ -687,7 +687,7 @@ template <typename T> cNode<T> *cConformation<T>::addDC(cNode<T> *parentC, std::
     ADD_C5
     ADD_C4
     ADD_C3
-    ADD_03
+    ADD_O3
 //    ADD_...
 //    ADD_DUMMY_TRANSFORM
 //    ADD_CARBON_BETA(params[3], params_grad[3])
