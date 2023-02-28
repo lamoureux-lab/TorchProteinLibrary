@@ -79,10 +79,6 @@ class Angles2CoordsFunction(Function):
 
 			print(sequenceTensor,
 				 input_angles_cpu,
-				 output_coords_cpu,
-				 output_resnames_cpu,
-				 output_resnums_cpu,
-				 output_atomnames_cpu,
 				 polymer_type,
 				 na_num_atoms)
 

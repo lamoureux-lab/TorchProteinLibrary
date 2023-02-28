@@ -61,6 +61,54 @@
     this->transforms.push_back(bbC_transform); \
     nC = addNode(nCA, groups.back(), transforms.back());
 
+#define ADD_PHOSPHATE \
+    bbP = makeAtom("P", firstAtomIndex, residueName, residueIndex, atoms_global); \
+//    if(parentC==NULL) \
+//        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
+//    else \
+        bbP_transform = new cTransform<T>(params[5], &geo.C3_O3_P_angle, geo.R_O3_P, params_grad[5]); \ //params[0] and geometry??
+    this->groups.push_back(bbP); \
+    this->transforms.push_back(bbP_transform); \
+    nP = addNode(parentC, groups.back(), transforms.back());
+
+#define ADD_05 \
+    bb05 = makeAtom("0", firstAtomIndex+1, residueName, residueIndex, atoms_global); \
+//    if(parentC==NULL) \
+//        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
+//    else \
+        bbO5_transform = new cTransform<T>(params[0], &geo.O3_P_O5_angle, geo.R_P_O5, params_grad[0]); \ //params[1] and geometry??
+    this->groups.push_back(bb05); \
+    this->transforms.push_back(bb05_transform); \
+    n05 = addNode(parentC, groups.back(), transforms.back());
+
+#define ADD_C5 \
+    bbC5 = makeAtom("C", firstAtomIndex+2, residueName, residueIndex, atoms_global); \
+    bbC5_transform = new cTransform<T>(params[1], &geo.P_O5_C5_angle, geo.R_O5_C5, params_grad[1]); \ //params[2] and geometry??
+    this->groups.push_back(bbC5); \
+    this->transforms.push_back(bbC5_transform); \
+    nC5 = addNode(parentC, groups.back(), transforms.back());
+
+#define ADD_C4 \
+    bbC4 = makeAtom("C", firstAtomIndex+3, residueName, residueIndex, atoms_global); \
+    bbC4_transform = new cTransform<T>(params[2], &geo.O5_C5_C4_angle, geo.R_C5_C4, params_grad[2]); \ //params[3] and geometry??
+    this->groups.push_back(bbC4); \
+    this->transforms.push_back(bbC4_transform); \
+    nC4 = addNode(parentC, groups.back(), transforms.back());
+
+#define ADD_C3 \
+    bbC3 = makeAtom("C", firstAtomIndex+4, residueName, residueIndex, atoms_global); \
+    bbC3_transform = new cTransform<T>(params[3], &geo.C5_C4_C3_angle, geo.R_C4_C3, params_grad[3]); \ //params[4] and geometry??
+    this->groups.push_back(bbC3); \
+    this->transforms.push_back(bbC3_transform); \
+    nC3 = addNode(parentC, groups.back(), transforms.back());
+
+#define ADD_O3 \
+    bbO3 = makeAtom("O", firstAtomIndex+5, residueName, residueIndex, atoms_global); \
+    bbO3_transform = new cTransform<T>(params[4], &geo.C4_C3_O3_angle, geo.R_C3_O3, params_grad[4]); \ //params[5] and geometry??
+    this->groups.push_back(bbO3); \
+    this->transforms.push_back(bbO3_transform); \
+    nC3 = addNode(parentC, groups.back(), transforms.back());
+
 
 template <typename T> cNode<T> *cConformation<T>::addGly(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
     cNode<T> *nC, *nCA, *nN;
@@ -546,95 +594,111 @@ template <typename T> cNode<T> *cConformation<T>::addTrp(cNode<T> *parentC, std:
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nC, *nCA, *nN, *nCB, *nCG;
-    cTransform<T> *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbCG_transform;
-    cRigidGroup<T> *bbCA, *bbC, *bbN, *bbCB, *bbCG;
+   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbC2_transform, *bbC1_transform, bb04_transform, bb03_transform; //and base
+    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bbC2, *bbC1, *bb04, *bb03;//and base
 
     uint residueIndex, firstAtomIndex;
-    char residueName = 'W';
-    PARENT_CHECK
-    ADD_NITROGEN
-    ADD_CARBON_ALPHA
-    ADD_DUMMY_TRANSFORM
-    ADD_CARBON_BETA(params[3], params_grad[3])
+    char residueName = 'G';
+    PARENT_CHECK //?
+    ADD_PHOSPHATE
+    ADD_O5
+    ADD_C5
+    ADD_C4
+    ADD_C3
+    ADD_03
+    //    ADD_...
+//    ADD_DUMMY_TRANSFORM
+//    ADD_CARBON_BETA(params[3], params_grad[3])
 
-    bbCG = makeTrpGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
-    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]);
-    this->groups.push_back(bbCG);
-    this->transforms.push_back(bbCG_transform);
-    nCG = addNode(nCB, groups.back(), transforms.back());
+//    bbCG = makeDGGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global); //rename
+//    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]); //needs editing
+//    this->groups.push_back(bbCG); //rename
+//    this->transforms.push_back(bbCG_transform); //rename
+//    nCG = addNode(nCB, groups.back(), transforms.back()); //rename
 
-    ADD_CARBONYL(12)
-    return nC;
+    return nO3; //
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nC, *nCA, *nN, *nCB, *nCG;
-    cTransform<T> *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbCG_transform;
-    cRigidGroup<T> *bbCA, *bbC, *bbN, *bbCB, *bbCG;
+   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbC2_transform, *bbC1_transform, bb04_transform, bb03_transform; //and base
+    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bbC2, *bbC1, *bb04, *bb03;//and base
 
     uint residueIndex, firstAtomIndex;
-    char residueName = 'W';
-    PARENT_CHECK
-    ADD_NITROGEN
-    ADD_CARBON_ALPHA
-    ADD_DUMMY_TRANSFORM
-    ADD_CARBON_BETA(params[3], params_grad[3])
+    char residueName = 'A';
+    PARENT_CHECK //?
+    ADD_PHOSPHATE
+    ADD_O5
+    ADD_C5
+    ADD_C4
+    ADD_C3
+    ADD_03
+//    ADD_...
+//    ADD_DUMMY_TRANSFORM
+//    ADD_CARBON_BETA(params[3], params_grad[3])
 
-    bbCG = makeTrpGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
-    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]);
-    this->groups.push_back(bbCG);
-    this->transforms.push_back(bbCG_transform);
-    nCG = addNode(nCB, groups.back(), transforms.back());
+//    bbCG = makeDGGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global); //rename
+//    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]); //needs editing
+//    this->groups.push_back(bbCG); //rename
+//    this->transforms.push_back(bbCG_transform); //rename
+//    nCG = addNode(nCB, groups.back(), transforms.back()); //rename
 
-    ADD_CARBONYL(12)
-    return nC;
+    return nO3; //
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nC, *nCA, *nN, *nCB, *nCG;
-    cTransform<T> *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbCG_transform;
-    cRigidGroup<T> *bbCA, *bbC, *bbN, *bbCB, *bbCG;
+   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbC2_transform, *bbC1_transform, bb04_transform, bb03_transform; //and base
+    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bbC2, *bbC1, *bb04, *bb03;//and base
 
     uint residueIndex, firstAtomIndex;
-    char residueName = 'W';
-    PARENT_CHECK
-    ADD_NITROGEN
-    ADD_CARBON_ALPHA
-    ADD_DUMMY_TRANSFORM
-    ADD_CARBON_BETA(params[3], params_grad[3])
+    char residueName = 'T';
+    PARENT_CHECK //?
+    ADD_PHOSPHATE
+    ADD_O5
+    ADD_C5
+    ADD_C4
+    ADD_C3
+    ADD_03
+//    ADD_...
+//    ADD_DUMMY_TRANSFORM
+//    ADD_CARBON_BETA(params[3], params_grad[3])
 
-    bbCG = makeTrpGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
-    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]);
-    this->groups.push_back(bbCG);
-    this->transforms.push_back(bbCG_transform);
-    nCG = addNode(nCB, groups.back(), transforms.back());
+//    bbCG = makeDGGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global); //rename
+//    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]); //needs editing
+//    this->groups.push_back(bbCG); //rename
+//    this->transforms.push_back(bbCG_transform); //rename
+//    nCG = addNode(nCB, groups.back(), transforms.back()); //rename
 
-    ADD_CARBONYL(12)
-    return nC;
+    return nO3; //
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nC, *nCA, *nN, *nCB, *nCG;
-    cTransform<T> *bbN_transform, *bbCA_transform, *bbC_transform, *bbCB_transform, *bbCG_transform;
-    cRigidGroup<T> *bbCA, *bbC, *bbN, *bbCB, *bbCG;
+   cNode<T> *nP, *n05, *nC5, *nC4, *nC3,  *n03; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbC2_transform, *bbC1_transform, bb04_transform, bb03_transform; //and base
+    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bbC2, *bbC1, *bb04, *bb03;//and base
 
     uint residueIndex, firstAtomIndex;
-    char residueName = 'W';
-    PARENT_CHECK
-    ADD_NITROGEN
-    ADD_CARBON_ALPHA
-    ADD_DUMMY_TRANSFORM
-    ADD_CARBON_BETA(params[3], params_grad[3])
+    char residueName = 'C';
+    PARENT_CHECK //?
+    ADD_PHOSPHATE
+    ADD_O5
+    ADD_C5
+    ADD_C4
+    ADD_C3
+    ADD_03
+//    ADD_...
+//    ADD_DUMMY_TRANSFORM
+//    ADD_CARBON_BETA(params[3], params_grad[3])
 
-    bbCG = makeTrpGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global);
-    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]);
-    this->groups.push_back(bbCG);
-    this->transforms.push_back(bbCG_transform);
-    nCG = addNode(nCB, groups.back(), transforms.back());
+//    bbCG = makeDGGroup(geo, firstAtomIndex+3, residueName, residueIndex, atoms_global); //rename
+//    bbCG_transform = new cTransform<T>(params[4], &geo.C_C_C_angle, geo.R_C_C, params_grad[4]); //needs editing
+//    this->groups.push_back(bbCG); //rename
+//    this->transforms.push_back(bbCG_transform); //rename
+//    nCG = addNode(nCB, groups.back(), transforms.back()); //rename
 
-    ADD_CARBONYL(12)
-    return nC;
+    return nO3; //
 }
 
 template class cConformation<float>;

@@ -228,7 +228,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                 }
             }
             num_atoms -= 6; // 3 for 1 chain (need function or arg to get number of chains)
-        std::cout << "num atoms:" << num_atoms;
+        std::cout << "get num atoms:" << num_atoms << "\n";
         return num_atoms;
         }
      }

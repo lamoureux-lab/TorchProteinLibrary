@@ -52,6 +52,11 @@ class cGeometry{
         T R_CG_CD2, R_CG_ND1, R_CG_NE2, R_CG_CE1;
         T CB_CG_CD2_angle, CB_CG_ND1_angle, CB_CG_NE2_angle, CB_CG_CE1_angle;
 
+        //NA Geometry
+        //NA backbone
+        T R_P_O5, R_O5_C5, R_C5_C4, R_C4_C3, R_C3_O3, R_O3_P;
+        T O3_P_O5_angle, P_O5_C5_angle, O5_C5_C4_angle, C5_C4_C3_angle, C4_C3_O3_angle, C3_O3_P_angle;
+
         cGeometry();
         ~cGeometry();
 

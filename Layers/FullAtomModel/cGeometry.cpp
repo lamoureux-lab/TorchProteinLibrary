@@ -159,7 +159,22 @@ template <typename T> cGeometry<T>::cGeometry(){
     CB_CG_ND1_angle = (M_PI - 2.12232037043);
     CB_CG_NE2_angle = -(M_PI - 2.89899188756);
     CB_CG_CE1_angle = (M_PI - 2.79078147394);
-    
+
+
+    //Geometry for Nucleic Acids
+    //NA Backbone
+    R_P_O5 = 1.593;
+    R_O5_C5 = 1.440;
+    R_C5_C4 = 1.511; // poly_type
+    R_C4_C3 = 1.528; // poly_type
+    R_C3_O3 = 1.431; // poly_type
+    R_O3_P = 1.607;
+    O3_P_O5_angle = (M_PI*104.0/180);
+    P_O5_C5_angle = (M_PI*120.9/180);
+    O5_C5_C4_angle = (M_PI*110.2/180); // poly_type
+    C5_C4_C3_angle = (M_PI*114.7/180); // poly_type
+    C4_C3_O3_angle = (M_PI*110.3/180); // poly_type
+    C3_O3_P_angle = (M_PI*119.7/180);
 }
 
 template <typename T> cGeometry<T>::~cGeometry(){
