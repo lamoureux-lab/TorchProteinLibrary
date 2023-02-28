@@ -71,15 +71,15 @@
     this->transforms.push_back(bbP_transform); \
     nP = addNode(parentC, groups.back(), transforms.back());
 
-#define ADD_05 \
-    bb05 = makeAtom("0", firstAtomIndex+1, residueName, residueIndex, atoms_global); \
+#define ADD_O5 \
+    bbO5 = makeAtom("O", firstAtomIndex+1, residueName, residueIndex, atoms_global); \
 //    if(parentC==NULL) \
 //        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
 //    else \
         bbO5_transform = new cTransform<T>(params[0], &geo.O3_P_O5_angle, geo.R_P_O5, params_grad[0]); \
-    this->groups.push_back(bb05); \
-    this->transforms.push_back(bb05_transform); \
-    n05 = addNode(parentC, groups.back(), transforms.back());
+    this->groups.push_back(bbO5); \
+    this->transforms.push_back(bbO5_transform); \
+    nO5 = addNode(parentC, groups.back(), transforms.back());
 
 #define ADD_C5 \
     bbC5 = makeAtom("C", firstAtomIndex+2, residueName, residueIndex, atoms_global); \
@@ -107,7 +107,7 @@
     bbO3_transform = new cTransform<T>(params[4], &geo.C4_C3_O3_angle, geo.R_C3_O3, params_grad[4]); \
     this->groups.push_back(bbO3); \
     this->transforms.push_back(bbO3_transform); \
-    nC3 = addNode(parentC, groups.back(), transforms.back());
+    nO3 = addNode(parentC, groups.back(), transforms.back());
 
 
 template <typename T> cNode<T> *cConformation<T>::addGly(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
@@ -594,9 +594,9 @@ template <typename T> cNode<T> *cConformation<T>::addTrp(cNode<T> *parentC, std:
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
-    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, bb03_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
-    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bb03;// *bbC2, *bbC1, *bb04, and base
+   cNode<T> *nP, *nO5, *nC5, *nC4, *nC3, *nO3; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, bbO3_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
+    cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'G';
@@ -621,9 +621,9 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
-    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, bb03_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
-    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bb03;// *bbC2, *bbC1, *bb04, and base
+   cNode<T> *nP, *nO5, *nC5, *nC4, *nC3, *nO3; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, bbO3_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
+    cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'A';
@@ -648,9 +648,9 @@ template <typename T> cNode<T> *cConformation<T>::addDA(cNode<T> *parentC, std::
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nP, *n05, *nC5, *nC4, *nC3, *n03; // *nC2, *nC1, *n04, and base
-    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform,  bb03_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
-    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3,  *bb03;// *bbC2, *bbC1, *bb04, and base
+   cNode<T> *nP, *nO5, *nC5, *nC4, *nC3, *nO3; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform,  bbO3_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
+    cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3,  *bbO3;// *bbC2, *bbC1, *bb04, and base
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'T';
@@ -675,9 +675,9 @@ template <typename T> cNode<T> *cConformation<T>::addDT(cNode<T> *parentC, std::
 }
 
 template <typename T> cNode<T> *cConformation<T>::addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal){
-   cNode<T> *nP, *n05, *nC5, *nC4, *nC3,  *n03; // *nC2, *nC1, *n04, and base
-    cTransform<T> *bbP_transform, *bb05_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform,  bb03_transform; //*bbC2_transform, *bbC1_transform, bb04_transform, and base
-    cRigidGroup<T> *bbP, *bb05, *bbC5, *bbC4, *bbC3, *bb03;// *bbC2, *bbC1, *bb04, and base
+   cNode<T> *nP, *nO5, *nC5, *nC4, *nC3,  *nO3; // *nC2, *nC1, *n04, and base
+    cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform,  bbO3_transform; //*bbC2_transform, *bbC1_transform, bb04_transform, and base
+    cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'C';
