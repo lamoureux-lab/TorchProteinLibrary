@@ -100,8 +100,9 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 
                 int length = single_angles.sizes()[1];
 
-                int num_atoms = na_num_atoms;
-                std::cout << "num_atoms" << num_atoms;
+//                int num_atoms = na_num_atoms;
+                int num_atoms = <int>(res_names.size() * 6);
+                std::cout << "interface num_atoms" << num_atoms;
 
                 if( single_coords.sizes()[0]<3*num_atoms){
                     ERROR("incorrect coordinates tensor length");
@@ -128,7 +129,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                             torch::Tensor single_atom_name = single_atom_names[idx];
                             torch::Tensor single_res_name = single_res_names[idx];
                             single_res_nums[idx] = (int)conf.groups[j]->residueIndex;
-                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name);
+                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name); //Error here
                             StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
                         }
                     }
