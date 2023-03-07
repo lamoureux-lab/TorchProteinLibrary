@@ -69,7 +69,8 @@ class Angles2CoordsFunction(Function):
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
-			max_num_atoms = na_num_atoms
+			max_num_atoms = sequenceTensor.size() * 6
+			# max_num_atoms = na_num_atoms #for test
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
 			output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A'))
@@ -80,7 +81,8 @@ class Angles2CoordsFunction(Function):
 			print(sequenceTensor,
 				 input_angles_cpu,
 				 polymer_type,
-				 na_num_atoms)
+				 na_num_atoms,
+				 max_num_atoms)
 
 			_FullAtomModel.Angles2Coords_forward(sequenceTensor,
 												 input_angles_cpu,
