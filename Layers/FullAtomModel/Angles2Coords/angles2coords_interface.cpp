@@ -100,8 +100,9 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 
                 int length = single_angles.sizes()[1];
 
-                std::cout << "size of single_res_names" << sizeof(single_res_names) << "\n";
-                std::cout << "size of single_res_names[0]" << sizeof(single_res_names[0]) << "\n";
+                std::cout << "single_sequence" << single_sequence << "\n";
+                std::cout << "size of single_sequence" << sizeof(single_sequence) << "\n";
+                std::cout << "size of single_sequence[0]" << sizeof(single_sequence[0]) << "\n";
                 int num_atoms = na_num_atoms;
 //                int num_atoms = (sizeof(res_names[i]) * 6);
                 std::cout << "interface num_atoms" << num_atoms;
