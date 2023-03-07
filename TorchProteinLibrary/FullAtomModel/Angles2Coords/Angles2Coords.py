@@ -29,6 +29,9 @@ def convertString(string):
 	'''Converts a string to 0-terminated byte tensor'''  
 	return torch.from_numpy(np.fromstring(string+'\0', dtype=np.uint8))
 
+def convert2str(tensor):
+    return tensor.numpy().astype(dtype=np.uint8).tobytes().split(b'\00')[0]
+
 
 class Angles2CoordsFunction(Function):
 	"""
@@ -69,7 +72,7 @@ class Angles2CoordsFunction(Function):
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
-			max_num_atoms = int(convertString(sequenceTensor).size()) * 6
+			max_num_atoms = int(convert2str(sequenceTensor).size()) * 6
 			# max_num_atoms = na_num_atoms #for test
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
