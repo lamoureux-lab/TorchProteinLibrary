@@ -72,7 +72,7 @@ class Angles2CoordsFunction(Function):
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
-			max_num_atoms = int(convert2str(sequenceTensor).size()) * 6
+			max_num_atoms = int(str(convert2str(sequenceTensor)).size()) * 6 #for test
 			# max_num_atoms = na_num_atoms #for test
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
