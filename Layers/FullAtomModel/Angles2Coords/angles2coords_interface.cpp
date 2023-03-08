@@ -174,7 +174,9 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 
 //      Get Num Atoms
         uint length = single_angles.sizes()[1];
-        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
+//        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
+        int num_atoms = seq.size() * 6;
+        std::cout << "interface back num_atoms"<< num_atoms << "\n";
         
 //      Conformation
         torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
