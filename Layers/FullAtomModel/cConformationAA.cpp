@@ -63,9 +63,9 @@
 
 #define ADD_PHOSPHATE \
     bbP = makeAtom("P", firstAtomIndex, residueName, residueIndex, atoms_global); \
-    if(parentC==NULL) \ // for test
-        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \ // for test
-    else \ // for test
+    if(parentC==NULL) \
+        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
+    else \
         bbP_transform = new cTransform<T>(params[5], &geo.C3_O3_P_angle, geo.R_O3_P, params_grad[5]); \
     this->groups.push_back(bbP); \
     this->transforms.push_back(bbP_transform); \
