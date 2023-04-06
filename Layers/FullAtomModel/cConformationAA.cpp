@@ -598,14 +598,13 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     cNode<T> *nP, *nO5, *nC5, *nC4, *nC3, *nO3; // *nC2, *nC1, *n04, and base
     cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbO3_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
     cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
-    std::cout << "nodes, transforms, and rigid groups declared";
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'G';
-    std::cout << "residue and firstAtomIndex declared, residueName defined";
     PARENT_CHECK //?
     std::cout << "Parent Check called";
     ADD_PHOSPHATE
+    std::cout << "addPHOSPHATE called";
     ADD_O5
     ADD_C5
     ADD_C4
@@ -688,11 +687,9 @@ template <typename T> cNode<T> *cConformation<T>::addDC(cNode<T> *parentC, std::
    cNode<T> *nP, *nO5, *nC5, *nC4, *nC3,  *nO3; // *nC2, *nC1, *n04, and base
     cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbO3_transform; //*bbC2_transform, *bbC1_transform, bb04_transform, and base
     cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
-    std::cout << "nodes, transforms, and rigid groups declared";
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'C';
-    std::cout << "residue and firstAtomIndex declared, residueName defined";
     PARENT_CHECK //?
     std::cout << "Parent Check called";
     ADD_PHOSPHATE
