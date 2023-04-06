@@ -124,7 +124,6 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                 }
                 torch::Tensor dummy_grad = torch::zeros_like(single_angles);
         //        Conformation and convertRes1to3
-                std::cout << "angles2coords_interface past errors about to call Conformation";
 
                 AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
                     cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type);

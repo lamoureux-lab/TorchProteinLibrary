@@ -166,6 +166,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
             else
                 terminal = false;
         }
+        std::cout << "Angles assigned, about to call switch(aa[i])";
         switch(aa[i]){
             case 'G':
                 lastC = addDG(lastC, params, params_grad, terminal); //addDG
