@@ -689,7 +689,9 @@ template <typename T> cNode<T> *cConformation<T>::addDC(cNode<T> *parentC, std::
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'C';
+    std::cout << "residue and firstAtomIndex declared, residueName defined";
     PARENT_CHECK //?
+    std::cout << "Parent Check called";
     ADD_PHOSPHATE
     ADD_O5
     ADD_C5
