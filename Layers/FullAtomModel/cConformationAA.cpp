@@ -611,6 +611,7 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     ADD_C4
     ADD_C3
     ADD_O3
+    std::cout << "add backbone called";
     //    ADD_...
 //    ADD_DUMMY_TRANSFORM
 //    ADD_CARBON_BETA(params[3], params_grad[3])
