@@ -599,6 +599,8 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     cTransform<T> *bbP_transform, *bbO5_transform, *bbC5_transform, *bbC4_transform, *bbC3_transform, *bbO3_transform; // *bbC2_transform, *bbC1_transform, bb04_transform, and base
     cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
 
+    std::cout << "params[2]" << params[2] << "\n params_grad[2]" << params_grad[2];
+
     uint residueIndex, firstAtomIndex;
     char residueName = 'G';
     PARENT_CHECK //?
