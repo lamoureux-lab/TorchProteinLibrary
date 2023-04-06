@@ -605,8 +605,8 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     std::cout << "Parent Check called";
     ADD_PHOSPHATE
     ADD_O5
-    std::cout << "add05 called";
     ADD_C5
+    std::cout << "add_C5 called";
     ADD_C4
     ADD_C3
     ADD_O3
