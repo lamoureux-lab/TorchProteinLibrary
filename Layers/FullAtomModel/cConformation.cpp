@@ -165,21 +165,22 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 terminal = false;
         }
         switch(aa[i]){
+            std::cout << "switch(aa[i])" << (aa[i]);
             case 'G':
                 lastC = addDG(lastC, params, params_grad, terminal); //addDG
-                std::cout << "addDG called";
+                std::cout << "addDG called" << "\n";
                 break;
             case 'A':
                 lastC = addDA(lastC, params, params_grad, terminal); //addDA
-                std::cout << "addDA called";
+                std::cout << "addDA called" << "\n";
                 break;
             case 'T':
                 lastC = addDT(lastC, params, params_grad, terminal); //addDT
-                std::cout << "addDT called";
+                std::cout << "addDT called" << "\n";
                 break;
             case 'C':
                 lastC = addDC(lastC, params, params_grad, terminal); //addDC
-                std::cout << "addDC called";
+                std::cout << "addDC called" << "\n";
                 break;
         }
     }
