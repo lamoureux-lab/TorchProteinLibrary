@@ -32,8 +32,6 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
-
-    std::cout << "Conformation called";
     if( polymer_type == 0){
     for(int i=0; i<aa.length(); i++){
         T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
@@ -166,7 +164,6 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
             else
                 terminal = false;
         }
-        std::cout << "Angles assigned, about to call switch(aa[i])";
         switch(aa[i]){
             case 'G':
                 lastC = addDG(lastC, params, params_grad, terminal); //addDG
@@ -182,6 +179,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 break;
         }
     }
+    std::cout << "Conformation loop finished";
     }
     
     //Computing conformation
