@@ -606,8 +606,8 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     ADD_PHOSPHATE
     ADD_O5
     ADD_C5
-    std::cout << "add_C5 called";
     ADD_C4
+    std::cout << "add_C4 called";
     ADD_C3
     ADD_O3
     std::cout << "add backbone called";
