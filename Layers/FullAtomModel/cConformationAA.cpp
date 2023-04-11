@@ -600,7 +600,7 @@ template <typename T> cNode<T> *cConformation<T>::addDG(cNode<T> *parentC, std::
     cRigidGroup<T> *bbP, *bbO5, *bbC5, *bbC4, *bbC3, *bbO3;// *bbC2, *bbC1, *bb04, and base
 
     std::cout << "params" << params[0] << "\n" << params[1] << "\n" << params[2] << "\n" << params[3] << "\n" << params[4] << "\n" << params[5];
-    std::cout << "\n params_grad" << "\n" << params_grad[0] << "\n" << params_grad[1] << "\n" << params_grad[2];
+    std::cout << "\n params_grad" << "\n" << params_grad[0] << "\n" << params_grad[1] << "\n" << *params_grad[2];
 
     uint residueIndex, firstAtomIndex;
     char residueName = 'G';
