@@ -124,18 +124,18 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     }
     if( polymer_type == 1){
     for(int i=0; i<aa.length(); i++){
-        T *alpha = angles + i + angles_length*0;T *dalpha = angles_grad + i + angles_length*0;
-        T *beta = angles + i + angles_length*1;T *dbeta = angles_grad + i + angles_length*1;
-        T *gamma = angles + i + angles_length*2;T *dgamma = angles_grad + i + angles_length*2;
-        T *delta = angles + i + angles_length*3;T *ddelta = angles_grad + i + angles_length*3;
-        T *epsilon = angles + i + angles_length*4;T *depsilon = angles_grad + i + angles_length*4;
-        T *zeta = angles + i + angles_length*5;T *dzeta = angles_grad + i + angles_length*5;
-        T *nu0 = angles + i + angles_length*6;T *dnu0 = angles_grad + i + angles_length*6;
-        T *nu1 = angles + i + angles_length*7;T *dnu1 = angles_grad + i + angles_length*7;
-        T *nu2 = angles + i + angles_length*8;T *dnu2 = angles_grad + i + angles_length*8;
-        T *nu3 = angles + i + angles_length*9;T *dnu3 = angles_grad + i + angles_length*9;
-        T *nu4 = angles + i + angles_length*10;T *dnu4 = angles_grad + i + angles_length*10;
-        T *chi = angles + i + angles_length*11;T *dchi = angles_grad + i + angles_length*11;
+        T *alpha = angles + i + angles_length*0;   T *dalpha = angles_grad + i + angles_length*0;
+        T *beta = angles + i + angles_length*1;    T *dbeta = angles_grad + i + angles_length*1;
+        T *gamma = angles + i + angles_length*2;   T *dgamma = angles_grad + i + angles_length*2;
+        T *delta = angles + i + angles_length*3;   T *ddelta = angles_grad + i + angles_length*3;
+        T *epsilon = angles + i + angles_length*4; T *depsilon = angles_grad + i + angles_length*4;
+        T *zeta = angles + i + angles_length*5;    T *dzeta = angles_grad + i + angles_length*5;
+        T *nu0 = angles + i + angles_length*6;     T *dnu0 = angles_grad + i + angles_length*6;
+        T *nu1 = angles + i + angles_length*7;     T *dnu1 = angles_grad + i + angles_length*7;
+        T *nu2 = angles + i + angles_length*8;     T *dnu2 = angles_grad + i + angles_length*8;
+        T *nu3 = angles + i + angles_length*9;     T *dnu3 = angles_grad + i + angles_length*9;
+        T *nu4 = angles + i + angles_length*10;    T *dnu4 = angles_grad + i + angles_length*10;
+        T *chi = angles + i + angles_length*11;    T *dchi = angles_grad + i + angles_length*11;
 //        T *gamma, *dgamma;
 //        if(i>0){
 //            gamma = angles + i-1 + angles_length*2;dgamma = angles_grad + i-1 + angles_length*2;
