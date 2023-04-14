@@ -898,7 +898,9 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
     throw(std::string("Unknown atom/res names"));
 }
 
-std::string ProtUtil::convertRes1to3(char resName){
+std::string ProtUtil::convertRes1to3(char resName, int polymer_type){
+    switch(polymer_type){
+    case 0:
     switch(resName){
         case 'G':
             return std::string("GLY");
@@ -943,6 +945,18 @@ std::string ProtUtil::convertRes1to3(char resName){
         default:
             std::cout<<"Unknown residue name"<<std::endl;
             throw("Unknown residue name");
+    }
+    case 1:
+    switch(resName){
+        case 'G':
+            return std::string("DG");
+        case 'A':
+            return std::string("DA");
+        case 'T':
+            return std::string("DT");
+        case 'C':
+            return std::string("DC");
+        }
     }
 }
 

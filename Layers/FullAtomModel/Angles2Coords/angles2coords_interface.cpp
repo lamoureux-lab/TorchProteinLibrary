@@ -133,7 +133,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                             torch::Tensor single_atom_name = single_atom_names[idx];
                             torch::Tensor single_res_name = single_res_names[idx];
                             single_res_nums[idx] = (int)conf.groups[j]->residueIndex;
-                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName), single_res_name); //Error here
+                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName, polymer_type), single_res_name); //Error here
                             StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
                         }
                     }

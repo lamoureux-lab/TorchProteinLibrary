@@ -30,7 +30,7 @@ namespace ProtUtil{
     bool isNucleotide(std::string &res_name, int polymer_type);
 
     // convert 1-letter aa code to 3-letter code
-    std::string convertRes1to3(char resName);
+    std::string convertRes1to3(char resName, int polymer_type = 0);
 
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
