@@ -165,7 +165,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 terminal = false;
         }
         switch(aa[i]){
-            std::cout << "switch(aa[i])" << (aa[i]);
+//            std::cout << "switch(aa[i])" << (aa[i]);
             case 'G':
                 lastC = addDG(lastC, params, params_grad, terminal); //addDG
                 std::cout << "addDG called" << "\n";
