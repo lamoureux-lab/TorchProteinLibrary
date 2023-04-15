@@ -159,7 +159,7 @@ if __name__=='__main__':
 			ext_modules=[	
 							RMSD,
 							FullAtomModel, 
-							Volume, 
+							# Volume,
 							ReducedModel,
 							# Physics,
 							# Graph

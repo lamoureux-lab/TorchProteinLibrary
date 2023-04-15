@@ -73,7 +73,7 @@ class Angles2CoordsFunction(Function):
 			input_angles_cpu = input_angles_cpu.contiguous()
 
 			print(str(convert2str(sequenceTensor)))
-			max_num_atoms = int(len(str(convert2str(sequenceTensor))) - 2) * 6 #for test
+			max_num_atoms = int(len(str(convert2str(sequenceTensor))) - 3) * 6 #for test
 			# max_num_atoms = na_num_atoms #for test
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)

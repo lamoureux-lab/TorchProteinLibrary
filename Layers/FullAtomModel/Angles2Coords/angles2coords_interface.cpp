@@ -104,7 +104,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 //                std::cout << "size of single_sequence" << (int)single_sequence.sizes()[0] << "\n";
 //                std::cout << "size of single_sequence[0]" << sizeof(single_sequence[0]) << "\n";
 //                int num_atoms = na_num_atoms;
-                int num_atoms = ((int)single_sequence.sizes()[0] * 6);
+                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 6);
                 std::cout << "interface num_atoms" << num_atoms;
 
                 if( single_coords.sizes()[0]<3*num_atoms){
@@ -176,7 +176,7 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 //      Get Num Atoms
         uint length = single_angles.sizes()[1];
 //        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
-        int num_atoms = seq.size() * 6;
+        int num_atoms = (seq.size() -1) * 6;
         std::cout << "interface back num_atoms"<< num_atoms << "\n";
         
 //      Conformation

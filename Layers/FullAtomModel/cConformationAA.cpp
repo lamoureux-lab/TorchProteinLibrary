@@ -72,38 +72,39 @@
     nP = addNode(parentC, groups.back(), transforms.back());
 
 #define ADD_O5 \
-    bbO5 = makeAtom("O", firstAtomIndex+1, residueName, residueIndex, atoms_global); \
-//    if(parentC==NULL) \
-//        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
-//    else \
-        bbO5_transform = new cTransform<T>(params[0], &geo.O3_P_O5_angle, geo.R_P_O5, params_grad[0]); \
+    bbO5 = makeAtom("O5'", firstAtomIndex+1, residueName, residueIndex, atoms_global); \
+    bbO5_transform = new cTransform<T>(params[0], &geo.O3_P_O5_angle, geo.R_P_O5, params_grad[0]); \
     this->groups.push_back(bbO5); \
     this->transforms.push_back(bbO5_transform); \
     nO5 = addNode(nP, groups.back(), transforms.back());
 
+//    if(parentC==NULL) \ //place back between make atom and transform
+//        bbP_transform = new cTransform<T>(&zero_const, &zero_const, zero_const, NULL); \
+//    else \
+
 #define ADD_C5 \
-    bbC5 = makeAtom("C", firstAtomIndex+2, residueName, residueIndex, atoms_global); \
+    bbC5 = makeAtom("C5'", firstAtomIndex+2, residueName, residueIndex, atoms_global); \
     bbC5_transform = new cTransform<T>(params[1], &geo.P_O5_C5_angle, geo.R_O5_C5, params_grad[1]); \
     this->groups.push_back(bbC5); \
     this->transforms.push_back(bbC5_transform); \
     nC5 = addNode(nO5, groups.back(), transforms.back());
 
 #define ADD_C4 \
-    bbC4 = makeAtom("C", firstAtomIndex+3, residueName, residueIndex, atoms_global); \
+    bbC4 = makeAtom("C4'", firstAtomIndex+3, residueName, residueIndex, atoms_global); \
     bbC4_transform = new cTransform<T>(params[2], &geo.O5_C5_C4_angle, geo.R_C5_C4, params_grad[2]); \
     this->groups.push_back(bbC4); \
     this->transforms.push_back(bbC4_transform); \
     nC4 = addNode(nC5, groups.back(), transforms.back());
 
 #define ADD_C3 \
-    bbC3 = makeAtom("C", firstAtomIndex+4, residueName, residueIndex, atoms_global); \
+    bbC3 = makeAtom("C3'", firstAtomIndex+4, residueName, residueIndex, atoms_global); \
     bbC3_transform = new cTransform<T>(params[3], &geo.C5_C4_C3_angle, geo.R_C4_C3, params_grad[3]); \
     this->groups.push_back(bbC3); \
     this->transforms.push_back(bbC3_transform); \
     nC3 = addNode(nC4, groups.back(), transforms.back());
 
 #define ADD_O3 \
-    bbO3 = makeAtom("O", firstAtomIndex+5, residueName, residueIndex, atoms_global); \
+    bbO3 = makeAtom("O3'", firstAtomIndex+5, residueName, residueIndex, atoms_global); \
     bbO3_transform = new cTransform<T>(params[4], &geo.C4_C3_O3_angle, geo.R_C3_O3, params_grad[4]); \
     this->groups.push_back(bbO3); \
     this->transforms.push_back(bbO3_transform); \

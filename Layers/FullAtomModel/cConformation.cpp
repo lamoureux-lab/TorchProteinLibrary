@@ -184,7 +184,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 break;
         }
     }
-    std::cout << "Conformation loop finished";
+    std::cout << "Conformation loop finished" << std::endl;
     }
     
     //Computing conformation
