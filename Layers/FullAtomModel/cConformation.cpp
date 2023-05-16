@@ -27,7 +27,7 @@ template <typename T> void cTransform<T>::print(){
 //     return os<<*(node.group);
 // }
 // AS: need the function below
-template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type, bool add_terminal){
+template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type, torch::Tensor chain_names,bool add_terminal){
     cNode<T> *lastC = NULL;
     zero_const = 0.0;
     this->atoms_global = atoms_global;
@@ -123,6 +123,10 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     }
     }
     if( polymer_type == 1){
+    std::string chain_idx = "0";
+    torch::Tensor single_chain_names = chain_names[0];
+    int atom_idx = 0;
+
     for(int i=0; i<aa.length(); i++){
         T *alpha = angles + i + angles_length*0;   T *dalpha = angles_grad + i + angles_length*0;
         T *beta = angles + i + angles_length*1;    T *dbeta = angles_grad + i + angles_length*1;
@@ -158,35 +162,91 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
         T *xi12 = angles + i + angles_length*23;T *dxi12 = angles_grad + i + angles_length*23;
         std::vector<T*> params({alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi, xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9, xi10, xi11, xi12});
         std::vector<T*> params_grad({dalpha, dbeta, dgamma, ddelta, depsilon, dzeta, dnu0, dnu1, dnu2, dnu3, dnu4, dchi, dxi1, dxi2, dxi3, dxi4, dxi5, dxi6, dxi7, dxi8, dxi9, dxi10, dxi11, dxi12});
-        if(add_terminal){
-            if(i == (aa.length()-1))
-                terminal = true;
-            else
-                terminal = false;
-        }
-        switch(aa[i]){
-//            std::cout << "switch(aa[i])" << (aa[i]);
-            case 'G':
-                lastC = addDG(lastC, params, params_grad, terminal); //addDG
+//        }
+//        if(add_terminal){
+//            if(i == (aa.length()-1))
+//                terminal = true;
+//            else
+//                terminal = false;
+//        } // add_terminal? == is_five_prime?
+//        for(int j=0; j<single_chain_names.length(); j++){
+
+//            std::cout << "aa" << (aa) << std::endl;
+//            std::cout << "aa[j]" << (aa[i]) << std::endl;
+    //        std::cout << "tensor2String(single_chain_names[j])" << tensor2String(single_chain_names[i]) << std::endl;
+//            std::cout << "(chain_names)" << single_chain_names << std::endl;
+//            std::cout << "chain_names[i]" << single_chain_names[atom_idx] << std::endl;
+//            std::cout << "chain_idx" << (chain_idx) << std::endl;
+
+            if(tensor2String(single_chain_names[atom_idx]) > chain_idx){
+                chain_idx = tensor2String(single_chain_names[atom_idx]);
+                if (aa[i] == 'G'){
+                lastC = addDG_5Prime(lastC, params, params_grad, terminal); //addDG *terminal == five_prime
+                std::cout << "addDG 5' called" << "\n";
+                std::string term_atom("C4");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                continue;
+                }
+            if (aa[i] == 'A'){
+                lastC = addDA_5Prime(lastC, params, params_grad, terminal); //addDA
+                std::cout << "addDA 5' called" << "\n";
+                std::string term_atom("C4");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                continue;
+                }
+            if (aa[i] == 'T'){
+                lastC = addDT_5Prime(lastC, params, params_grad, terminal); //addDT
+                std::cout << "addDT 5' called" << "\n";
+                std::string term_atom("C6");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                continue;
+                }
+            if (aa[i] == 'C'){
+                lastC = addDC_5Prime(lastC, params, params_grad, terminal); //addDC
+                std::cout << "addDC 5' called" << "\n";
+                std::string term_atom("C6");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                continue;
+                }
+            }
+
+            if (aa[i] == 'G'){
+                lastC = addDG(lastC, params, params_grad, terminal); //addDG *terminal == five_prime
                 std::cout << "addDG called" << "\n";
-                break;
-            case 'A':
+                std::string term_atom("C4");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                }
+            if (aa[i] == 'A'){
                 lastC = addDA(lastC, params, params_grad, terminal); //addDA
                 std::cout << "addDA called" << "\n";
-                break;
-            case 'T':
+                std::string term_atom("C4");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                }
+            if (aa[i] == 'T'){
                 lastC = addDT(lastC, params, params_grad, terminal); //addDT
                 std::cout << "addDT called" << "\n";
-                break;
-            case 'C':
+                std::string term_atom("C6");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                }
+            if (aa[i] == 'C'){
                 lastC = addDC(lastC, params, params_grad, terminal); //addDC
                 std::cout << "addDC called" << "\n";
-                break;
-        }
+                std::string term_atom("C6");
+                std::string NA(1, aa[i]);
+                atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                }
+            }
+            std::cout << "Conformation loop finished" << std::endl;
+//        }
     }
-    std::cout << "Conformation loop finished" << std::endl;
-    }
-    
+
     //Computing conformation
     this->update(this->root);
     //Computing number of atoms

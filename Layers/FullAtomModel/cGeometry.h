@@ -57,6 +57,13 @@ class cGeometry{
         T R_P_O5, R_O5_C5, R_C5_C4, R_C4_C3, R_C3_O3, R_O3_P;
         T O3_P_O5_angle, P_O5_C5_angle, O5_C5_C4_angle, C5_C4_C3_angle, C4_C3_O3_angle, C3_O3_P_angle;
 
+        //NA sugar ring
+        T R_C4_O4;
+        T C5_C4_O4_angle;
+
+        // C4_dummy_transform
+        T C4_correction_angle, O5_C5_C4_O4_diangle;
+
         cGeometry();
         ~cGeometry();
 

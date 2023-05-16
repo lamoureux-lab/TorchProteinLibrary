@@ -12,7 +12,8 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                                 torch::Tensor res_nums,
                                 torch::Tensor atom_names,
                                 int polymer_type,
-                                int na_num_atoms
+                                int na_num_atoms,
+                                torch::Tensor chain_names
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
@@ -65,7 +66,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
             torch::Tensor dummy_grad = torch::zeros_like(single_angles);
     //        Conformation and convertRes1to3
             AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type);
+                cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type, chain_names);
                 for(int j=0; j<conf.groups.size(); j++){
                     for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                         int idx = conf.groups[j]->atomIndexes[k];
@@ -104,7 +105,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 //                std::cout << "size of single_sequence" << (int)single_sequence.sizes()[0] << "\n";
 //                std::cout << "size of single_sequence[0]" << sizeof(single_sequence[0]) << "\n";
 //                int num_atoms = na_num_atoms;
-                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 6);
+                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 7) - 2;
                 std::cout << "interface num_atoms" << num_atoms;
 
                 if( single_coords.sizes()[0]<3*num_atoms){
@@ -126,14 +127,14 @@ void Angles2Coords_forward(     torch::Tensor sequences,
         //        Conformation and convertRes1to3
 
                 AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-                    cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type);
+                    cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type, chain_names);
                     for(int j=0; j<conf.groups.size(); j++){
                         for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                             int idx = conf.groups[j]->atomIndexes[k];
                             torch::Tensor single_atom_name = single_atom_names[idx];
                             torch::Tensor single_res_name = single_res_names[idx];
                             single_res_nums[idx] = (int)conf.groups[j]->residueIndex;
-                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName, polymer_type), single_res_name); //Error here
+                            StringUtil::string2Tensor(ProtUtil::convertRes1to3(conf.groups[j]->residueName, polymer_type), single_res_name);
                             StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);
                         }
                     }
@@ -150,7 +151,8 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
                                 torch::Tensor grad_angles,
                                 torch::Tensor sequences,
                                 torch::Tensor input_angles,
-                                int polymer_type
+                                int polymer_type,
+                                torch::Tensor chain_names
                         ){
     bool add_terminal = false;
     CHECK_CPU_INPUT_TYPE(sequences, torch::kByte);
@@ -176,13 +178,13 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 //      Get Num Atoms
         uint length = single_angles.sizes()[1];
 //        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
-        int num_atoms = (seq.size() -1) * 6;
+        int num_atoms = ((seq.size() -1) * 7)- 2;
         std::cout << "interface back num_atoms"<< num_atoms << "\n";
         
 //      Conformation
         torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
         AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
-            cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>(), polymer_type);
+            cConformation<scalar_t> conf(seq, single_angles.data<scalar_t>(), single_grad_angles.data<scalar_t>(),length, dummy_coords.data<scalar_t>(), polymer_type, chain_names);
             conf.backward(conf.root, single_grad_atoms.data<scalar_t>());
         }));
         // cConformation<double> conf( seq, single_angles.data<double>(), single_grad_angles.data<double>(),
@@ -215,10 +217,10 @@ void Angles2Coords_save(    const char* sequence,
     
 }
 
-int getSeqNumAtoms( const char *sequence){
+int getSeqNumAtoms( const char *sequence, int polymer_type, torch::Tensor chain_names){
     bool add_terminal = false;
     std::string seq(sequence);
-    int polymer_type = 1; //"hard coded" need to change to arg
-    int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
+//    int polymer_type = polymer_type; //"hard coded" need to change to arg
+    int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
     return num_atoms;
 }

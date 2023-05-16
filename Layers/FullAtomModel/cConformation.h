@@ -6,6 +6,7 @@
 #include <string>
 #include <cRigidGroup.h>
 #include <cGeometry.h>
+#include <torch/extension.h>
 //AS: function for graphs
 template <typename T>
 class cTransform{
@@ -62,7 +63,7 @@ class cConformation{
         cNode<T> *root;
 
         // Construct protein graph and bind grad to the angles
-        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type = 0, bool add_terminal=false);
+        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type = 0, torch::Tensor chain_names = {}, bool add_terminal=false);
         ~cConformation();
         
         void print(cNode<T> *node);
@@ -104,6 +105,10 @@ class cConformation{
         cNode<T> *addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDG_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDA_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDT_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDC_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
 };
 
 #endif

@@ -175,6 +175,15 @@ template <typename T> cGeometry<T>::cGeometry(){
     C5_C4_C3_angle = (M_PI*114.7/180); // poly_type
     C4_C3_O3_angle = (M_PI*110.3/180); // poly_type
     C3_O3_P_angle = (M_PI*119.7/180);
+
+    //NA sugar ring
+    R_C4_O4 = 1.446; // poly_type
+
+    C5_C4_O4_angle = (M_PI*109.4/180); //poly_type
+
+    //C4_dummy_transform
+    C4_correction_angle = 0.0;
+    O5_C5_C4_O4_diangle = (M_PI*294.99682/360);
 }
 
 template <typename T> cGeometry<T>::~cGeometry(){
