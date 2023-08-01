@@ -126,6 +126,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
     std::string chain_idx = "0";
     torch::Tensor single_chain_names = chain_names[0];
     int atom_idx = 0;
+    char last_res = '0';
 
     for(int i=0; i<aa.length(); i++){
         T *alpha = angles + i + angles_length*0;   T *dalpha = angles_grad + i + angles_length*0;
@@ -181,70 +182,76 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
             if(tensor2String(single_chain_names[atom_idx]) > chain_idx){
                 chain_idx = tensor2String(single_chain_names[atom_idx]);
                 if (aa[i] == 'G'){
-                lastC = addDG_5Prime(lastC, params, params_grad, terminal); //addDG *terminal == five_prime
-                std::cout << "addDG 5' called" << "\n";
+                lastC = addDG_5Prime(lastC, params, params_grad, last_res, terminal); //addDG *terminal == five_prime
+                std::cout << "addDG 5' called" << std::endl;
                 std::string term_atom("C4");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                last_res = 'G';
                 continue;
                 }
             if (aa[i] == 'A'){
-                lastC = addDA_5Prime(lastC, params, params_grad, terminal); //addDA
-                std::cout << "addDA 5' called" << "\n";
+                lastC = addDA_5Prime(lastC, params, params_grad, last_res, terminal); //addDA
+                std::cout << "addDA 5' called" << std::endl;
                 std::string term_atom("C4");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                last_res = 'A';
                 continue;
                 }
             if (aa[i] == 'T'){
-                lastC = addDT_5Prime(lastC, params, params_grad, terminal); //addDT
-                std::cout << "addDT 5' called" << "\n";
+                lastC = addDT_5Prime(lastC, params, params_grad, last_res, terminal); //addDT
+                std::cout << "addDT 5' called" << std::endl;
                 std::string term_atom("C6");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                last_res = 'T';
                 continue;
                 }
             if (aa[i] == 'C'){
-                lastC = addDC_5Prime(lastC, params, params_grad, terminal); //addDC
-                std::cout << "addDC 5' called" << "\n";
+                lastC = addDC_5Prime(lastC, params, params_grad, last_res, terminal); //addDC
+                std::cout << "addDC 5' called" << std::endl;
                 std::string term_atom("C6");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                last_res = 'C';
                 continue;
                 }
             }
 
             if (aa[i] == 'G'){
-                lastC = addDG(lastC, params, params_grad, terminal); //addDG *terminal == five_prime
-                std::cout << "addDG called" << "\n";
+                lastC = addDG(lastC, params, params_grad, last_res, terminal); //addDG *terminal == five_prime
+                std::cout << "addDG called" << std::endl;
                 std::string term_atom("C4");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                last_res = 'G';
                 }
             if (aa[i] == 'A'){
-                lastC = addDA(lastC, params, params_grad, terminal); //addDA
-                std::cout << "addDA called" << "\n";
+                lastC = addDA(lastC, params, params_grad, last_res, terminal); //addDA
+                std::cout << "addDA called" << std::endl;
                 std::string term_atom("C4");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                last_res = 'A';
                 }
             if (aa[i] == 'T'){
-                lastC = addDT(lastC, params, params_grad, terminal); //addDT
-                std::cout << "addDT called" << "\n";
+                lastC = addDT(lastC, params, params_grad, last_res, terminal); //addDT
+                std::cout << "addDT called" << std::endl;
                 std::string term_atom("C6");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                last_res = 'T';
                 }
             if (aa[i] == 'C'){
-                lastC = addDC(lastC, params, params_grad, terminal); //addDC
-                std::cout << "addDC called" << "\n";
+                lastC = addDC(lastC, params, params_grad, last_res, terminal); //addDC
+                std::cout << "addDC called" << std::endl;
                 std::string term_atom("C6");
                 std::string NA(1, aa[i]);
                 atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                last_res = 'C';
                 }
             }
-            std::cout << "Conformation loop finished" << std::endl;
-//        }
     }
 
     //Computing conformation

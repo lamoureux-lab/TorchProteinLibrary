@@ -204,7 +204,7 @@ def getBackbone(residues, polymer_type= 0):
 				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 				nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 				nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-				chi.append(calc_dihedral(O4_i, C1_i, N_i, C_i))
+				chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
 
 				continue
 
@@ -253,7 +253,7 @@ def getBackbone(residues, polymer_type= 0):
 					nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 					nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 					nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-					chi.append(calc_dihedral(O4_i, C1_i, N_i, C_i))
+					chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
 					continue
 
 			if i < (len(residues) - 1):
@@ -276,7 +276,7 @@ def getBackbone(residues, polymer_type= 0):
 			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
 			nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
 			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-			chi.append(calc_dihedral(O4_i, C1_i, N_i, C_i))
+			chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
 
 			# print(chi)
 
@@ -639,8 +639,6 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
-		# print(angles)
-		# print("Error Polymer Type 1 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	elif polymer_type == 2:
 		length = 0

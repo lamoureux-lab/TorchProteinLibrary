@@ -74,12 +74,12 @@ class Angles2CoordsFunction(Function):
 			input_angles_cpu = input_angles_cpu.contiguous()
 
 			# print("a2c function poly 1 seq",str(convert2str(sequenceTensor))[2:-1])
-			max_num_atoms = (int(len(str(convert2str(sequenceTensor))) - 3) * 7) + (- 2) #for test [(seq - 3) * 6 for backbone length][(+ (-2)) for loss of phos group due to new chain]
-			# max_num_atoms = na_num_atoms #for test
+			# max_num_atoms = (int(len(str(convert2str(sequenceTensor))) - 3) * 9) + (- 2) + (114) #for test [(seq - 3) * 6 for backbone length][(+ (-2)) for loss of phos group due to new chain] + 52 due to addition of Cyt & Thy rigid group without changing to getNum atoms
+			max_num_atoms = num_atoms
 			batch_size = input_angles_cpu.size(0)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
-			output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A')) ##needs to be able to detect and write correct chain names
-			# output_chainnames_cpu = chain_names ##should be modified to detect new chains rather than just assign as chain_names arg
+			# output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A')) ##needs to be able to detect and write correct chain names
+			output_chainnames_cpu = chain_names ##should be modified to detect new chains rather than just assign as chain_names arg
 			output_resnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 			output_resnums_cpu = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
 			output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
@@ -97,7 +97,7 @@ class Angles2CoordsFunction(Function):
 												 output_resnums_cpu,
 												 output_atomnames_cpu,
 												 polymer_type,
-												 torch.tensor(max_num_atoms, dtype=torch.int32),
+												 num_atoms,
 												 chain_names) ##for test, orignally na_num_atoms
 
 			if math.isnan(output_coords_cpu.sum()):
@@ -109,7 +109,7 @@ class Angles2CoordsFunction(Function):
 	
 	# @profile
 	@staticmethod 
-	def backward(ctx, grad_atoms_cpu, *kwargs, polymer_type, chain_names):
+	def backward(ctx, grad_atoms_cpu, *kwargs, polymer_type=1, chain_names=torch.zeros(240, 1, dtype=torch.uint8).fill_(ord('A'))):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()		
 		input_angles_cpu, sequenceTensor = ctx.saved_tensors
@@ -123,7 +123,7 @@ class Angles2CoordsFunction(Function):
 		return grad_angles_cpu, None, None
 
 class Angles2Coords(Module):
-	def __init__(self, polymer_type=0, na_num_atoms=0, chain_names = []):
+	def __init__(self, polymer_type=0, na_num_atoms=0, chain_names=[]):
 		super(Angles2Coords, self).__init__()
 		self.num_atoms = None
 		self.polymer_type = polymer_type

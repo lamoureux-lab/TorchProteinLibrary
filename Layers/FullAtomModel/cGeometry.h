@@ -58,11 +58,14 @@ class cGeometry{
         T O3_P_O5_angle, P_O5_C5_angle, O5_C5_C4_angle, C5_C4_C3_angle, C4_C3_O3_angle, C3_O3_P_angle;
 
         //NA sugar ring
-        T R_C4_O4;
-        T C5_C4_O4_angle;
+        T R_C4_O4, R_C3_C2, R_C2_C1;
+        T C3_C4_O4_angle, O3_C3_C2_angle, C3_C2_C1_angle;
 
-        // C4_dummy_transform
-        T C4_correction_angle, O5_C5_C4_O4_diangle;
+        // Sugar dummy transforms
+        T C4_correction_angle, O3_C3_C4_O4_diangle;
+        T C3_correction_angle, P_O3_C3_C2_diangle;
+
+       T R_Cyt_N1, R_Gua_N1, R_Thy_N1, R_Ade_N1, DNA_N1_angle;
 
         cGeometry();
         ~cGeometry();

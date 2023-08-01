@@ -18,6 +18,7 @@ import matplotlib.pylab as plt
 # file = '/u2/home_u2/fam95/Documents/119d.pdb'
 # file = '/u2/home_u2/fam95/Documents/1d29.pdb'
 file = '/u2/home_u2/fam95/Documents/180d.pdb'
+# file = '/u2/home_u2/fam95/Documents/6z0s.pdb'
 
 
 def _convert2str(tensor):
@@ -108,12 +109,12 @@ angles = angles.to(dtype=torch.float)
 angles.requires_grad_()
 optimizer = optim.Adam([angles], lr=0.00001)
 a2c = FullAtomModel.Angles2Coords(polymer_type=polymer_type)  # Current Work
-pred_na = a2c(angles, sequences, polymer_type, num_atoms)
+pred_na = a2c(angles, sequences, polymer_type, num_atoms, chainnames)
 coords_2, chainnames, resnames, resnums, atomnames, num_atoms = pred_na
 
-print(resnames[0], atomnames[0])
-for i in range(len(resnames[0])):
-    print(_convert2str(resnames[0,i]).decode("utf-8"), _convert2str(atomnames[0,i]).decode("utf-8"))
+# print(resnames[0], atomnames[0])
+# for i in range(len(resnames[0])):
+#     print(_convert2str(resnames[0,i]).decode("utf-8"), _convert2str(atomnames[0,i]).decode("utf-8"))
     # print(resnames[0, i], atomnames[0, i])
     # print(atomnames[0, i])
 #
@@ -126,13 +127,16 @@ for i in range(len(resnames[0])):
 i  = 0
 while i < (len(coords_2[0])):
 #     print(_convert2str(torch.Tensor.detach(coords_2[0, i])).decode("utf-8"))
-    print(_convert2str(resnames[0, int(i/3)]).decode("utf-8"), _convert2str(atomnames[0, int(i/3)]).decode("utf-8"), 'x:', torch.Tensor.detach(coords_2[0, i]), ", y:", torch.Tensor.detach(coords_2[0, i+1]), ", z:", torch.Tensor.detach(coords_2[0, i+2]))
+    print(_convert2str(resnames[0, int(i/3)]).decode("utf-8"), _convert2str(atomnames[0, int(i/3)]).decode("utf-8"),
+          'x:', torch.Tensor.detach(coords_2[0, i]), ", y:", torch.Tensor.detach(coords_2[0, i+1]), ", z:", torch.Tensor.detach(coords_2[0, i+2]))
     i += 3
+print(len(torch.Tensor.detach(coords_2)[0]))
 
 i  = 0
-while i < (len(coords_dst[0])):
+while i < (len(coords_dst[0]) - 3):
 #     print(_convert2str(torch.Tensor.detach(coords_2[0, i])).decode("utf-8"))
-    print(_convert2str(saved_atom_names[0, int(i/3)]).decode("utf-8"), 'dst_x:', torch.Tensor.detach(coords_dst[0, i]), ", y:", torch.Tensor.detach(coords_dst[0, i+1]), ", z:", torch.Tensor.detach(coords_dst[0, i+2]))
+    print(_convert2str(saved_atom_names[0, int(i/3)]).decode("utf-8"), 'dst_x:', torch.Tensor.detach(coords_dst[0, i]),
+          ", y:", torch.Tensor.detach(coords_dst[0, i+1]), ", z:", torch.Tensor.detach(coords_dst[0, i+2]))
     i += 3
 print(len(torch.Tensor.detach(coords_dst)[0]))
 # rmsd = RMSD.Coords2RMSD()
@@ -145,30 +149,31 @@ print(len(torch.Tensor.detach(coords_dst)[0]))
 # for epoch in range(10):  # At 10 for test
 #     epochs.append(epoch + 1)
 #     optimizer.zero_grad()
-#     coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences, polymer_type, num_atoms)
+#     coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences, polymer_type, num_atoms, chainnames)
 #     L = rmsd(coords_src, coords_dst, num_atoms)
+#     # L.backward(polymer_type=polymer_type, chain_names=chainnames)
 #     L.backward()
 #     optimizer.step()
 #     loss_per = float(L)
 #     loss.append(loss_per)
 #
-# coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences)
-# coords_aft = torch.Tensor.detach(coords_src)
-# after_ang, lengths = Coords2Angles(coords_aft, chainnames, resnames, resnums, atomnames,
-#                                    num_atoms)  # Does this step introduce new error?
-#
+# # coords_src, chainnames, resnames, resnums, atomnames, num_atoms = a2c(angles, sequences)
+# # coords_aft = torch.Tensor.detach(coords_src)
+# # after_ang, lengths = Coords2Angles(coords_aft, chainnames, resnames, resnums, atomnames,
+# #                                    num_atoms)  # Does this step introduce new error?
+# #
 # new_coords, new_chainnames, new_resnames, new_resnums, new_atomnames, new_num_atoms = a2c(angles, sequences)
 #
 # # Name of new PDB file to be written
 # pdb2pdb_na_test = '/u2/home_u2/fam95/Documents/pdb2pdb_na_test_119d.pdb'
-pdb2pdb_dna_test = '/u2/home_u2/fam95/Documents/pdb2pdb_na_test_180d_bb.pdb' ## for 180d
+pdb2pdb_dna_test = "/u2/home_u2/fam95/Documents/pdb2pdb_na_test_180d_modbbring&chiang3.pdb" ## for 180d
 #
 # ax.plot(epochs, loss)
-# ax.set_ylim([0, 1])
+# # ax.set_ylim([0, 1])
 # ax.set_xlabel("epochs", fontsize=12)
 # ax.set_ylabel("rmsd (A)", fontsize=12)
 #
-# # plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt_ylim1_TPLna_ehbb_test1e6.png') [turned off for test]
+# plt.savefig('/u2/home_u2/fam95/Documents/pdb2pdb_lossplt__TPLdna_180d_test1e1.png') #[turned off for test]  ylim1
 #
 # #Creating DeltaAngle Plot
 # bef_det = torch.Tensor.detach(before_ang)
@@ -235,4 +240,5 @@ pdb2pdb_dna_test = '/u2/home_u2/fam95/Documents/pdb2pdb_na_test_180d_bb.pdb' ## 
 #
 ## Save New PDB [turned off for test]
 # print(num_atoms)
-FullAtomModel.writePDB(pdb2pdb_dna_test, coords_dst, chainnames, resnames, resnums, atomnames, torch.tensor([72], dtype=torch.int32)) ## last arg == hardcoded num_atoms
+# FullAtomModel.writePDB(pdb2pdb_dna_test, coords_2, chainnames, resnames, resnums, atomnames, num_atoms)
+# FullAtomModel.writePDB(pdb2pdb_dna_test, new_coords, chainnames, resnames, resnums, atomnames, num_atoms)

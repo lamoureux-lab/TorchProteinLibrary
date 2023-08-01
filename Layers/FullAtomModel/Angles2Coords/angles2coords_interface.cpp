@@ -84,8 +84,7 @@ void Angles2Coords_forward(     torch::Tensor sequences,
               }
           }
         if(polymer_type == 1){
-            std::cout << "Error Polymer Type 1 Not Implemented in angles2coords_interface.cpp \n";
-            std::cout << "na_num_atoms: " << na_num_atoms << "\n";
+
             #pragma omp parallel for
 
             for(int i=0; i<batch_size; i++){
@@ -104,9 +103,9 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 //                std::cout << "single_sequence" << single_sequence << "\n";
 //                std::cout << "size of single_sequence" << (int)single_sequence.sizes()[0] << "\n";
 //                std::cout << "size of single_sequence[0]" << sizeof(single_sequence[0]) << "\n";
-//                int num_atoms = na_num_atoms;
-                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 7) - 2;
-                std::cout << "interface num_atoms" << num_atoms;
+                int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
+//                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 9) - 2 + (114); // for test use getNumAtoms
+                std::cout << "interface num_atoms" << num_atoms; // for test use getNumAtoms
 
                 if( single_coords.sizes()[0]<3*num_atoms){
                     ERROR("incorrect coordinates tensor length");
@@ -177,8 +176,8 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 
 //      Get Num Atoms
         uint length = single_angles.sizes()[1];
-//        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type);
-        int num_atoms = ((seq.size() -1) * 7)- 2;
+        int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
+//        int num_atoms = ((seq.size() -1) * 9)- 2 + (114);
         std::cout << "interface back num_atoms"<< num_atoms << "\n";
         
 //      Conformation

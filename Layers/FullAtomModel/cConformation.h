@@ -101,14 +101,14 @@ class cConformation{
         cNode<T> *addPhe(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addTyr(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addTrp(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDG_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDA_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDT_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
-        cNode<T> *addDC_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDG_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDA_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDT_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
+        cNode<T> *addDC_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res, bool terminal=false);
 };
 
 #endif

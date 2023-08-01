@@ -121,7 +121,7 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 				# print(chain_name)
 				atom_name = tensor2string(atomnames[i,j,:])
 				res_name = tensor2string(resnames[i,j,:])
-				res_num = resnums[i,j].item()
+				res_num = resnums[i,j].item() + 1
 				x = coords[i, 3*j].item()
 				y = coords[i, 3*j+1].item()
 				z = coords[i, 3*j+2].item()

@@ -46,7 +46,6 @@ def get_sequence(res_names, res_nums, num_atoms, mask, polymer_type):
                     # previous_resnum = res_nums[batch_idx, atom_idx].item()
                     print("get_sequence not implemented for polymer type 2")
 
-
         residue_name = _convert2str(res_names[batch_idx, -1, :]).decode("utf-8")
         if polymer_type == 0:
             sequence = sequence + dindex_to_1[d3_to_index[residue_name]]
@@ -91,4 +90,4 @@ sequences = get_sequence(resnames, resnums, num_atoms, mask, polymerType) #Needs
 # print(sequences)
 
 # Coords2Angles function Called
-angles, lengths = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms, polymerType)
+# angles, lengths = Coords2Angles(coords_dst, chainnames, resnames, resnums, atomnames, num_atoms, polymerType)
