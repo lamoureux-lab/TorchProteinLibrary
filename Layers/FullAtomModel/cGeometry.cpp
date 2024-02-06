@@ -169,36 +169,37 @@ template <typename T> cGeometry<T>::cGeometry(){
     R_C4_C3 = 1.528; // poly_type
     R_C3_O3 = 1.431; // poly_type
     R_O3_P = 1.607;
-    O3_P_O5_angle = -(M_PI - (M_PI*104.0/180));
-    P_O5_C5_angle = -(M_PI - (M_PI*120.9/180));
-    O5_C5_C4_angle = -(M_PI - (M_PI*110.2/180)); // poly_type
-    C5_C4_C3_angle = -(M_PI - (M_PI*114.7/180)); // poly_type
-    C4_C3_O3_angle = -(M_PI - (M_PI*110.3/180)); // poly_type
-    C3_O3_P_angle = -(M_PI - (M_PI*119.7/180));
+    O3_P_O5_angle = (M_PI - (M_PI*104.0/180));
+    P_O5_C5_angle = (M_PI - (M_PI*120.9/180));
+    O5_C5_C4_angle = (M_PI - (M_PI*110.2/180)); // poly_type
+    C5_C4_C3_angle = (M_PI - (M_PI*114.7/180)); // poly_type
+    C4_C3_O3_angle = (M_PI - (M_PI*110.3/180)); // poly_type
+    C3_O3_P_angle = (M_PI - (M_PI*119.7/180));
 
     //NA sugar ring
     R_C4_O4 = 1.446; // poly_type
     R_C3_C2 = 1.525; // poly_type
     R_C2_C1 = 1.528; // poly_type
 
-    C3_C4_O4_angle = -(M_PI - (M_PI*105.6/180)); //poly_type C5_C4_O4 109.4
-    O3_C3_C2_angle = -(M_PI - (M_PI*110.6/180)); //poly_type C4_C3_C2 103.2
-    C3_C2_C1_angle = -(M_PI - (M_PI*102.7/180)); //poly_type
+    C3_C4_O4_angle = (M_PI - (M_PI*109.4/180)); //poly_type C5_C4_O4 109.4 || C3_C4_O4 105.6
+    O3_C3_C2_angle = (M_PI - (M_PI*103.2/180)); //poly_type C4_C3_C2 103.2 || O3_C3_C2 110.6
+    C3_C2_C1_angle = (M_PI - (M_PI*102.7/180)); //poly_type
 
     //C4_dummy_transform
     C4_correction_angle = 0.0;
-    O3_C3_C4_O4_diangle = (M_PI*252.20807/360); //approximation from Gaussian
+    O3_C3_C4_O4_diangle = -0.5*((M_PI*252.20807/180)); //approximation from Gaussian
 
     //C3_dummy_transform
     C3_correction_angle = 0.0;
-    P_O3_C3_C2_diangle = (M_PI*93.58720/360); //approximation from Gaussian
+    P_O3_C3_C2_diangle = -0.5*(M_PI*93.58720/180); //approximation from Gaussian
 
 //    DNA chi
     R_Cyt_N1 = 1.470;
     R_Gua_N1 = 1.459;
     R_Thy_N1 = 1.473;
     R_Ade_N1 = 1.462;
-    DNA_N1_angle = -(M_PI - (M_PI * 114.2/180));
+    R_Ura_N1 = 1.469;
+    DNA_N1_angle = (M_PI - (M_PI * 114.2/180));
 
 }
 
@@ -210,7 +211,7 @@ template <typename T> void cGeometry<T>::gly(){
     //backbone angles [Original TPL values]
 //    C_N_CA_angle = (3.14159 - 1.9391);
 //    N_CA_C_angle = (3.14159 - 2.061);
-//    CA_C_N_angle = (3.14159 - 2.1186);
+//    CA_C_N_angle = (3.14159 - 2.116);
 //    CA_C_O_angle = (3.14159 - 2.1033);
 //    omega_const = -3.1318;
 

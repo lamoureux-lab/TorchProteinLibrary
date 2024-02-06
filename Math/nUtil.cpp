@@ -184,7 +184,7 @@ bool ProtUtil::isNucleotide(std::string &res_name, int polymer_type){
             return false;
             }
     else if(polymer_type == 2){
-        if(res_name == " A" || res_name == " U" || res_name == " C" || res_name == " G")
+        if(res_name == "A" || res_name == "U" || res_name == "C" || res_name == "G")
             return true;
         else
             return false;
@@ -214,7 +214,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         return num_atoms;
         }
 
-     if (polymer_type == 1){
+     if (polymer_type == 1 || polymer_type == 2){
 //         std::cout << "get_num_atoms p1 chain names:" << chain_names.slice(0,0) << std::endl;
          std::string chain_idx = "0";
 //         int chain_num = 0;
@@ -240,7 +240,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                     std::string term_atom("C4");
                     num_atoms += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
                 }
-                if(NA == std::string("T") || NA == std::string("C")){
+                if(NA == std::string("T") || NA == std::string("C") || NA == std::string("U")){
                     std::string term_atom("C6");
                     num_atoms += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
                 }
@@ -253,20 +253,19 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                 std::string term_atom("C4");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
                 }
-            if(NA == std::string("T") || NA == std::string("C")){
+            if(NA == std::string("T") || NA == std::string("C") || NA == std::string("U")){
                 std::string term_atom("C6");
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
             }
          }
 //        std::cout << "chain_num" << chain_num;
 //        num_atoms -= (3 * chain_num); // 3 for 1 chain (need function or arg to get number of chains)
-        std::cout << "get num atoms:" << num_atoms << std::endl;
+//        std::cout << "get num atoms:" << num_atoms << std::endl;
         return num_atoms;
     }
 }
 
 uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind, int polymer_type){
-
     if (polymer_type == 0){
 
     if(atom_name == std::string("N"))
@@ -593,338 +592,684 @@ uint ProtUtil::getAtomIndex(std::string &res_name, std::string &atom_name, bool 
     }
     }
 
-    if( polymer_type == 1){
-    if (res_name == std::string("DA") && fiveprime_ind == true || res_name == std::string("A") && fiveprime_ind == true){
-        if(atom_name == std::string("O5'"))
-            return 0;
-        if(atom_name == std::string("C5'"))
-            return 1;
-        if(atom_name == std::string("C4'"))
-            return 2;
-        if(atom_name == std::string("O4'"))
-            return 3;
-        if(atom_name == std::string("C3'"))
-            return 4;
-        if(atom_name == std::string("O3'"))
-            return 5;
-        if(atom_name == std::string("C2'"))
-            return 6;
-        if(atom_name == std::string("C1'"))
-            return 7;
-        if(atom_name == std::string("N9"))
-            return 8;
-        if(atom_name == std::string("C8"))
-            return 9;
-        if(atom_name == std::string("N7"))
-            return 10;
-        if(atom_name == std::string("C5"))
-            return 11;
-        if(atom_name == std::string("C6"))
-            return 12;
-        if(atom_name == std::string("N6"))
-            return 13;
-        if(atom_name == std::string("N1"))
-            return 14;
-        if(atom_name == std::string("C2"))
-            return 15;
-        if(atom_name == std::string("N3"))
-            return 16;
-        if(atom_name == std::string("C4"))
-            return 17;
-    }
-
-     if(res_name == std::string("DG") && fiveprime_ind == true || res_name == std::string("G") && fiveprime_ind == true){
-        if(atom_name == std::string("O5'"))
-            return 0;
-        if(atom_name == std::string("C5'"))
-            return 1;
-        if(atom_name == std::string("C4'"))
-            return 2;
-        if(atom_name == std::string("O4'"))
-            return 3;
-        if(atom_name == std::string("C3'"))
-            return 4;
-        if(atom_name == std::string("O3'"))
-            return 5;
-        if(atom_name == std::string("C2'"))
-            return 6;
-        if(atom_name == std::string("C1'"))
-            return 7;
-        if(atom_name == std::string("N9"))
-            return 8;
-        if(atom_name == std::string("C8"))
-            return 9;
-        if(atom_name == std::string("N7"))
-            return 10;
-        if(atom_name == std::string("C5"))
-            return 11;
-        if(atom_name == std::string("C6"))
-            return 12;
-        if(atom_name == std::string("O6"))
-            return 13;
-        if(atom_name == std::string("N1"))
-            return 14;
-        if(atom_name == std::string("C2"))
-            return 15;
-        if(atom_name == std::string("N2"))
-            return 16;
-        if(atom_name == std::string("N3"))
-            return 17;
-        if(atom_name == std::string("C4"))
-            return 18;
-    }
-
-    if(res_name == std::string("DT") && fiveprime_ind == true || res_name == std::string("T") && fiveprime_ind == true){
-        if(atom_name == std::string("O5'"))
-            return 0;
-        if(atom_name == std::string("C5'"))
-            return 1;
-        if(atom_name == std::string("C4'"))
-            return 2;
-        if(atom_name == std::string("O4'"))
-            return 3;
-        if(atom_name == std::string("C3'"))
-            return 4;
-        if(atom_name == std::string("O3'"))
-            return 5;
-        if(atom_name == std::string("C2'"))
-            return 6;
-        if(atom_name == std::string("C1'"))
-            return 7;
-        if(atom_name == std::string("N1"))
-            return 8;
-        if(atom_name == std::string("C2"))
-            return 9;
-        if(atom_name == std::string("O2"))
-            return 10;
-        if(atom_name == std::string("N3"))
-            return 11;
-        if(atom_name == std::string("C4"))
-            return 12;
-        if(atom_name == std::string("O4"))
-            return 13;
-        if(atom_name == std::string("C5"))
-            return 14;
-        if(atom_name == std::string("C7"))
-            return 15;
-        if(atom_name == std::string("C6"))
-            return 16;
+    if( polymer_type == 1 || polymer_type == 2){
+        if ((res_name == std::string("DA") && fiveprime_ind == true) || (res_name == std::string("A") && fiveprime_ind == true)){
+            if(atom_name == std::string("O5'"))
+                return 0;
+            if(atom_name == std::string("C5'"))
+                return 1;
+            if(atom_name == std::string("C4'"))
+                return 2;
+            if(atom_name == std::string("O4'"))
+                return 3;
+            if(atom_name == std::string("C3'"))
+                return 4;
+            if(atom_name == std::string("O3'"))
+                return 5;
+            if(atom_name == std::string("C2'"))
+                return 6;
+            if(atom_name == std::string("O2'"))
+                return 7;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 7;
+                if( polymer_type == 2)
+                    return 8;
+                    }
+            if(atom_name == std::string("N9")){
+                if( polymer_type == 1)
+                    return 8;
+                if( polymer_type == 2)
+                    return 9;
+                    }
+            if(atom_name == std::string("C8")){
+                if( polymer_type == 1)
+                    return 9;
+                if( polymer_type == 2)
+                    return 10;
+                    }
+            if(atom_name == std::string("N7")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("N6")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 16;
+                if( polymer_type == 2)
+                    return 17;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 17;
+                if( polymer_type == 2)
+                    return 18;
+                    }
         }
 
-    if(res_name == std::string("DC") && fiveprime_ind == true || res_name == std::string("C") && fiveprime_ind == true){
-        if(atom_name == std::string("O5'"))
-            return 0;
-        if(atom_name == std::string("C5'"))
-            return 1;
-        if(atom_name == std::string("C4'"))
-            return 2;
-        if(atom_name == std::string("O4'"))
-            return 3;
-        if(atom_name == std::string("C3'"))
-            return 4;
-        if(atom_name == std::string("O3'"))
-            return 5;
-        if(atom_name == std::string("C2'"))
-            return 6;
-        if(atom_name == std::string("C1'"))
-            return 7;
-        if(atom_name == std::string("N1"))
-            return 8;
-        if(atom_name == std::string("C2"))
-            return 9;
-        if(atom_name == std::string("O2"))
-            return 10;
-        if(atom_name == std::string("N3"))
-            return 11;
-        if(atom_name == std::string("C4"))
-            return 12;
-        if(atom_name == std::string("N4"))
-            return 13;
-        if(atom_name == std::string("C5"))
-            return 14;
-        if(atom_name == std::string("C6"))
-            return 15;
-    }
-    if(res_name == std::string("DA") && fiveprime_ind == false || res_name == std::string("A") && fiveprime_ind == false){//|| res_name == std::string("O")){
-        if(atom_name == std::string("P"))
-            return 0;
-        if(atom_name == std::string("OP1"))
-            return 1;
-        if(atom_name == std::string("OP2"))
-            return 2;
-        if(atom_name == std::string("O5'"))
-            return 3;
-        if(atom_name == std::string("C5'"))
-            return 4;
-        if(atom_name == std::string("C4'"))
-            return 5;
-        if(atom_name == std::string("O4'"))
-            return 6;
-        if(atom_name == std::string("C3'"))
-            return 7;
-        if(atom_name == std::string("O3'"))
-            return 8;
-        if(atom_name == std::string("C2'"))
-            return 9;
-        if(atom_name == std::string("C1'"))
-            return 10;
-        if(atom_name == std::string("N9"))
-            return 11;
-        if(atom_name == std::string("C8"))
-            return 12;
-        if(atom_name == std::string("N7"))
-            return 13;
-        if(atom_name == std::string("C5"))
-            return 14;
-        if(atom_name == std::string("C6"))
-            return 15;
-        if(atom_name == std::string("N6"))
-            return 16;
-        if(atom_name == std::string("N1"))
-            return 17;
-        if(atom_name == std::string("C2"))
-            return 18;
-        if(atom_name == std::string("N3"))
-            return 19;
-        if(atom_name == std::string("C4"))
-            return 20;
-    }
-
-     if(res_name == std::string("DG") && fiveprime_ind == false || res_name == std::string("G") && fiveprime_ind == false){// || res_name == std::string("U")){
-        if(atom_name == std::string("P"))
-            return 0;
-        if(atom_name == std::string("OP1"))
-            return 1;
-        if(atom_name == std::string("OP2"))
-            return 2;
-        if(atom_name == std::string("O5'"))
-            return 3;
-        if(atom_name == std::string("C5'"))
-            return 4;
-        if(atom_name == std::string("C4'"))
-            return 5;
-        if(atom_name == std::string("O4'"))
-            return 6;
-        if(atom_name == std::string("C3'"))
-            return 7;
-        if(atom_name == std::string("O3'"))
-            return 8;
-        if(atom_name == std::string("C2'"))
-            return 9;
-        if(atom_name == std::string("C1'"))
-            return 10;
-        if(atom_name == std::string("N9"))
-            return 11;
-        if(atom_name == std::string("C8"))
-            return 12;
-        if(atom_name == std::string("N7"))
-            return 13;
-        if(atom_name == std::string("C5"))
-            return 14;
-        if(atom_name == std::string("C6"))
-            return 15;
-        if(atom_name == std::string("O6"))
-            return 16;
-        if(atom_name == std::string("N1"))
-            return 17;
-        if(atom_name == std::string("C2"))
-            return 18;
-        if(atom_name == std::string("N2"))
-            return 19;
-        if(atom_name == std::string("N3"))
-            return 20;
-        if(atom_name == std::string("C4"))
-            return 21;
-    }
-
-    if(res_name == std::string("DT") && fiveprime_ind == false || res_name == std::string("T") && fiveprime_ind == false){// || res_name == std::string("Z")){
-        if(atom_name == std::string("P"))
-            return 0;
-        if(atom_name == std::string("OP1"))
-            return 1;
-        if(atom_name == std::string("OP2"))
-            return 2;
-        if(atom_name == std::string("O5'"))
-            return 3;
-        if(atom_name == std::string("C5'"))
-            return 4;
-        if(atom_name == std::string("C4'"))
-            return 5;
-        if(atom_name == std::string("O4'"))
-            return 6;
-        if(atom_name == std::string("C3'"))
-            return 7;
-        if(atom_name == std::string("O3'"))
-            return 8;
-        if(atom_name == std::string("C2'"))
-            return 9;
-        if(atom_name == std::string("C1'"))
-            return 10;
-        if(atom_name == std::string("N1"))
-            return 11;
-        if(atom_name == std::string("C2"))
-            return 12;
-        if(atom_name == std::string("O2"))
-            return 13;
-        if(atom_name == std::string("N3"))
-            return 14;
-        if(atom_name == std::string("C4"))
-            return 15;
-        if(atom_name == std::string("O4"))
-            return 16;
-        if(atom_name == std::string("C5"))
-            return 17;
-        if(atom_name == std::string("C7"))
-            return 18;
-        if(atom_name == std::string("C6"))
-            return 19;
+         if((res_name == std::string("DG") && fiveprime_ind == true) || (res_name == std::string("G") && fiveprime_ind == true)){
+            if(atom_name == std::string("O5'"))
+                return 0;
+            if(atom_name == std::string("C5'"))
+                return 1;
+            if(atom_name == std::string("C4'"))
+                return 2;
+            if(atom_name == std::string("O4'"))
+                return 3;
+            if(atom_name == std::string("C3'"))
+                return 4;
+            if(atom_name == std::string("O3'"))
+                return 5;
+            if(atom_name == std::string("C2'"))
+                return 6;
+            if(atom_name == std::string("O2'"))
+                return 7;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 7;
+                if( polymer_type == 2)
+                    return 8;
+                    }
+            if(atom_name == std::string("N9")){
+                if( polymer_type == 1)
+                    return 8;
+                if( polymer_type == 2)
+                    return 9;
+                    }
+            if(atom_name == std::string("C8")){
+                if( polymer_type == 1)
+                    return 9;
+                if( polymer_type == 2)
+                    return 10;
+                    }
+            if(atom_name == std::string("N7")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("O6")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
+            if(atom_name == std::string("N2")){
+                if( polymer_type == 1)
+                    return 16;
+                if( polymer_type == 2)
+                    return 17;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 17;
+                if( polymer_type == 2)
+                    return 18;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 18;
+                if( polymer_type == 2)
+                    return 19;
+                    }
         }
 
-    if(res_name == std::string("DC") && fiveprime_ind == false || res_name == std::string("C") && fiveprime_ind == false){ // || res_name == std::string("B")){
-        if(atom_name == std::string("P"))
-            return 0;
-        if(atom_name == std::string("OP1"))
-            return 1;
-        if(atom_name == std::string("OP2"))
-            return 2;
-        if(atom_name == std::string("O5'"))
-            return 3;
-        if(atom_name == std::string("C5'"))
-            return 4;
-        if(atom_name == std::string("C4'"))
-            return 5;
-        if(atom_name == std::string("O4'"))
-            return 6;
-        if(atom_name == std::string("C3'"))
-            return 7;
-        if(atom_name == std::string("O3'"))
-            return 8;
-        if(atom_name == std::string("C2'"))
-            return 9;
-        if(atom_name == std::string("C1'"))
-            return 10;
-        if(atom_name == std::string("N1"))
-            return 11;
-        if(atom_name == std::string("C2"))
-            return 12;
-        if(atom_name == std::string("O2"))
-            return 13;
-        if(atom_name == std::string("N3"))
-            return 14;
-        if(atom_name == std::string("C4"))
-            return 15;
-        if(atom_name == std::string("N4"))
-            return 16;
-        if(atom_name == std::string("C5"))
-            return 17;
-        if(atom_name == std::string("C6"))
-            return 18;
+        if(res_name == std::string("DT") && fiveprime_ind == true || res_name == std::string("T") && fiveprime_ind == true){
+            if(atom_name == std::string("O5'"))
+                return 0;
+            if(atom_name == std::string("C5'"))
+                return 1;
+            if(atom_name == std::string("C4'"))
+                return 2;
+            if(atom_name == std::string("O4'"))
+                return 3;
+            if(atom_name == std::string("C3'"))
+                return 4;
+            if(atom_name == std::string("O3'"))
+                return 5;
+            if(atom_name == std::string("C2'"))
+                return 6;
+            if(atom_name == std::string("C1'"))
+                return 7;
+            if(atom_name == std::string("N1"))
+                return 8;
+            if(atom_name == std::string("C2"))
+                return 9;
+            if(atom_name == std::string("O2"))
+                return 10;
+            if(atom_name == std::string("N3"))
+                return 11;
+            if(atom_name == std::string("C4"))
+                return 12;
+            if(atom_name == std::string("O4"))
+                return 13;
+            if(atom_name == std::string("C5"))
+                return 14;
+            if(atom_name == std::string("C7"))
+                return 15;
+            if(atom_name == std::string("C6"))
+                return 16;
+            }
+
+        if(res_name == std::string("DC") && fiveprime_ind == true || res_name == std::string("C") && fiveprime_ind == true){
+            if(atom_name == std::string("O5'"))
+                return 0;
+            if(atom_name == std::string("C5'"))
+                return 1;
+            if(atom_name == std::string("C4'"))
+                return 2;
+            if(atom_name == std::string("O4'"))
+                return 3;
+            if(atom_name == std::string("C3'"))
+                return 4;
+            if(atom_name == std::string("O3'"))
+                return 5;
+            if(atom_name == std::string("C2'"))
+                return 6;
+            if(atom_name == std::string("O2'"))
+                return 7;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 7;
+                if( polymer_type == 2)
+                    return 8;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 8;
+                if( polymer_type == 2)
+                    return 9;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 9;
+                if( polymer_type == 2)
+                    return 10;
+                    }
+            if(atom_name == std::string("O2")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("N4")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
         }
+         if( res_name == std::string("U") && fiveprime_ind == true){
+            if(atom_name == std::string("O5'"))
+                return 0;
+            if(atom_name == std::string("C5'"))
+                return 1;
+            if(atom_name == std::string("C4'"))
+                return 2;
+            if(atom_name == std::string("O4'"))
+                return 3;
+            if(atom_name == std::string("C3'"))
+                return 4;
+            if(atom_name == std::string("O3'"))
+                return 5;
+            if(atom_name == std::string("C2'"))
+                return 6;
+            if(atom_name == std::string("O2'"))
+                return 7;
+            if(atom_name == std::string("C1'"))
+                return 8;
+            if(atom_name == std::string("N1"))
+                return 9;
+            if(atom_name == std::string("C2"))
+                return 10;
+            if(atom_name == std::string("O2"))
+                return 11;
+            if(atom_name == std::string("N3"))
+                return 12;
+            if(atom_name == std::string("C4"))
+                return 13;
+            if(atom_name == std::string("O4"))
+                return 14;
+            if(atom_name == std::string("C5"))
+                return 15;
+            if(atom_name == std::string("C6"))
+                return 16;
+            }
+        if(res_name == std::string("DA") && fiveprime_ind == false || res_name == std::string("A") && fiveprime_ind == false){//|| res_name == std::string("O")){
+            if(atom_name == std::string("P"))
+                return 0;
+            if(atom_name == std::string("OP1"))
+                return 1;
+            if(atom_name == std::string("OP2"))
+                return 2;
+            if(atom_name == std::string("O5'"))
+                return 3;
+            if(atom_name == std::string("C5'"))
+                return 4;
+            if(atom_name == std::string("C4'"))
+                return 5;
+            if(atom_name == std::string("O4'"))
+                return 6;
+            if(atom_name == std::string("C3'"))
+                return 7;
+            if(atom_name == std::string("O3'"))
+                return 8;
+            if(atom_name == std::string("C2'"))
+                return 9;
+            if(atom_name == std::string("O2'"))
+                return 10;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("N9")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C8")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("N7")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
+            if(atom_name == std::string("N6")){
+                if( polymer_type == 1)
+                    return 16;
+                if( polymer_type == 2)
+                    return 17;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 17;
+                if( polymer_type == 2)
+                    return 18;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 18;
+                if( polymer_type == 2)
+                    return 19;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 19;
+                if( polymer_type == 2)
+                    return 20;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 20;
+                if( polymer_type == 2)
+                    return 21;
+                    }
         }
 
-        if (polymer_type == 2){
-        std::cout << "Get Atom Index not implemented for Polymer Type 2 \n";
+         if(res_name == std::string("DG") && fiveprime_ind == false || res_name == std::string("G") && fiveprime_ind == false){// || res_name == std::string("U")){
+            if(atom_name == std::string("P"))
+                return 0;
+            if(atom_name == std::string("OP1"))
+                return 1;
+            if(atom_name == std::string("OP2"))
+                return 2;
+            if(atom_name == std::string("O5'"))
+                return 3;
+            if(atom_name == std::string("C5'"))
+                return 4;
+            if(atom_name == std::string("C4'"))
+                return 5;
+            if(atom_name == std::string("O4'"))
+                return 6;
+            if(atom_name == std::string("C3'"))
+                return 7;
+            if(atom_name == std::string("O3'"))
+                return 8;
+            if(atom_name == std::string("C2'"))
+                return 9;
+            if(atom_name == std::string("O2'"))
+                return 10;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("N9")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C8")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("N7")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
+            if(atom_name == std::string("O6")){
+                if( polymer_type == 1)
+                    return 16;
+                if( polymer_type == 2)
+                    return 17;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 17;
+                if( polymer_type == 2)
+                    return 18;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 18;
+                if( polymer_type == 2)
+                    return 19;
+                    }
+            if(atom_name == std::string("N2")){
+                if( polymer_type == 1)
+                    return 19;
+                if( polymer_type == 2)
+                    return 20;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 20;
+                if( polymer_type == 2)
+                    return 21;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 21;
+                if( polymer_type == 2)
+                    return 22;
+                    }
         }
+
+        if(res_name == std::string("DT") && fiveprime_ind == false || res_name == std::string("T") && fiveprime_ind == false){// || res_name == std::string("Z")){
+            if(atom_name == std::string("P"))
+                return 0;
+            if(atom_name == std::string("OP1"))
+                return 1;
+            if(atom_name == std::string("OP2"))
+                return 2;
+            if(atom_name == std::string("O5'"))
+                return 3;
+            if(atom_name == std::string("C5'"))
+                return 4;
+            if(atom_name == std::string("C4'"))
+                return 5;
+            if(atom_name == std::string("O4'"))
+                return 6;
+            if(atom_name == std::string("C3'"))
+                return 7;
+            if(atom_name == std::string("O3'"))
+                return 8;
+            if(atom_name == std::string("C2'"))
+                return 9;
+            if(atom_name == std::string("C1'"))
+                return 10;
+            if(atom_name == std::string("N1"))
+                return 11;
+            if(atom_name == std::string("C2"))
+                return 12;
+            if(atom_name == std::string("O2"))
+                return 13;
+            if(atom_name == std::string("N3"))
+                return 14;
+            if(atom_name == std::string("C4"))
+                return 15;
+            if(atom_name == std::string("O4"))
+                return 16;
+            if(atom_name == std::string("C5"))
+                return 17;
+            if(atom_name == std::string("C7"))
+                return 18;
+            if(atom_name == std::string("C6"))
+                return 19;
+            }
+
+        if(res_name == std::string("DC") && fiveprime_ind == false || res_name == std::string("C") && fiveprime_ind == false){ // || res_name == std::string("B")){
+            if(atom_name == std::string("P"))
+                return 0;
+            if(atom_name == std::string("OP1"))
+                return 1;
+            if(atom_name == std::string("OP2"))
+                return 2;
+            if(atom_name == std::string("O5'"))
+                return 3;
+            if(atom_name == std::string("C5'"))
+                return 4;
+            if(atom_name == std::string("C4'"))
+                return 5;
+            if(atom_name == std::string("O4'"))
+                return 6;
+            if(atom_name == std::string("C3'"))
+                return 7;
+            if(atom_name == std::string("O3'"))
+                return 8;
+            if(atom_name == std::string("C2'"))
+                return 9;
+            if(atom_name == std::string("O2'"))
+                return 10;
+            if(atom_name == std::string("C1'")){
+                if( polymer_type == 1)
+                    return 10;
+                if( polymer_type == 2)
+                    return 11;
+                    }
+            if(atom_name == std::string("N1")){
+                if( polymer_type == 1)
+                    return 11;
+                if( polymer_type == 2)
+                    return 12;
+                    }
+            if(atom_name == std::string("C2")){
+                if( polymer_type == 1)
+                    return 12;
+                if( polymer_type == 2)
+                    return 13;
+                    }
+            if(atom_name == std::string("O2")){
+                if( polymer_type == 1)
+                    return 13;
+                if( polymer_type == 2)
+                    return 14;
+                    }
+            if(atom_name == std::string("N3")){
+                if( polymer_type == 1)
+                    return 14;
+                if( polymer_type == 2)
+                    return 15;
+                    }
+            if(atom_name == std::string("C4")){
+                if( polymer_type == 1)
+                    return 15;
+                if( polymer_type == 2)
+                    return 16;
+                    }
+            if(atom_name == std::string("N4")){
+                if( polymer_type == 1)
+                    return 16;
+                if( polymer_type == 2)
+                    return 17;
+                    }
+            if(atom_name == std::string("C5")){
+                if( polymer_type == 1)
+                    return 17;
+                if( polymer_type == 2)
+                    return 18;
+                    }
+            if(atom_name == std::string("C6")){
+                if( polymer_type == 1)
+                    return 18;
+                if( polymer_type == 2)
+                    return 19;
+                    }
+            }
+            if( res_name == std::string("U") && fiveprime_ind == false){
+            if(atom_name == std::string("P"))
+                return 0;
+            if(atom_name == std::string("OP1"))
+                return 1;
+            if(atom_name == std::string("OP2"))
+                return 2;
+            if(atom_name == std::string("O5'"))
+                return 3;
+            if(atom_name == std::string("C5'"))
+                return 4;
+            if(atom_name == std::string("C4'"))
+                return 5;
+            if(atom_name == std::string("O4'"))
+                return 6;
+            if(atom_name == std::string("C3'"))
+                return 7;
+            if(atom_name == std::string("O3'"))
+                return 8;
+            if(atom_name == std::string("C2'"))
+                return 9;
+            if(atom_name == std::string("O2'"))
+                return 10;
+            if(atom_name == std::string("C1'"))
+                return 11;
+            if(atom_name == std::string("N1"))
+                return 12;
+            if(atom_name == std::string("C2"))
+                return 13;
+            if(atom_name == std::string("O2"))
+                return 14;
+            if(atom_name == std::string("N3"))
+                return 15;
+            if(atom_name == std::string("C4"))
+                return 16;
+            if(atom_name == std::string("O4"))
+                return 17;
+            if(atom_name == std::string("C5"))
+                return 18;
+            if(atom_name == std::string("C6"))
+                return 19;
+            }
+        }
+
+//        if (polymer_type == 2){
+//        std::cout << "Get Atom Index not implemented for Polymer Type 2 \n";
+//        }
 
     std::cout<<"Unknown atom/res names"<<std::endl;
     throw(std::string("Unknown atom/res names"));
@@ -989,7 +1334,17 @@ std::string ProtUtil::convertRes1to3(char resName, int polymer_type){
         case 'C':
             return std::string("DC");
         }
-    }
+    case 2:
+    switch(resName){
+        case 'G':
+            return std::string("G");
+        case 'A':
+            return std::string("A");
+        case 'U':
+            return std::string("U");
+        case 'C':
+            return std::string("C");
+        }}
 }
 
 uint ProtUtil::get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal){

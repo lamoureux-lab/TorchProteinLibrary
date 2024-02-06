@@ -22,7 +22,7 @@ using namespace StringUtil;
 cPDBLoader::cPDBLoader(){
 
 }
-cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
+cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_type) {
 //    std::cout << "Before File Open Test cPDBLoader call \n";
 
     std::ifstream pfile(filename);
@@ -31,28 +31,44 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 	// reading raw file
 
 //	std::cout << "Before while Test cPDBLoader call \n";
+//    std::cout << "chain_id"<< chain_id << '\n';
+
 
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
 
-//        std::cout << header << "cPDBLoader call Test \n";
-
+//        std::cout << header << "cPDBLoader call Test \n" << std::endl;
+//        Instead of if poly type here, Get Atom Name Check if Heavy Atom, Then Get res_name to detect poly type
+//          Poly_type can then be detected, saved, and puch back from here so it never has to be inputted.
         if(polymer_type == 0){
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
                 // std::cout<<atom_name<<" ";
                 if(isHeavyAtom(atom_name)){
-                    xStr = line.substr(30,8);
-                    yStr = line.substr(38,8);
-                    zStr = line.substr(46,8);
-                    res_name = trim(line.substr(17,3));
                     chain_name = line.substr(21, 1);
-                    res_num = std::stoi(line.substr(22,4));
-                    r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
-                    chain_names.push_back(chain_name);
-                    res_names.push_back(res_name);
-                    res_nums.push_back(res_num);
-                    atom_names.push_back(atom_name);
+                    if(chain_id.empty()){
+                        xStr = line.substr(30,8);
+                            yStr = line.substr(38,8);
+                            zStr = line.substr(46,8);
+                            res_num = std::stoi(line.substr(22,4));
+                            r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                            chain_names.push_back(chain_name);
+                            res_names.push_back(res_name);
+                            res_nums.push_back(res_num);
+                            atom_names.push_back(atom_name);
+                        }
+                    if(chain_name == chain_id && chain_id.length() > 0){
+                        xStr = line.substr(30,8);
+                        yStr = line.substr(38,8);
+                        zStr = line.substr(46,8);
+                        res_name = trim(line.substr(17,3));
+                        res_num = std::stoi(line.substr(22,4));
+                        r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                        chain_names.push_back(chain_name);
+                        res_names.push_back(res_name);
+                        res_nums.push_back(res_num);
+                        atom_names.push_back(atom_name);
+                        }
 //                     std::cout<<res_name<<": "<<atom_name << "| ";
                 }
             }
@@ -71,39 +87,69 @@ cPDBLoader::cPDBLoader(std::string filename, int polymer_type) {
 //                    std::cout << res_name << " ";
                     if(isNucleotide(res_name, polymer_type)){
 //                        std::cout << atom_name <<" "; //PDBLoader "is nucleotide" test
-                        xStr = line.substr(30,8);
-                        yStr = line.substr(38,8);
-                        zStr = line.substr(46,8);
                         chain_name = line.substr(21, 1);
-                        res_num = std::stoi(line.substr(22,4));
-                        r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
-                        chain_names.push_back(chain_name);
-                        res_names.push_back(res_name);
-                        res_nums.push_back(res_num);
-                        atom_names.push_back(atom_name);
-//                        std::cout<<res_num << "\n"; //PDBLoader isNucleotide Test
+//                        std::cout << "chain name:" << chain_name;
+                        if(chain_id.empty()){
+//                        std::cout << "1";
+                        xStr = line.substr(30,8);
+                            yStr = line.substr(38,8);
+                            zStr = line.substr(46,8);
+                            res_num = std::stoi(line.substr(22,4));
+                            r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                            chain_names.push_back(chain_name);
+                            res_names.push_back(res_name);
+                            res_nums.push_back(res_num);
+                            atom_names.push_back(atom_name);
+                        }
+                        if(chain_name == chain_id && chain_id.length() > 0){
+//                            std::cout << "2";
+                            xStr = line.substr(30,8);
+                            yStr = line.substr(38,8);
+                            zStr = line.substr(46,8);
+                            res_num = std::stoi(line.substr(22,4));
+                            r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                            chain_names.push_back(chain_name);
+                            res_names.push_back(res_name);
+                            res_nums.push_back(res_num);
+                            atom_names.push_back(atom_name);
+    //                        std::cout<<res_num << "\n"; //PDBLoader isNucleotide Test
+                        }
                     }
                 }
             }
 	    }
 	    if(polymer_type == 2){
             if( header.compare("ATOM")==0){
+//                std::cout << header << "cPDBLoader if header compare Test \n" << std::endl;
                 atom_name = trim(line.substr(12,4));
-//                 std::cout<<atom_name<<" ";
                 if(isHeavyAtom(atom_name)){
                     res_name = trim(line.substr(17,3));
+//                    std::cout<<atom_name<<" " << res_name << std::endl;
                     if(isNucleotide(res_name, polymer_type)){
-                        xStr = line.substr(30,8);
-                        yStr = line.substr(38,8);
-                        zStr = line.substr(46,8);
                         chain_name = line.substr(21, 1);
-                        res_num = std::stoi(line.substr(22,4));
-                        r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
-                        chain_names.push_back(chain_name);
-                        res_names.push_back(res_name);
-                        res_nums.push_back(res_num);
-                        atom_names.push_back(atom_name);
-                        // std::cout<<res_name<<" "<<atom_name;
+                        if(chain_id.empty()){
+                        xStr = line.substr(30,8);
+                            yStr = line.substr(38,8);
+                            zStr = line.substr(46,8);
+                            res_num = std::stoi(line.substr(22,4));
+                            r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                            chain_names.push_back(chain_name);
+                            res_names.push_back(res_name);
+                            res_nums.push_back(res_num);
+                            atom_names.push_back(atom_name);
+                        }
+                        if (chain_name == chain_id && chain_id.length() > 0){
+                            xStr = line.substr(30,8);
+                            yStr = line.substr(38,8);
+                            zStr = line.substr(46,8);
+                            res_num = std::stoi(line.substr(22,4));
+                            r.push_back(cVector3<double>(std::stof(xStr),std::stof(yStr),std::stof(zStr)));
+                            chain_names.push_back(chain_name);
+                            res_names.push_back(res_name);
+                            res_nums.push_back(res_num);
+                            atom_names.push_back(atom_name);
+                            // std::cout<<res_name<<" "<<atom_name;
+                        }
                     }
                 }
             }

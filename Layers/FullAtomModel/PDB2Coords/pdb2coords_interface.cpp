@@ -6,7 +6,7 @@
 #include <algorithm>
 
 void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Tensor chain_names, torch::Tensor res_names, 
-                        torch::Tensor res_nums, torch::Tensor atom_names, torch::Tensor atom_mask, torch::Tensor num_atoms, int polymer_type){
+                        torch::Tensor res_nums, torch::Tensor atom_names, torch::Tensor atom_mask, torch::Tensor num_atoms, torch::Tensor chain_ids, int polymer_type){
     
     CHECK_CPU_INPUT_TYPE(filenames, torch::kByte);
     CHECK_CPU_INPUT_TYPE(res_names, torch::kByte);
@@ -28,7 +28,14 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             torch::Tensor single_filename = filenames[i];
             std::string filename = StringUtil::tensor2String(single_filename);
 
-            cPDBLoader pdb(filename, 0);
+            std::string chain_id;
+            if(chain_ids.size(0) > 0){
+                torch::Tensor single_chain_id = chain_ids[i];
+                std::string chain_id = StringUtil::tensor2String(single_chain_id);
+            }
+//            std::cout << 'chain_id and chain_ids size:'<< chain_id << '\n'<< chain_ids.size(0);
+
+            cPDBLoader pdb(filename, chain_id, 0);
             num_atoms[i] = 0;
             int previous_res_num = pdb.res_nums[0];
             for(int j=0; j<pdb.r.size(); j++){
@@ -73,7 +80,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             std::string filename = StringUtil::tensor2String(single_filename);
 
-            cPDBLoader pdb(filename, 0);
+            std::string chain_id;
+            if(chain_ids.size(0) > 0){
+                torch::Tensor single_chain_id = chain_ids[i];
+                std::string chain_id = StringUtil::tensor2String(single_chain_id);
+            }
+
+            cPDBLoader pdb(filename, chain_id, 0);
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
@@ -102,7 +115,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
         }
     }
 
-    else if (polymer_type == 1){
+    else if (polymer_type == 1 || polymer_type == 2){
         int batch_size = filenames.size(0);
 //
         #pragma omp parallel for
@@ -110,7 +123,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             torch::Tensor single_filename = filenames[i];
             std::string filename = StringUtil::tensor2String(single_filename);
 
-            cPDBLoader pdb(filename, 1);
+            std::string chain_id;
+            if(chain_ids.size(0) > 0){
+                torch::Tensor single_chain_id = chain_ids[i];
+                chain_id = StringUtil::tensor2String(single_chain_id);
+            }
+
+            cPDBLoader pdb(filename, chain_id, polymer_type);
 //            std::cout << pdb.res_names << " \n cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 1
 //            std::cout << res_names << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 2
 //            std::cout << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 3
@@ -122,7 +141,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             num_atoms[i] = static_cast<int>(pdb.atom_names.size() + 1);
 
-//          Get Num_atoms another way
+//          Get Num_atoms another way : I can use the following way now, I modified getAtomIndex just need to add the correct args
+//          Then I might be able to combine this first part of poly 0 & 1+2. (could i just use getNumAtom?)
+//          Then once I get poly type I can use an if to control flow of parts of the 2nd part I need to
 
 //            int previous_res_num = pdb.res_nums[0];
 //            for(int j=0; j<pdb.r.size(); j++){
@@ -162,7 +183,13 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
             std::string filename = StringUtil::tensor2String(single_filename);
 
-            cPDBLoader pdb(filename, 1);
+            std::string chain_id;
+            if(chain_ids.size(0) > 0){
+                torch::Tensor single_chain_id = chain_ids[i];
+                chain_id = StringUtil::tensor2String(single_chain_id);
+            }
+
+            cPDBLoader pdb(filename, chain_id, polymer_type);
 
             int global_ind = 0;
             int previous_res_num = pdb.res_nums[0];
@@ -170,8 +197,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             int chain_num = 0;
 
             for(int j=0; j<pdb.r.size(); j++){
-////            std::cout << pdb.chain_names[j];
-////            std::cout << pdb.res_nums[j];
+//                std::cout << pdb.chain_names[j] << std::endl;
+////                std::cout << pdb.res_nums[j];
+//                std::cout << pdb.atom_names[j] << " " << pdb.res_names[j] << std::endl;
                 if (pdb.chain_names[j] > chain_idx && pdb.atom_names[j] == "O5'"){
                     chain_idx = pdb.chain_names[j];
                     int res_idx = static_cast<int>(pdb.res_nums[j]);
@@ -181,16 +209,16 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
                         if (previous_res_num < pdb.res_nums[j]) {
                             previous_res_num = pdb.res_nums[j];
-                            if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG") {
+                            if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG" || pdb.res_names[j-1] == "A" || pdb.res_names[j-1] == "G") {
                                 std::string resLastAtom("C4");
-                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, 1) + 1;
+                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, polymer_type) + 1;
                             }
-                            if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC") {
+                            if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC" || pdb.res_names[j-1] == "C" || pdb.res_names[j-1] == "U") {
                                 std::string resLastAtom("C6");
-                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, 1) + 1;
+                                global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, true, polymer_type) + 1;
                             }
                         }
-                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], true, 1) + global_ind - (3 * chain_num);
+                        uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], true, polymer_type) + global_ind - (3 * chain_num);
 
                         StringUtil::string2Tensor(pdb.chain_names[j], single_chain_names[idx]);
                         StringUtil::string2Tensor(pdb.res_names[j], single_res_names[idx]);
@@ -213,16 +241,16 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 }
                 if (previous_res_num < pdb.res_nums[j]) {
                     previous_res_num = pdb.res_nums[j];
-                    if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG") {
+                    if (pdb.res_names[j-1] == "DA" || pdb.res_names[j-1] == "DG" || pdb.res_names[j-1] == "A" || pdb.res_names[j-1] == "G") {
                         std::string resLastAtom("C4");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, 1) + 1;
+                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, polymer_type) + 1;
                     }
-                    if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC") {
+                    if (pdb.res_names[j-1] == "DT" || pdb.res_names[j-1] == "DC" || pdb.res_names[j-1] == "C" || pdb.res_names[j-1] == "U") {
                         std::string resLastAtom("C6");
-                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, 1) + 1;
+                        global_ind += ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom, false, polymer_type) + 1;
                     }
                 }
-                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, 1) + global_ind - (3 * chain_num);
+                uint idx = ProtUtil::getAtomIndex(pdb.res_names[j], pdb.atom_names[j], false, polymer_type) + global_ind - (3 * chain_num);
 
 //                std::cout << "chain num variable:" << chain_num << "\n";
 
@@ -245,13 +273,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             }
 //        }
 //    }
-//        std::cerr << "Error Polymer Type 1 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
 //        std::cout << atom_names;
         }
-    }
-
-    else if (polymer_type == 2){
-        std::cerr << "Error Polymer Type 2 Not Implemented in pdb2coords_interface.cpp/PDB2CoordsOrdered \n";
     }
 
     else{

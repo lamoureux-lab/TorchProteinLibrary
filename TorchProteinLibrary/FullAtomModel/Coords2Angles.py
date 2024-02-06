@@ -63,6 +63,9 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 				current_residue.add(atom)
 
 			if polymer_type == 2:
+				# print(atom_name, coord, 0.0, 1.0, "", atom_name, None)
+				if len(atom_name) == 0:
+					continue
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				current_residue.add(atom)
 
@@ -88,7 +91,7 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			for j, xi in enumerate(xis):
 				angles[3+j, i] = xis[j]
 		return angles
-	if polymer_type == 1:
+	if polymer_type == 1 or polymer_type == 2:
 		residues = list(structure.get_residues())
 		angles = torch.zeros(24, len(residues), dtype=torch.double, device='cpu')
 		alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi = getBackbone(residues, polymer_type)
@@ -106,9 +109,9 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[10, i] = nu4[i]
 			angles[11, i] = chi[i]
 			# print(str(residue)[10])
-			xis = getRotamer(residue, 1)
-			for j, xi in enumerate(xis):
-				angles[12 + j, i] = xis[j]
+			# xis = getRotamer(residue, polymer_type) # Commented out for test, but they aren't currently used anyway
+			# for j, xi in enumerate(xis):			# Commented out for test, but they aren't currently used anyway
+			# 	angles[12 + j, i] = xis[j]			# Commented out for test, but they aren't currently used anyway
 		return angles
 		# print("Error Polymer Type 1 Not Implemented for TPL/TPL/FullAtomModel/Coords2PDB.py/Biostructure2Dihedrals")
 
@@ -140,7 +143,7 @@ def getBackbone(residues, polymer_type= 0):
 		omega.append(0.0)
 		return phi, psi, omega
 
-	if polymer_type == 1:
+	if polymer_type == 1 or polymer_type == 2:
 		alpha = []
 		beta = []
 		gamma = []
@@ -158,6 +161,7 @@ def getBackbone(residues, polymer_type= 0):
 
 		for i, res_i in enumerate(residues):
 			# print(res_i.get_list())
+			# print(str(res_i)[9:10])
 			# print(res_i.get_parent())
 			if str(res_i.get_parent()) > chain_idx:  #& res_i.get_atom() == "O5'":
 				chain_idx = str(res_i.get_parent())
@@ -173,11 +177,11 @@ def getBackbone(residues, polymer_type= 0):
 				C2_i = res_i["C2'"].get_vector()
 				O4_i = res_i["O4'"].get_vector()
 
-				if str(res_i)[10] == "A" or str(res_i)[10] == "G":
+				if str(res_i)[9:10] == "DA" or str(res_i)[9:10] == "DG" or str(res_i)[9] == "A" or str(res_i)[9] == "G":
 					N_i = res_i["N9"].get_vector()
 					C_i = res_i["C4"].get_vector()
 
-				if str(res_i)[10] == "C" or str(res_i)[10] == "T":
+				if str(res_i)[10] == "C" or str(res_i)[10] == "T" or str(res_i)[9] == "U" or str(res_i)[9] == "C":
 					N_i = res_i["N1"].get_vector()
 					C_i = res_i["C2"].get_vector()
 
@@ -198,13 +202,21 @@ def getBackbone(residues, polymer_type= 0):
 					P_ip1 = res_ip1["P"].get_vector()
 					O5_ip1 = res_ip1["O5'"].get_vector()
 					zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
+					# print("residue:", res_i, "C3", C3_i, "O3", O3_i, "P", P_ip1, "O5", O5_ip1, "zeta:", calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
-				nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
-				nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+				# nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i)) #original
+				nu0.append(calc_dihedral(O4_i, C4p_i, C5_i, O5_i) - calc_dihedral(O5_i, C5_i, C4p_i, C3_i)) # modified to point towards O4, also switched from o3 to from o5
+				# nu0.append(calc_dihedral(O4_i, C4p_i, C3_i, O3_i))
+				# nu0.append(-82)
+				# nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+				nu1.append(calc_dihedral(N_i, C1_i, C2_i, C3_i)) #modified with N instead of O4, to point towards N
 				nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
-				nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+				# nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+				nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, C5_i) - calc_dihedral(C5_i, C4p_i, C3_i, O3_i)) ##modified with C5 instead of O5, to point towards C2
+				# print("calc dihedral", calc_dihedral(C2_i, C3_i, C4p_i, C5_i))
 				nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-				chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
+				# nu4.append(calc_dihedral(C5_i, C4p_i, O4_i, C1_i)) ## modified w/ C5 instead of C3, to point towards C1
+				chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i) + (np.pi/2))
 
 				continue
 
@@ -222,11 +234,11 @@ def getBackbone(residues, polymer_type= 0):
 			O4_i = res_i["O4'"].get_vector()
 
 
-			if str(res_i)[10] == "A" or str(res_i)[10] == "G":
+			if str(res_i)[10] == "A" or str(res_i)[10] == "G" or str(res_i)[9] == "A" or str(res_i)[9] == "G":
 				N_i = res_i["N9"].get_vector()
 				C_i = res_i["C4"].get_vector()
 
-			if str(res_i)[10] == "C" or str(res_i)[10] == "T":
+			if str(res_i)[10] == "C" or str(res_i)[10] == "T" or str(res_i)[9] == "U"  or str(res_i)[9] == "C":
 				N_i = res_i["N1"].get_vector()
 				C_i = res_i["C2"].get_vector()
 
@@ -248,12 +260,19 @@ def getBackbone(residues, polymer_type= 0):
 				if str(res_ip1.get_parent()) > chain_idx:
 					epsilon.append(0.0)
 					zeta.append(0.0)
-					nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
-					nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+					# nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i)) original
+					nu0.append(calc_dihedral(O4_i, C4p_i, C5_i, O5_i) - calc_dihedral(O5_i, C5_i, C4p_i, C3_i))  # modified to point towards O4, also switched from o3 to from o5
+					# nu0.append(calc_dihedral(O4_i, C4p_i, C3_i, O3_i))
+					# nu0.append(-82)
+					# nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+					nu1.append(calc_dihedral(N_i, C1_i, C2_i, C3_i))  # modified with N instead of O4
 					nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
-					nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+					# nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
+					# nu3.append(calc_dihedral(C2_i, C3_i, O3_i, P_ip1)) ##modified with C5 instead of O5
+					nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, C5_i) - calc_dihedral(C5_i, C4p_i, C3_i, O3_i))  ##just put a standard approx, what value should I for the last nu3? (was multiplied by -0.5, removed for test)
 					nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-					chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
+					# nu4.append(calc_dihedral(C5_i, C4p_i, O4_i, C1_i))  ## modified w/ C5 instead of C3, to point towards C1
+					chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i) + (np.pi/2))
 					continue
 
 			if i < (len(residues) - 1):
@@ -266,17 +285,24 @@ def getBackbone(residues, polymer_type= 0):
 				P_ip1 = res_ip1["P"].get_vector()
 				O5_ip1 = res_ip1["O5'"].get_vector()
 				zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
+				# print("residue:", res_i, "C3", C3_i, "O3", O3_i, "P", P_ip1, "O5", O5_ip1, "zeta:", calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
 			if i == (len(residues) - 1):
 				epsilon.append(0.0)
 				zeta.append(0.0)
 
-			nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i))
-			nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i))
+			# nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i)) original
+			nu0.append(calc_dihedral(O4_i, C4p_i, C5_i, O5_i) - calc_dihedral(C3_i, C4p_i, C5_i, O5_i))  # modified gamma to point towards O4, also switched from o3 to from o5
+			# nu0.append(calc_dihedral(O4_i, C4p_i, C3_i, O3_i))
+			# nu0.append(-82)
+			# nu1.append(calc_dihedral(O4_i, C1_i, C2_i, C3_i)) #add or subtract 120 degrees
+			nu1.append(calc_dihedral(N_i, C1_i, C2_i, C3_i)) #modified with N instead of O4
 			nu2.append(calc_dihedral(C1_i, C2_i, C3_i, C4p_i))
-			nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i))
-			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i))
-			chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i))
+			# nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, O4_i)) #compute using C5 instead of O4
+			nu3.append(calc_dihedral(C2_i, C3_i, C4p_i, C5_i) - calc_dihedral(C5_i, C4p_i, C3_i, O3_i)) ##modified with C5 instead of O4
+			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i)) #
+			# nu4.append(calc_dihedral(C5_i, C4p_i, O4_i, C1_i))  ## modified w/ C5 instead of C3, to point towards C1
+			chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i)  + (np.pi/2))
 
 			# print(chi)
 
@@ -326,16 +352,18 @@ def getRotamer(residue, polymer_type = 0):
 		if residue.get_resname()=='TRP':
 			return getTrpRot(residue)
 
-	if polymer_type == 1:
+	if polymer_type == 1 or polymer_type == 2:
 		# print(str(residue)[10])
-		if str(residue)[10] == 'A':
+		if str(residue)[10] == 'A' or str(residue)[9] == 'A':
 			return getDARot(residue)
-		if str(residue)[10] == 'C':
+		if str(residue)[10] == 'C' or str(residue)[9] == 'C':
 			return getDCRot(residue)
-		if str(residue)[10] == 'G':
+		if str(residue)[10] == 'G' or str(residue)[9] == 'G':
 			return getDGRot(residue)
 		if str(residue)[10] == 'T':
 			return getDTRot(residue)
+		if str(residue)[9] == 'U':
+			return getURot(residue)
 
 def getCysRot(residue):
 	N = residue["N"].get_vector()
@@ -619,6 +647,27 @@ def getDTRot(residue):
 
 	return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8, xi9]
 
+def getURot(residue):
+		C1 = residue["C1'"].get_vector()
+		N1 = residue["N1"].get_vector()
+		C2 = residue["C2"].get_vector()
+		O2 = residue["O2"].get_vector()
+		N3 = residue["N3"].get_vector()
+		C4 = residue["C4"].get_vector()
+		O4 = residue["O4"].get_vector()
+		C5 = residue["C5"].get_vector()
+		C6 = residue["C6"].get_vector()
+		xi1 = calc_dihedral(C1, N1, C2, N3)
+		xi2 = calc_dihedral(C1, N1, C2, O2)
+		xi3 = calc_dihedral(N1, C2, N3, C4)
+		xi4 = calc_dihedral(C2, N3, C4, C5)
+		xi5 = calc_dihedral(C2, N3, C4, O4)
+		xi6 = calc_dihedral(N3, C4, C5, C6)
+		xi7 = calc_dihedral(C4, C5, C6, N1)
+		xi8 = calc_dihedral(C5, C6, N1, C1)
+
+		return [xi1, xi2, xi3, xi4, xi5, xi6, xi7, xi8]
+
 def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type=0):
 	if polymer_type == 0:
 
@@ -631,6 +680,21 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
 	if polymer_type == 1:
+		# i = 0
+		# for i in range(len(coords[0]) - 2):
+		# 	print('x:',torch.Tensor.detach(coords[0, i]), ", y:", torch.Tensor.detach(coords[0, i+1]), ", z:", torch.Tensor.detach(coords[0, i+2]))
+		# 	i += 2
+		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
+		# print("length", length)
+		max_seq_length = max(length)
+		batch_size = length.size(0)
+		angles = torch.zeros(batch_size, 24, max_seq_length, dtype=torch.float32, device='cpu')
+		for batch_idx, structure in enumerate(structures):
+			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
+			# print(dihedrals)
+			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
+
+	elif polymer_type == 2:
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
 		# print("length", length)
 		max_seq_length = max(length)
@@ -639,11 +703,6 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
-
-	elif polymer_type == 2:
-		length = 0
-		angles = 0
-		print("Error Polymer Type 2 Not Implemented in TPL/TPL/FullAtomModel/Coords2Angles.py")
 
 	else:
 		print("Polymer Type is Not Valid")

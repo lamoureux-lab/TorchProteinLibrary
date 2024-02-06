@@ -6,7 +6,6 @@ void Angles2Coords_forward(     at::Tensor sequences,
                                 torch::Tensor res_nums,
                                 at::Tensor atom_names,
                                 int polymer_type,
-                                int na_num_atoms,
                                 torch::Tensor chain_names
                         );
 

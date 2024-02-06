@@ -65,7 +65,7 @@ class cGeometry{
         T C4_correction_angle, O3_C3_C4_O4_diangle;
         T C3_correction_angle, P_O3_C3_C2_diangle;
 
-       T R_Cyt_N1, R_Gua_N1, R_Thy_N1, R_Ade_N1, DNA_N1_angle;
+       T R_Cyt_N1, R_Gua_N1, R_Thy_N1, R_Ade_N1, R_Ura_N1, DNA_N1_angle;
 
         cGeometry();
         ~cGeometry();

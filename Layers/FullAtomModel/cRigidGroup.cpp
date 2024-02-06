@@ -212,8 +212,19 @@ template <typename T> cRigidGroup<T> *makeTrpGroup(cGeometry<T> &geo, uint atomI
 template <typename T> cRigidGroup<T> *makePhosGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr){
     cRigidGroup<T> *g = new cRigidGroup<T>();
     g->addAtom(cVector3<T>(0,0,0), "P", atomIndex, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(-0.17653, -1.23469, 0.805979), "OP1", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.013545, -0.08738, -1.48236), "OP2", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.56, -1.24, 0.64), "OP1", atomIndex+1, residueName, residueIndex, atoms_global_ptr); // was exp(-0.014, 1.375, -0.45) now from guassian -> OP1
+    g->addAtom(cVector3<T>(0.32, 1.24, 0.79), "OP2", atomIndex+2, residueName, residueIndex, atoms_global_ptr); // was OP1(-0.17653, -1.23469, -0.805979) -> OP2 [original OP2 was (0.0135, -0.09, -1.5)] now from gauss
+    return g;
+}
+//    g->addAtom(cVector3<T>(0,0,1), "Z", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
+//    g->addAtom(cVector3<T>(1,0,0), "OX", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
+//    g->addAtom(cVector3<T>(0,1,0), "OY", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
+//    g->addAtom(cVector3<T>(-0.184111, -1.287736, 0.84606), "OP1", atomIndex+1, residueName, residueIndex, atoms_global_ptr); // was exp(-0.014, 1.375, -0.45) now from guassian -> OP1
+//    g->addAtom(cVector3<T>(1.40141, 0.67988, 0.365802), "OP2", atomIndex+2, residueName, residueIndex, atoms_global_ptr); // was OP1(-0.17653, -1.23469, -0.805979) -> OP2 [original OP2 was (0.0135, -0.09, -1.5)] now from gauss
+template <typename T> cRigidGroup<T> *makeC2Group(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr){
+    cRigidGroup<T> *g = new cRigidGroup<T>();
+    g->addAtom(cVector3<T>(0,0,0), "C2'", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.56, -1.24, 0.64), "O2'", atomIndex+1, residueName, residueIndex, atoms_global_ptr);//(0, 1.413, 0) or (0, 0, 1.413)?
     return g;
 }
 
@@ -224,7 +235,7 @@ template <typename T> cRigidGroup<T> *makeCytGroup(cGeometry<T> &geo, uint atomI
     g->addAtom(cVector3<T>(0.0405,  -2.2735, 0), "O2", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(2.041,  -1.209, 0), "N3", atomIndex+3, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(2.7035,  -0.056, 0), "C4", atomIndex+4, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(3.8475,  0.632, 0), "N4", atomIndex+5, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(4.0375,  -0.1026, 0), "N4", atomIndex+5, residueName, residueIndex, atoms_global_ptr); //changed for test, was (3.8475,  -0.056, 0) and previously was (3.8475,  0.632, 0)
     g->addAtom(cVector3<T>(2.027,  1.2, 0), "C5", atomIndex+6, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(0.688,  1.181, 0), "C6", atomIndex+7, residueName, residueIndex, atoms_global_ptr);
     return g;
@@ -237,9 +248,9 @@ template <typename T> cRigidGroup<T> *makeThyGroup(cGeometry<T> &geo, uint atomI
     g->addAtom(cVector3<T>(0.0555,  -2.25, 0), "O2", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(2.043,  -1.084, 0), "N3", atomIndex+3, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(2.783,  -0.073, 0), "C4", atomIndex+4, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(3.835,  -0.5595, 0), "N4", atomIndex+5, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(4.0063,  -0.03403, 0), "O4", atomIndex+5, residueName, residueIndex, atoms_global_ptr);  //changed for test, was (3.835,  -0.073, 0) and previously was (3.835,  -0.5595, 0)
     g->addAtom(cVector3<T>(2.009,  1.305, 0), "C5", atomIndex+6, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(2.0277205,  2.6205, 0), "C7", atomIndex+7, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(2.7205,  2.6205, 0), "C7", atomIndex+7, residueName, residueIndex, atoms_global_ptr); //changed for test, was (2.0277205,  2.6205, 0)
     g->addAtom(cVector3<T>(0.674,  1.202, 0), "C6", atomIndex+8, residueName, residueIndex, atoms_global_ptr);
     return g;
 }
@@ -249,12 +260,12 @@ template <typename T> cRigidGroup<T> *makeAdeGroup(cGeometry<T> &geo, uint atomI
     g->addAtom(cVector3<T>(0,0,0), "N9", atomIndex, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(0.828, 1.095, 0), "C8", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
     g->addAtom(cVector3<T>(2.105,  0.793, 0), "N7", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(1.95,  -0.2865, 0), "C5", atomIndex+3, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(2.515,  -1.5735, 0), "C6", atomIndex+4, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(3.68,  -2.2245, 0), "N6", atomIndex+5, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(1.803,  -3.3725, 0), "N1", atomIndex+6, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.798,  -3.5, 0), "C2", atomIndex+7, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.227,  -2.298, 0), "N3", atomIndex+8, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(2.095,  -0.595, 0), "C5", atomIndex+3, residueName, residueIndex, atoms_global_ptr); // changed for test, was (1.95,  -0.2865, 0)
+    g->addAtom(cVector3<T>(3.2,  -1.55, 0), "C6", atomIndex+4, residueName, residueIndex, atoms_global_ptr);// test, was (2.515,  -1.5735, 0)
+    g->addAtom(cVector3<T>(4.455,  -1.25, 0), "N6", atomIndex+5, residueName, residueIndex, atoms_global_ptr);// test, was (3.68,  -2.2245, 0)
+    g->addAtom(cVector3<T>(2.79,  -2.84, 0), "N1", atomIndex+6, residueName, residueIndex, atoms_global_ptr); // test, was (1.803,  -3.3725, 0)
+    g->addAtom(cVector3<T>(1.5,  -3.2, 0), "C2", atomIndex+7, residueName, residueIndex, atoms_global_ptr);//test, was (0.798,  -3.5, 0)
+    g->addAtom(cVector3<T>(0.397,  -2.427, 0), "N3", atomIndex+8, residueName, residueIndex, atoms_global_ptr);//test, was (0.227,  -2.298, 0)
     g->addAtom(cVector3<T>(0.829,  -1.096, 0), "C4", atomIndex+9, residueName, residueIndex, atoms_global_ptr);
     return g;
 }
@@ -262,16 +273,29 @@ template <typename T> cRigidGroup<T> *makeAdeGroup(cGeometry<T> &geo, uint atomI
 template <typename T> cRigidGroup<T> *makeGuaGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr){
     cRigidGroup<T> *g = new cRigidGroup<T>();
     g->addAtom(cVector3<T>(0,0,0), "N9", atomIndex, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.824, 1.101, 0), "C8", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(2.092,  0.792, 0), "N7", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(1.921,  -0.266, 0), "C5", atomIndex+3, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(2.489,  -1.566, 0), "C6", atomIndex+4, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(3.585,  -2.139, 0), "O6", atomIndex+5, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(1.699,  -2.711, 0), "N1", atomIndex+6, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.756333,  -3.399666, 0), "C2", atomIndex+7, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.0651666,  -4.5481666, 0), "N2", atomIndex+8, residueName, residueIndex, atoms_global_ptr);
-    g->addAtom(cVector3<T>(0.204,  -2.3, 0), "N3", atomIndex+9, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.824, 1.101, 0), "C8", atomIndex+1, residueName, residueIndex, atoms_global_ptr); //(0.824, 1.101, 0)
+    g->addAtom(cVector3<T>(2.092,  0.792, 0), "N7", atomIndex+2, residueName, residueIndex, atoms_global_ptr); //(2.092,  0.792, 0)
+    g->addAtom(cVector3<T>(2.092,  -0.596, 0), "C5", atomIndex+3, residueName, residueIndex, atoms_global_ptr); //(1.921,  -0.266, 0)
+    g->addAtom(cVector3<T>(3.18,  -1.5, 0), "C6", atomIndex+4, residueName, residueIndex, atoms_global_ptr);// test, was (2.489,  -1.566, 0)
+    g->addAtom(cVector3<T>(4.356,  -1.23, 0), "O6", atomIndex+5, residueName, residueIndex, atoms_global_ptr);// test, was (3.585,  -2.139, 0)
+    g->addAtom(cVector3<T>(2.8,  -2.8, 0), "N1", atomIndex+6, residueName, residueIndex, atoms_global_ptr);// test, was (1.699,  -2.711, 0)
+    g->addAtom(cVector3<T>(1.5,  -3.2, 0), "C2", atomIndex+7, residueName, residueIndex, atoms_global_ptr);// test, was (0.756333,  -3.399666, 0)
+    g->addAtom(cVector3<T>(1.28,  -4.5, 0), "N2", atomIndex+8, residueName, residueIndex, atoms_global_ptr);// test, was (0.0651666,  -4.5481666, 0)
+    g->addAtom(cVector3<T>(0.385,  -2.38, 0), "N3", atomIndex+9, residueName, residueIndex, atoms_global_ptr);//test, was (0.204,  -2.3, 0)
     g->addAtom(cVector3<T>(0.823,  -1.1, 0), "C4", atomIndex+10, residueName, residueIndex, atoms_global_ptr);
+    return g;
+}
+
+template <typename T> cRigidGroup<T> *makeUraGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr){
+    cRigidGroup<T> *g = new cRigidGroup<T>();
+    g->addAtom(cVector3<T>(0,0,0), "N1", atomIndex, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.688, -1.216, 0), "C2", atomIndex+1, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.0405,  -2.2735, 0), "O2", atomIndex+2, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(2.041,  -1.209, 0), "N3", atomIndex+3, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(2.7035,  -0.056, 0), "C4", atomIndex+4, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(4.0375,  -0.1026, 0), "O4", atomIndex+5, residueName, residueIndex, atoms_global_ptr); //Will need to be adjusted
+    g->addAtom(cVector3<T>(2.027,  1.2, 0), "C5", atomIndex+6, residueName, residueIndex, atoms_global_ptr);
+    g->addAtom(cVector3<T>(0.688,  1.181, 0), "C6", atomIndex+7, residueName, residueIndex, atoms_global_ptr);
     return g;
 }
 
@@ -294,10 +318,12 @@ template cRigidGroup<float> *makePheGroup(cGeometry<float>&, uint, char, uint, f
 template cRigidGroup<float> *makeTyrGroup(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makeTrpGroup(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makePhosGroup(cGeometry<float>&, uint, char, uint, float*);
+template cRigidGroup<float> *makeC2Group(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makeCytGroup(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makeThyGroup(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makeAdeGroup(cGeometry<float>&, uint, char, uint, float*);
 template cRigidGroup<float> *makeGuaGroup(cGeometry<float>&, uint, char, uint, float*);
+template cRigidGroup<float> *makeUraGroup(cGeometry<float>&, uint, char, uint, float*);
 
 template class cRigidGroup<double>;
 template cRigidGroup<double> *makeAtom(std::string, uint, char, uint, double*);
@@ -318,7 +344,9 @@ template cRigidGroup<double> *makePheGroup(cGeometry<double>&, uint, char, uint,
 template cRigidGroup<double> *makeTyrGroup(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makeTrpGroup(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makePhosGroup(cGeometry<double>&, uint, char, uint, double*);
+template cRigidGroup<double> *makeC2Group(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makeCytGroup(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makeThyGroup(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makeAdeGroup(cGeometry<double>&, uint, char, uint, double*);
 template cRigidGroup<double> *makeGuaGroup(cGeometry<double>&, uint, char, uint, double*);
+template cRigidGroup<double> *makeUraGroup(cGeometry<double>&, uint, char, uint, double*);
