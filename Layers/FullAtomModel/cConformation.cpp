@@ -255,7 +255,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 }
     }
     if (polymer_type == 2){
-        std::cout << "Polymer Type 2 Not Implemented in Conformation" << std::endl;
+//        std::cout << "Polymer Type 2 Not Implemented in Conformation" << std::endl;
         std::string chain_idx = "0";
         torch::Tensor single_chain_names = chain_names[0];
         int atom_idx = 0;
@@ -316,7 +316,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     chain_idx = tensor2String(single_chain_names[atom_idx]);
                     if (aa[i] == 'G'){
                     lastC = addG_5Prime(lastC, params, params_grad, last_res);
-                    std::cout << "addG 5' called" << std::endl;
+//                    std::cout << "addG 5' called" << std::endl;
                     std::string term_atom("C4");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
@@ -325,7 +325,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'A'){
                     lastC = addA_5Prime(lastC, params, params_grad, last_res); //addDA
-                    std::cout << "addA 5' called" << std::endl;
+//                    std::cout << "addA 5' called" << std::endl;
                     std::string term_atom("C4");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
@@ -334,7 +334,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'U'){
                     lastC = addU_5Prime(lastC, params, params_grad, last_res); //addDT
-                    std::cout << "addU 5' called" << std::endl;
+//                    std::cout << "addU 5' called" << std::endl;
                     std::string term_atom("C6");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
@@ -343,7 +343,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'C'){
                     lastC = addC_5Prime(lastC, params, params_grad, last_res); //addDC
-                    std::cout << "addC 5' called" << std::endl;
+//                    std::cout << "addC 5' called" << std::endl;
                     std::string term_atom("C6");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
@@ -354,7 +354,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
 
                 if (aa[i] == 'G'){
                     lastC = addG(lastC, params, params_grad, last_res); //addDG *terminal == five_prime
-                    std::cout << "addG called" << std::endl;
+//                    std::cout << "addG called" << std::endl;
                     std::string term_atom("C4");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
@@ -362,7 +362,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'A'){
                     lastC = addA(lastC, params, params_grad, last_res); //addDA
-                    std::cout << "addA called" << std::endl;
+//                    std::cout << "addA called" << std::endl;
                     std::string term_atom("C4");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
@@ -370,7 +370,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'U'){
                     lastC = addU(lastC, params, params_grad, last_res); //addDT
-                    std::cout << "addU called" << std::endl;
+//                    std::cout << "addU called" << std::endl;
                     std::string term_atom("C6");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
@@ -378,7 +378,7 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                     }
                 if (aa[i] == 'C'){
                     lastC = addC(lastC, params, params_grad, last_res); //addDC
-                    std::cout << "addC called" << std::endl;
+//                    std::cout << "addC called" << std::endl;
                     std::string term_atom("C6");
                     std::string NA(1, aa[i]);
                     atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;

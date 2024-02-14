@@ -54,7 +54,8 @@ def tensor2string(tensor):
 class PDB2CoordsOrdered:
 					
 	def __call__(self, filenames, chain_ids=[], polymer_types=[0]):
-		
+
+		# print("1")
 		filenamesTensor = convertStringList(filenames)
 		batch_size = len(filenames)
 		num_atoms = torch.zeros(batch_size, dtype=torch.int)
@@ -65,6 +66,7 @@ class PDB2CoordsOrdered:
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 		mask = torch.zeros(batch_size, 1, dtype=torch.uint8)
 		chain_tensor = convertStringList(chain_ids)
+		# print("2")
 
 		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu,
 										output_resnums_cpu, output_atomnames_cpu, mask, num_atoms, chain_tensor, polymer_types)
@@ -111,31 +113,56 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 							last_atom_num = atom_num
 
 	with open(filename, 'a') as fout:
-		for i in range(batch_size):
-			if add_model:
-				fout.write("MODEL %d\n"%(i+last_model_num))
-			
-			for j in range(num_atoms[i].item()):
-				chain_name = tensor2string(chainnames[i,j,:])
+
+		if not num_atoms.size():
+			for j in range(num_atoms.item()):
+				chain_name = tensor2string(chainnames[j, :])
 				if len(chain_name) == 0:
 					chain_name = "A"
 				# print(chain_name)
-				atom_name = tensor2string(atomnames[i,j,:])
-				res_name = tensor2string(resnames[i,j,:])
-				res_num = resnums[i,j].item() + 1
-				x = coords[i, 3*j].item()
-				y = coords[i, 3*j+1].item()
-				z = coords[i, 3*j+2].item()
+				atom_name = tensor2string(atomnames[j, :])
+				res_name = tensor2string(resnames[j, :])
+				res_num = resnums[j].item() + 1
+				x = coords[3 * j].item()
+				y = coords[3 * j + 1].item()
+				z = coords[3 * j + 2].item()
 				if bfactors is None:
 					bfactor = 0.1
 				else:
-					bfactor = bfactors[i, j]
-				
-				fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
-				# fout.write("%3s \n")
-				# fout.write("%3s \n" %(atom_name[0]))
-				# print(atom_name[0])
-				# print("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f           %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
+					bfactor = bfactors[j]
+
+				fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" % (
+					j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor,
+					atom_name[0], ""))
+
+		if num_atoms.size():
+			for i in range(batch_size):
+			# print('batch_size', batch_size)
+				if add_model:
+					fout.write("MODEL %d\n"%(i+last_model_num))
+
+
+				for j in range(num_atoms[i].item()):
+					chain_name = tensor2string(chainnames[i,j,:])
+					if len(chain_name) == 0:
+						chain_name = "A"
+					# print(chain_name)
+					atom_name = tensor2string(atomnames[i,j,:])
+					res_name = tensor2string(resnames[i,j,:])
+					res_num = resnums[i,j].item() + 1
+					x = coords[i, 3*j].item()
+					y = coords[i, 3*j+1].item()
+					z = coords[i, 3*j+2].item()
+					if bfactors is None:
+						bfactor = 0.1
+					else:
+						bfactor = bfactors[i, j]
+
+					fout.write("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
+					# fout.write("%3s \n")
+					# fout.write("%3s \n" %(atom_name[0]))
+					# print(atom_name[0])
+					# print("ATOM  %5d  %-3s %3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f           %2s%2s\n"%(j + last_atom_num + 1, atom_name, res_name, chain_name[0], res_num, x, y, z, 1.0, bfactor, atom_name[0],""))
 
 
 
