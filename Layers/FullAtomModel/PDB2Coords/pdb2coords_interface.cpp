@@ -7,7 +7,7 @@
 
 void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Tensor chain_names, torch::Tensor res_names, 
                         torch::Tensor res_nums, torch::Tensor atom_names, torch::Tensor atom_mask, torch::Tensor num_atoms, torch::Tensor chain_ids, int polymer_type){
-    
+//    std::cerr << "3";
     CHECK_CPU_INPUT_TYPE(filenames, torch::kByte);
     CHECK_CPU_INPUT_TYPE(res_names, torch::kByte);
     CHECK_CPU_INPUT_TYPE(atom_names, torch::kByte);
@@ -22,33 +22,35 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
     if (polymer_type == 0){
         int batch_size = filenames.size(0);
         std::string resLastAtom("OXT");
-
         #pragma omp parallel for
         for(int i=0; i<batch_size; i++){
             torch::Tensor single_filename = filenames[i];
             std::string filename = StringUtil::tensor2String(single_filename);
 
             std::string chain_id;
+//            std::cerr << "chain_ids" << chain_ids << "\n";
             if(chain_ids.size(0) > 0){
                 torch::Tensor single_chain_id = chain_ids[i];
-                std::string chain_id = StringUtil::tensor2String(single_chain_id);
+                chain_id = StringUtil::tensor2String(single_chain_id);
             }
-//            std::cout << 'chain_id and chain_ids size:'<< chain_id << '\n'<< chain_ids.size(0);
-
             cPDBLoader pdb(filename, chain_id, 0);
             num_atoms[i] = 0;
             int previous_res_num = pdb.res_nums[0];
             for(int j=0; j<pdb.r.size(); j++){
                 if (previous_res_num < pdb.res_nums[j]) {
                     previous_res_num = pdb.res_nums[j];
+//                    std::cerr << "res name" << pdb.res_names[j-1] << "atom name" << resLastAtom << "\n";
                     num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[j-1], resLastAtom));
                 }
             }
+//            std::cerr << "a";
+//            std::cerr << "res name" << pdb.res_names[pdb.r.size()-1] << "atom name" << resLastAtom << "\n";
             num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
+//            std::cerr << "b";
 
        // Num_atoms Test 1
 //        std::cout << "\n atoms names:" << pdb.atom_names << "\n res_names:" << pdb.res_names;
-//        std::cout << "\n size atom names:" << pdb.atom_names.size();
+//        std::cout << "\n size atom names:" << pdb.atom_names.size() << "\n";
 //        std::cout << "\n res_nums:" << pdb.res_nums;
         }
 
@@ -83,7 +85,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             std::string chain_id;
             if(chain_ids.size(0) > 0){
                 torch::Tensor single_chain_id = chain_ids[i];
-                std::string chain_id = StringUtil::tensor2String(single_chain_id);
+                chain_id = StringUtil::tensor2String(single_chain_id);
             }
 
             cPDBLoader pdb(filename, chain_id, 0);
@@ -116,8 +118,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
     }
 
     else if (polymer_type == 1 || polymer_type == 2){
+//        std::cerr << "4" << "\n";
         int batch_size = filenames.size(0);
-//
+
         #pragma omp parallel for
         for(int i=0; i<batch_size; i++){
             torch::Tensor single_filename = filenames[i];
@@ -128,8 +131,9 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 torch::Tensor single_chain_id = chain_ids[i];
                 chain_id = StringUtil::tensor2String(single_chain_id);
             }
-
+//            std::cerr << "chain id " << chain_id << "\n";
             cPDBLoader pdb(filename, chain_id, polymer_type);
+//            std::cerr << "6";
 //            std::cout << pdb.res_names << " \n cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 1
 //            std::cout << res_names << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 2
 //            std::cout << "cPDBLoader Test in pdb2coords \n"; //Test in pdb2coords of cPDBLoader 3
@@ -155,7 +159,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 //            num_atoms[i] += int(ProtUtil::getAtomIndex(pdb.res_names[pdb.r.size()-1], resLastAtom));
         }
         //Num_atoms Test
-//        std::cout << num_atoms << "\n";
+//        std::cout << "num_atoms" << num_atoms << "\n";
 //
         int max_num_atoms = num_atoms.max().data<int>()[0];
 //        int max_num_atoms = num_atoms
@@ -180,6 +184,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
             torch::Tensor single_res_nums = res_nums[i];
             torch::Tensor single_atom_names = atom_names[i];
             torch::Tensor single_mask = atom_mask[i];
+//            std::cerr << "5";
 
             std::string filename = StringUtil::tensor2String(single_filename);
 
@@ -188,7 +193,7 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 torch::Tensor single_chain_id = chain_ids[i];
                 chain_id = StringUtil::tensor2String(single_chain_id);
             }
-
+//            std::cerr << "6" << "\n";
             cPDBLoader pdb(filename, chain_id, polymer_type);
 
             int global_ind = 0;
@@ -263,6 +268,8 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
                 single_coords[3*idx + 1] = pdb.r[j].v[1];
                 single_coords[3*idx + 2] = pdb.r[j].v[2];
                 single_mask[idx] = 1;
+//                std::cerr << "\n idx:" << idx << " j:" << j << "\n";
+//                std::cerr << "\n pdb size:" << pdb.r.size() << "\n";
 
 //                std::cout << "chain: " << pdb.chain_names[j] << "\n"; //<< "single: " << single_chain_names[idx] << "\n";
 //                std::cout << "res: " << pdb.res_names[j] << "\n"; //<< "single: " << single_res_names[idx] << "\n";
@@ -271,9 +278,10 @@ void PDB2CoordsOrdered( torch::Tensor filenames, torch::Tensor coords, torch::Te
 
 
             }
+//                            std::cerr << "\n 999";
 //        }
 //    }
-//        std::cout << atom_names;
+//        std::cerr << atom_names;
         }
     }
 

@@ -71,12 +71,12 @@ class Angles2CoordsFunction(Function):
 		if polymer_type == 1 or polymer_type == 2:
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor, torch.tensor(polymer_type, dtype=torch.int32), chain_names)
 			input_angles_cpu = input_angles_cpu.contiguous()
-			print('num atoms', num_atoms)
+			# print('num atoms', num_atoms)
 			# print("a2c function poly 1 seq",str(convert2str(sequenceTensor))[2:-1])
 			# max_num_atoms = (int(len(str(convert2str(sequenceTensor))) - 3) * 9) + (- 2) + (114) #for test [(seq - 3) * 6 for backbone length][(+ (-2)) for loss of phos group due to new chain] + 52 due to addition of Cyt & Thy rigid group without changing to getNum atoms
 			max_num_atoms = num_atoms
 			batch_size = input_angles_cpu.size(0)
-			print('batch size', batch_size)
+			# print('batch size', batch_size)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
 			# output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A')) ##needs to be able to detect and write correct chain names
 			output_chainnames_cpu = chain_names ##should be modified to detect new chains rather than just assign as chain_names arg

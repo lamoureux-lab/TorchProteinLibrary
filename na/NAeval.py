@@ -12,6 +12,8 @@ import matplotlib.pylab as plt
 from pathlib import Path
 import time
 
+import PDBexemptions
+
 startTime = time.time()
 
 
@@ -156,7 +158,7 @@ def get_angles_from_coords(coords_dst, chainnames, resnames, resnums, atomnames,
 def optimize_angles(angles,sequences,chainnames, polymer_types, coords_dst, pdb_ids):
     angles = angles.to(dtype=torch.float)
     angles.requires_grad_()
-    optimizer = optim.Adam([angles], lr=0.001)
+    optimizer = optim.Adam([angles], lr=0.0001)
     a2c = FullAtomModel.Angles2Coords()
     pred_na = a2c(angles, sequences, chainnames, polymer_types)
     coords_2, chainnames, resnames, resnums, atomnames, num_atoms = pred_na
@@ -282,7 +284,7 @@ if __name__ == "__main__":
     #for each run change input[247] and output csv[303] location, change pdb batch locations[52],
     # check polymer type[52,225,230,235,240,247,259,303], and new pdb locations[230,235,240]
     #read csv and load into df
-    csv = '/u2/home_u2/fam95/Downloads/RNA/Batch4/na_pdb_dataset_long_chains.csv'
+    csv = '/u2/home_u2/fam95/Downloads/RNA/Batch4/pdb_ds_4b_long.csv'
     pdb_df = parse_csv_to_df(csv)
 
     #for each row of df, get pdb id, chain id, polymer type
@@ -291,6 +293,7 @@ if __name__ == "__main__":
     batch_loss_at_1000 = {}
     batch_loss_at_2000 = {}
     batch_loss_at_4000 = {}
+    loss_dict = {}
 
     # if not len(pdb_ids):
     #     # log1 pdbids, chainids, and polymertypes
@@ -331,12 +334,31 @@ if __name__ == "__main__":
     #     # set up final path to save pdb and then write new pdb
     #     write_pdbs(pdb_ids, coords_2, chainnames, resnames, resnums, atomnames, num_atoms)
     print(len(pdb_ids), type(pdb_ids), pdb_ids)
+
+    exemptions = ['6WAZ', '6YHS', '6YT9', '6VWV', '6YPU', '6YFT', '7KX9', '6V9B', '6WPI', '6WB0', '6WZS',
+                  '6WZR', '7AAV', '6ZYM', '7F36', '7JNH', '6YS5', '6YTF']
+
     for i in range(len(pdb_ids)):
+        loss_dict.clear()
         #log1 pdbids, chainids, and polymertypes
         #temp if statement to remove test dataset by removing pdbs that cause errors
-        if pdb_ids[i] == '6WAZ' or pdb_ids[i] == '6YHS' or pdb_ids[i] == '6YT9' or pdb_ids[i] == '7F0D':
-            print("continuing past" + pdb_ids[i])
+        if pdb_ids[i] in exemptions or pdb_ids[i] in PDBexemptions.PDBexemptions:
+            print("continuing past" + pdb_ids[i] + "due to exemption")
             continue
+
+        path_check = Path('/u2/home_u2/fam95/Downloads/RNA/Batch4/' + pdb_ids[i] + '/' + pdb_ids[i] + '_EvalLoss.csv')
+
+        if path_check.is_file():
+            if path_check.stat().st_size > 0:
+                loss_df_from_csv = pd.read_csv(path_check, header=0)
+                print(loss_df_from_csv)
+                loss_dict_from_csv = loss_df_from_csv.to_dict('index')
+                print(loss_dict_from_csv)
+                batch_loss_at_1000[loss_dict_from_csv[0]['pdb_id']] = [loss_dict_from_csv[0]['pdb_id'], loss_dict_from_csv[0]['loss at 1000']]
+                batch_loss_at_2000[loss_dict_from_csv[0]['pdb_id']] = [loss_dict_from_csv[0]['pdb_id'], loss_dict_from_csv[0]['loss at 2000']]
+                batch_loss_at_4000[loss_dict_from_csv[0]['pdb_id']] = [loss_dict_from_csv[0]['pdb_id'], loss_dict_from_csv[0]['loss at 4000']]
+                print("continuing past" + pdb_ids[i] + "csv already written")
+                continue
 
         #put pdb ids into file path and then load pdb files using pdb2coords
         file_paths = get_file_path_from_pdb_ids(pdb_ids[i])
@@ -374,8 +396,15 @@ if __name__ == "__main__":
 
         #set up final path to save pdb and then write new pdb
         write_pdbs(pdb_ids[i], coords_2, chainnames, resnames, resnums, atomnames, num_atoms)
+        loss_1000 = loss_at1000[pdb_ids[i]][1]
+        loss_2000 = loss_at2000[pdb_ids[i]][1]
+        loss_4000 = loss_at4000[pdb_ids[i]][1]
+        loss_dict[pdb_ids[i]] = [pdb_ids[i], loss_1000, loss_2000, loss_4000]
+        loss_df = pd.DataFrame.from_dict(loss_dict, 'index', columns=['pdb_id', 'loss at 1000', 'loss at 2000', 'loss at 4000'])
+        loss_df.to_csv('/u2/home_u2/fam95/Downloads/RNA/Batch4/' + pdb_ids[i] + '/' + pdb_ids[i] + '_EvalLoss.csv')
 
-    #save new csv with all the info in the old csv plus loss at x,y, and z epochs, and (max deviation, ...)?
+
+        #save new csv with all the info in the old csv plus loss at x,y, and z epochs, and (max deviation, ...)?
     loss_1000_df = pd.DataFrame.from_dict(batch_loss_at_1000, 'index', columns=['pdb_id', 'loss at 1000'])
     print(loss_1000_df)
     pdb_df.columns = ['0', '1', 'pdb_id', 'chain name', 'polymer type', 'resolution', 'model', 'length', '1rst res', 'last_res']
@@ -391,7 +420,7 @@ if __name__ == "__main__":
 
     print(merged_df_4000)
 
-    merged_df_4000.to_csv('/u2/home_u2/fam95/Downloads/RNA/Batch4/na_pdb_data_and_loss_after_optim.csv')
+    merged_df_4000.to_csv('/u2/home_u2/fam95/Downloads/RNA/Batch4/pdb_loss_optim_4b_long.csv')
 
     end_time = time.time()
     total_time = (end_time - startTime)
