@@ -42,7 +42,7 @@ class Angles2CoordsFunction(Function):
 	def forward(ctx, input_angles_cpu, sequenceTensor, num_atoms, polymer_type, chain_names):
 
 		if polymer_type == 0:
-			ctx.save_for_backward(input_angles_cpu, sequenceTensor)
+			ctx.save_for_backward(input_angles_cpu, sequenceTensor, torch.tensor(polymer_type, dtype=torch.int32), chain_names)
 			input_angles_cpu = input_angles_cpu.contiguous()
 
 			max_num_atoms = torch.max(num_atoms)
