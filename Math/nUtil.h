@@ -18,20 +18,28 @@ namespace StringUtil{
 
 namespace ProtUtil{
     // atom indexing common for cConformation and cPDBLoader
-    uint getAtomIndex(std::string &res_name, std::string &atom_name);
+    uint getAtomIndex(std::string &res_name, std::string &atom_name, bool fiveprime_ind = false, int polymer_type = 0);
     
     // number of atoms in a sequence
-    uint getNumAtoms(std::string &sequence, bool add_terminal);
+    uint getNumAtoms(std::string &sequence, bool add_terminal, int polymer_type = 0, torch::Tensor chain_names = {});
     
     // heavy atoms
     bool isHeavyAtom(std::string &atom_name);
 
+    //Nucleotides
+    bool isNucleotide(std::string &res_name, int polymer_type);
+
     // convert 1-letter aa code to 3-letter code
-    std::string convertRes1to3(char resName);
+    std::string convertRes1to3(char resName, int polymer_type = 0);
 
     // assign atom type from 11 possible
     uint get11AtomType(std::string res_name, std::string atom_name, bool terminal);
 
+    // assign atom type from 4 elements (C,N,O,S)
+    uint get4AtomTypeElement(std::string res_name, std::string atom_name, bool terminal);
+
+    // assign atom type from 26 Charmm TopAll36 list
+    uint getAtomTypeCharmm(std::string res_name, std::string atom_name, bool terminal);
 };
 
 template <typename T> void rotate(torch::Tensor &input_coords, cMatrix33<T> &R, torch::Tensor &output_coords, int num_atoms);

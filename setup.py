@@ -1,10 +1,11 @@
 from setuptools import setup
 from torch.utils.cpp_extension import CppExtension, BuildExtension, CUDAExtension
 import os
+import sys
 import sysconfig
 
 if __name__=='__main__':
-	
+	os.system('export TORCH_CUDA_ARCH_LIST="5.2;6.0;6.1;6.2;7.0;7.5"')
 	Packages = ['TorchProteinLibrary', 
 				#FullAtomModel
 				'TorchProteinLibrary.FullAtomModel', 
@@ -20,11 +21,23 @@ if __name__=='__main__':
 				'TorchProteinLibrary.Volume.TypedCoords2Volume',
 				'TorchProteinLibrary.Volume.Select',
 				'TorchProteinLibrary.Volume.VolumeConvolution',
+				'TorchProteinLibrary.Volume.VolumeMultiplication',
 				'TorchProteinLibrary.Volume.VolumeRotation',
 				'TorchProteinLibrary.Volume.VolumeRMSD',
 				#RMSD
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
+				#Physics
+				'TorchProteinLibrary.Physics',
+				'TorchProteinLibrary.Physics.AtomNames2Params',
+				'TorchProteinLibrary.Physics.Coords2Elec',
+				'TorchProteinLibrary.Physics.Coords2Stress',
+				#Graph
+				# 'TorchProteinLibrary.Graph.Coords2Neighbours',
+				#Utils
+				'TorchProteinLibrary.Utils',
+				'TorchProteinLibrary.Utils.Protein',
+				'TorchProteinLibrary.Utils.Volume'
 				]
 
 	FullAtomModel = CUDAExtension('_FullAtomModel', 
@@ -47,8 +60,8 @@ if __name__=='__main__':
 					'Layers/FullAtomModel/main.cpp'],
 					include_dirs = ['Layers/FullAtomModel', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']})
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']})
 
 	Volume = CUDAExtension('_Volume',
 					sources = [
@@ -59,18 +72,15 @@ if __name__=='__main__':
 					'Layers/Volume/TypedCoords2Volume/typedcoords2volume_interface.cpp',
 					'Layers/Volume/Volume2Xplor/volume2xplor_interface.cpp',
 					'Layers/Volume/Select/select_interface.cpp',
-					'Layers/Volume/VolumeConvolution/volumeConvolution_interface.cpp',
-					'Layers/Volume/VolumeRotation/volumeRotation_interface.cpp',
 					'Layers/Volume/VolumeRMSD/volumeRMSD_interface.cpp',
 					'Layers/Volume/Kernels.cu',
-					'Layers/Volume/VolumeConv.cu',
-					'Layers/Volume/RotateGrid.cu',
+					'Layers/Volume/HashKernel.cu',
 					'Layers/Volume/VolumeRMSD.cu',
 					'Layers/Volume/main.cpp'],
 					include_dirs = ['Layers/Volume', 'Math'],
 					libraries = ['gomp', 'cufft'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
 						)
 
 	ReducedModel = CUDAExtension('_ReducedModel',
@@ -85,11 +95,11 @@ if __name__=='__main__':
 					'Layers/ReducedModel/main.cpp'],
 					include_dirs = ['Layers/ReducedModel', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']}
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
 					)
 
-	RMSD = CppExtension('_RMSD',
+	RMSD = CUDAExtension('_RMSD',
 					sources = [
 					'Math/cMatrix33.cpp',
 					'Math/cMatrix44.cpp',
@@ -100,17 +110,61 @@ if __name__=='__main__':
 					'Layers/RMSD/main.cpp'],
 					include_dirs = ['Layers/RMSD', 'Math'],
 					libraries = ['gomp'],
-					extra_compile_args={'cxx': ['-fopenmp'],
-                                        'nvcc': ['-Xcompiler', '-fopenmp']})
+					extra_compile_args={'cxx': ['-fopenmp', '-g', '-std=c++14'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
+					)
+
+
+	Physics = CUDAExtension('_Physics',
+					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
+					'Layers/Physics/AtomNames2Params/atomnames2params_interface.cpp',
+					'Layers/Physics/Coords2Elec/coords2elec_interface.cpp',
+					'Layers/Physics/Coords2Stress/coords2stress_interface.cpp',
+					'Layers/Physics/KernelsElectrostatics.cu',
+					'Layers/Physics/KernelsStress.cu',
+					'Layers/Physics/main.cpp',
+					],
+					include_dirs = ['Math',
+									'Layers/Physics',
+									'Layers/Physics/Coords2Elec',
+									'Layers/Physics/Coords2Stress',
+									'Layers/Physics/AtomNames2Params',
+									'cusplibrary'],
+					libraries = ['gomp'],
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']})
+
+	Graph = CUDAExtension('_Graph',
+					sources = [
+					'Math/cMatrix33.cpp',
+					'Math/cMatrix44.cpp',
+					'Math/cVector3.cpp',
+					'Math/nUtil.cpp',
+					'Layers/Graph/Coords2Neighbours/coords2neighbours_interface.cpp',
+					'Layers/Graph/HashKernel.cu',
+					'Layers/Graph/main.cpp'],
+					include_dirs = ['Layers/Graph', 'Math'],
+					libraries = ['gomp', 'cufft'],
+					extra_compile_args={'cxx': ['-fopenmp', '-g'],
+                                        'nvcc': ['-Xcompiler', '-fopenmp', '-std=c++14']}
+						)
+
 	
 	setup(	name='TorchProteinLibrary',
-			version="0.1",
-			ext_modules=[	RMSD,
+			version="0.3",
+			ext_modules=[	
+							RMSD,
 							FullAtomModel, 
-							Volume, 
-							ReducedModel
+							# Volume,
+							ReducedModel,
+							# Physics,
+							# Graph
 						],
-			cmdclass={'build_ext': BuildExtension},
+			cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)},
 
 			packages = Packages,
 			author="Georgy Derevyanko",

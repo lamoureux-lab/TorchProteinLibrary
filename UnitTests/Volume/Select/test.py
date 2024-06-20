@@ -2,41 +2,71 @@ import sys
 import os
 import torch
 import numpy as np
+import unittest
 
 import TorchProteinLibrary
-from TorchProteinLibrary.FullAtomModel import Angles2Coords
-from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords
-from TorchProteinLibrary.FullAtomModel import Coords2CenteredCoords
-from TorchProteinLibrary.Volume import TypedCoords2Volume, SelectVolume
+from TorchProteinLibrary.Volume import CoordsSelect
+
+class TestCoordsSelect(unittest.TestCase):
+	device = 'cuda'
+	dtype = torch.float
+	places = 5
+	batch_size = 4
+	max_num_atoms = 16
+	box_size_bin = 40
+	box_size_ang = 120
+	num_features = 12
+	eps=1e-03 
+	atol=1e-05 
+	rtol=0.001
+	msg = "Testing CoordsSelect"
+	
+	def setUp(self):
+		print(self.msg, self.device, self.dtype)
+		self.volume = torch.rand(	self.batch_size, self.num_features, self.box_size_bin, self.box_size_bin, self.box_size_bin, 
+									device=self.device, dtype=self.dtype, requires_grad=True)
+		self.coords = torch.rand(self.batch_size, self.max_num_atoms*3, device=self.device, dtype=self.dtype)*self.box_size_ang
+		self.num_atoms = torch.zeros(self.batch_size, dtype=torch.int, device=self.device).fill_(self.max_num_atoms)
+
+
+class TestCoordsSelectForward(TestCoordsSelect):
+	msg = "Testing CoordsSelect forward"
+	def runTest(self):
+		sv = CoordsSelect(box_size_bins=self.box_size_bin, box_size_ang=self.box_size_ang)
+		features = sv(self.volume, self.coords, self.num_atoms)
+				
+		for batch_idx in range(self.batch_size):
+			for feature_idx in range(self.num_features):
+				res = float(self.box_size_bin)/float(self.box_size_ang)
+				err = 0.0
+				for i in range(0, self.num_atoms[batch_idx].item()):
+					x = int(np.floor(self.coords[batch_idx, 3*i].item()*res))
+					y = int(np.floor(self.coords[batch_idx, 3*i+1].item()*res))
+					z = int(np.floor(self.coords[batch_idx, 3*i+2].item()*res))
+					err += np.abs(features[batch_idx, feature_idx, i].item() - self.volume[batch_idx, feature_idx, x, y, z].item())
+				
+				self.assertAlmostEqual(err, 0.0)
+
+class TestCoordsSelectBackward(TestCoordsSelect):
+	msg = "Testing CoordsSelect backward"
+	def runTest(self):
+		sv = CoordsSelect(box_size_bins=self.box_size_bin, box_size_ang=self.box_size_ang)
+		features = sv(self.volume, self.coords, self.num_atoms)
+		features.backward(torch.ones_like(features))
+		
+		for batch_idx in range(self.batch_size):
+			for feature_idx in range(self.num_features):
+				res = float(self.box_size_bin)/float(self.box_size_ang)
+				err = 0.0
+				for i in range(0, self.num_atoms[batch_idx].item()):
+					x = int(np.floor(self.coords[batch_idx, 3*i].item()*res))
+					y = int(np.floor(self.coords[batch_idx, 3*i+1].item()*res))
+					z = int(np.floor(self.coords[batch_idx, 3*i+2].item()*res))
+					err += np.abs(1.0 - self.volume.grad[batch_idx, feature_idx, x, y, z].item())
+				
+				self.assertAlmostEqual(err, 0.0)
+
+
 
 if __name__=='__main__':
-	sequence = ['GGAGRRRGGWG', 'GGAGRRR']
-	angles = torch.zeros(len(sequence), 7, len(sequence[0]), dtype=torch.double)
-	angles[0,0,:] = -1.047
-	angles[0,1,:] = -0.698
-	angles[0,2:,:] = 110.4*np.pi/180.0
-	a2c = Angles2Coords()
-	c2cc = Coords2CenteredCoords()
-	c2tc = Coords2TypedCoords()
-	tc2v = TypedCoords2Volume()
-	
-	protein, res_names, atom_names, num_atoms = a2c(angles, sequence)
-	protein = c2cc(protein, num_atoms)
-	coords, num_atoms_of_type, offsets = c2tc(protein, res_names, atom_names, num_atoms)
-	volume = tc2v(coords.cuda(), num_atoms_of_type.cuda(), offsets.cuda())
-
-	sv = SelectVolume()
-	features = sv(volume, coords.float().cuda(), num_atoms.cuda())
-	print(features.sum())
-	batch_idx = 0
-	feature_idx = 1
-	res = 1.0
-	num_max_atoms = int(coords.size(1)/3)
-	err = 0.0
-	for i in range(0,num_max_atoms):
-		x = int(np.floor(coords[batch_idx,3*i]/res))
-		y = int(np.floor(coords[batch_idx,3*i+1]/res))
-		z = int(np.floor(coords[batch_idx,3*i+2]/res))
-		err += np.abs(features[batch_idx, feature_idx, i] - volume[batch_idx, feature_idx, x, y, z])
-	
-	print ('Error = ', err/num_max_atoms)
+	unittest.main()

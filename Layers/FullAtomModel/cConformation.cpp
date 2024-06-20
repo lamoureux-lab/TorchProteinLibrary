@@ -9,7 +9,7 @@ template <typename T> void cTransform<T>::updateMatrix(){
     Ry.setRy(*beta);
     Tr.setT(d, 'x');
     Rx.setRx(*alpha);
-    mat = Ry*Tr*Rx;
+    mat = Ry*Tr*Rx; // Rx is dihedral angles (rotation/transform this)
 }
 template <typename T> void cTransform<T>::updateDMatrix(){
     cMatrix44<T> Ry, Tr, DRx;
@@ -26,12 +26,12 @@ template <typename T> void cTransform<T>::print(){
 // template <typename T> std::ostream& operator<<(std::ostream& os, const cNode<T>& node){
 //     return os<<*(node.group);
 // }
-
-template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal){
+template <typename T> cConformation<T>::cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type, torch::Tensor chain_names,bool add_terminal){
     cNode<T> *lastC = NULL;
     zero_const = 0.0;
     this->atoms_global = atoms_global;
     bool terminal = false;
+    if( polymer_type == 0){
     for(int i=0; i<aa.length(); i++){
         T *phi = angles + i + angles_length*0;T *dphi = angles_grad + i + angles_length*0;
         T *psi = angles + i + angles_length*1;T *dpsi = angles_grad + i + angles_length*1;
@@ -120,7 +120,188 @@ template <typename T> cConformation<T>::cConformation(std::string aa, T *angles,
                 break;
         }
     }
-    
+    }
+    if( polymer_type == 1){
+        std::string chain_idx = "0";
+        torch::Tensor single_chain_names = chain_names[0];
+        int atom_idx = 0;
+        char last_res = '0';
+
+        for(int i=0; i<aa.length(); i++){
+            T *alpha = angles + i + angles_length*0;   T *dalpha = angles_grad + i + angles_length*0;
+            T *beta = angles + i + angles_length*1;    T *dbeta = angles_grad + i + angles_length*1;
+            T *gamma = angles + i + angles_length*2;   T *dgamma = angles_grad + i + angles_length*2;
+            T *delta = angles + i + angles_length*3;   T *ddelta = angles_grad + i + angles_length*3;
+            T *epsilon = angles + i + angles_length*4; T *depsilon = angles_grad + i + angles_length*4;
+            T *zeta = angles + i - 1 + angles_length*5;    T *dzeta = angles_grad + i - 1 + angles_length*5;
+            T *nu0 = angles + i + angles_length*6;     T *dnu0 = angles_grad + i + angles_length*6;
+            T *nu1 = angles + i + angles_length*7;     T *dnu1 = angles_grad + i + angles_length*7;
+            T *nu2 = angles + i + angles_length*8;     T *dnu2 = angles_grad + i + angles_length*8;
+            T *nu3 = angles + i + angles_length*9;     T *dnu3 = angles_grad + i + angles_length*9;
+            T *nu4 = angles + i + angles_length*10;    T *dnu4 = angles_grad + i + angles_length*10;
+            T *chi = angles + i + angles_length*11;    T *dchi = angles_grad + i + angles_length*11;
+
+            std::vector<T*> params({alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi});
+            std::vector<T*> params_grad({dalpha, dbeta, dgamma, ddelta, depsilon, dzeta, dnu0, dnu1, dnu2, dnu3, dnu4, dchi});
+
+
+                if(tensor2String(single_chain_names[atom_idx]) > chain_idx){
+                    chain_idx = tensor2String(single_chain_names[atom_idx]);
+                    if (aa[i] == 'G'){
+                    lastC = addDG_5Prime(lastC, params, params_grad, last_res);
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'G';
+                    continue;
+                    }
+                if (aa[i] == 'A'){
+                    lastC = addDA_5Prime(lastC, params, params_grad, last_res);
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'A';
+                    continue;
+                    }
+                if (aa[i] == 'T'){
+                    lastC = addDT_5Prime(lastC, params, params_grad, last_res);
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'T';
+                    continue;
+                    }
+                if (aa[i] == 'C'){
+                    lastC = addDC_5Prime(lastC, params, params_grad, last_res);
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'C';
+                    continue;
+                    }
+                }
+
+                if (aa[i] == 'G'){
+                    lastC = addDG(lastC, params, params_grad, last_res);
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'G';
+                    }
+                if (aa[i] == 'A'){
+                    lastC = addDA(lastC, params, params_grad, last_res); //addDA
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'A';
+                    }
+                if (aa[i] == 'T'){
+                    lastC = addDT(lastC, params, params_grad, last_res); //addDT
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'T';
+                    }
+                if (aa[i] == 'C'){
+                    lastC = addDC(lastC, params, params_grad, last_res); //addDC
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'C';
+                    }
+                }
+    }
+    if (polymer_type == 2){
+        std::string chain_idx = "0";
+        torch::Tensor single_chain_names = chain_names[0];
+        int atom_idx = 0;
+        char last_res = '0';
+
+        for(int i=0; i<aa.length(); i++){
+            T *alpha = angles + i + angles_length*0;   T *dalpha = angles_grad + i + angles_length*0;
+            T *beta = angles + i + angles_length*1;    T *dbeta = angles_grad + i + angles_length*1;
+            T *gamma = angles + i + angles_length*2;   T *dgamma = angles_grad + i + angles_length*2;
+            T *delta = angles + i + angles_length*3;   T *ddelta = angles_grad + i + angles_length*3;
+            T *epsilon = angles + i + angles_length*4; T *depsilon = angles_grad + i + angles_length*4;
+            T *zeta = angles + i - 1 + angles_length*5;    T *dzeta = angles_grad + i - 1 + angles_length*5;
+            T *nu0 = angles + i + angles_length*6;     T *dnu0 = angles_grad + i + angles_length*6;
+            T *nu1 = angles + i + angles_length*7;     T *dnu1 = angles_grad + i + angles_length*7;
+            T *nu2 = angles + i + angles_length*8;     T *dnu2 = angles_grad + i + angles_length*8;
+            T *nu3 = angles + i + angles_length*9;     T *dnu3 = angles_grad + i + angles_length*9;
+            T *nu4 = angles + i + angles_length*10;    T *dnu4 = angles_grad + i + angles_length*10;
+            T *chi = angles + i + angles_length*11;    T *dchi = angles_grad + i + angles_length*11;
+
+            std::vector<T*> params({alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi});
+            std::vector<T*> params_grad({dalpha, dbeta, dgamma, ddelta, depsilon, dzeta, dnu0, dnu1, dnu2, dnu3, dnu4, dchi});
+
+                if(tensor2String(single_chain_names[atom_idx]) > chain_idx){
+                    chain_idx = tensor2String(single_chain_names[atom_idx]);
+                    if (aa[i] == 'G'){
+                    lastC = addG_5Prime(lastC, params, params_grad, last_res);
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'G';
+                    continue;
+                    }
+                if (aa[i] == 'A'){
+                    lastC = addA_5Prime(lastC, params, params_grad, last_res); //addDA
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'A';
+                    continue;
+                    }
+                if (aa[i] == 'U'){
+                    lastC = addU_5Prime(lastC, params, params_grad, last_res); //addDT
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'U';
+                    continue;
+                    }
+                if (aa[i] == 'C'){
+                    lastC = addC_5Prime(lastC, params, params_grad, last_res); //addDC
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
+                    last_res = 'C';
+                    continue;
+                    }
+                }
+
+                if (aa[i] == 'G'){
+                    lastC = addG(lastC, params, params_grad, last_res); //addDG *terminal == five_prime
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'G';
+                    }
+                if (aa[i] == 'A'){
+                    lastC = addA(lastC, params, params_grad, last_res); //addDA
+                    std::string term_atom("C4");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'A';
+                    }
+                if (aa[i] == 'U'){
+                    lastC = addU(lastC, params, params_grad, last_res); //addDT
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'U';
+                    }
+                if (aa[i] == 'C'){
+                    lastC = addC(lastC, params, params_grad, last_res); //addDC
+                    std::string term_atom("C6");
+                    std::string NA(1, aa[i]);
+                    atom_idx += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
+                    last_res = 'C';
+                    }
+                }
+    }
+
+
     //Computing conformation
     this->update(this->root);
     //Computing number of atoms
@@ -138,7 +319,6 @@ template <typename T> cConformation<T>::~cConformation(){
     for(int i=0; i<groups.size(); i++)
         delete groups[i];
 }
-
 template <typename T> cNode<T> *cConformation<T>::addNode(cNode<T> *parent, cRigidGroup<T> *group, cTransform<T> *t){
     cNode<T> *new_node = new cNode<T>();
     new_node->group = group;
@@ -224,7 +404,6 @@ template <typename T> void cConformation<T>::print(cNode<T> *node){
     // std::cout<<".\n";
     
 }
-
 template <typename T> void cConformation<T>::save(std::string filename, const char mode){
     if(mode=='w'){
         std::ofstream pfile(filename, std::ofstream::out);

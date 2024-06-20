@@ -2,9 +2,9 @@ import os
 import sys
 import torch
 from TorchProteinLibrary import FullAtomModel
-from .utils import transform, bytes2string
+from utils import transform, bytes2string
 import numpy as np
-from .rotamers import getAngles, generateAA
+from rotamers import getAngles, generateAA
 from Bio.PDB.Polypeptide import aa1
 import unittest
 
@@ -57,7 +57,7 @@ class TestAngles2CoordsForward(unittest.TestCase):
 	
 	def _generate_sample(self, aa):
 		sequences = [aa]
-		protein, res_names, atom_names, num_atoms = self.a2c(self.angles, sequences)
+		protein, ch_names, res_names, res_nums, atom_names, num_atoms = self.a2c(self.angles, sequences)
 		self.sample = {}
 		for i in range(atom_names.size(1)):
 			self.sample[bytes2string(atom_names[0,i,:])] = protein.data[0,3*i : 3*i + 3].numpy()
@@ -108,7 +108,7 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 		x0.data[:,2,:] = np.pi
 		x0.data[:,3:,:] = 110.4*np.pi/180.0
 		
-		y0, res, at, n_at = self.a2c(x0, sequences)
+		y0, ch_n, res, res_n, at, n_at = self.a2c(x0, sequences)
 		y0 = y0.sum()
 			
 		y0.backward()
@@ -124,7 +124,7 @@ class TestAngles2CoordsBackward(unittest.TestCase):
 					dx = 0.00001
 					x1.copy_(x0)
 					x1[b,i,j] += dx
-					y1, res, at, n_at = self.a2c(x1,sequences)
+					y1, ch_n, res, res_n, at, n_at = self.a2c(x1,sequences)
 					y1 = y1.sum()
 					dy_dx = (y1.item()-y0.item())/(dx)
 					sample.append(dy_dx)

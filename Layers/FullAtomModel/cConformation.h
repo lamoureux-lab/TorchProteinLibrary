@@ -6,7 +6,8 @@
 #include <string>
 #include <cRigidGroup.h>
 #include <cGeometry.h>
-
+#include <torch/extension.h>
+//AS: function for graphs
 template <typename T>
 class cTransform{
     public:
@@ -62,7 +63,7 @@ class cConformation{
         cNode<T> *root;
 
         // Construct protein graph and bind grad to the angles
-        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, bool add_terminal=false);    
+        cConformation(std::string aa, T *angles, T *angles_grad, uint angles_length, T *atoms_global, int polymer_type = 0, torch::Tensor chain_names = {}, bool add_terminal=false);
         ~cConformation();
         
         void print(cNode<T> *node);
@@ -100,6 +101,22 @@ class cConformation{
         cNode<T> *addPhe(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addTyr(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
         cNode<T> *addTrp(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, bool terminal=false);
+        cNode<T> *addDG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDT(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDG_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDA_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDT_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addDC_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addG(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addA(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addU(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addC(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addG_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addA_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addU_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
+        cNode<T> *addC_5Prime(cNode<T> *parentC, std::vector<T*> params, std::vector<T*> params_grad, char last_res);
 };
 
 #endif

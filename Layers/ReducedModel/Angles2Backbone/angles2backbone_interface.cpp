@@ -5,11 +5,13 @@
 #include <nUtil.h>
 
 int Angles2BackboneGPU_forward(torch::Tensor input_angles, 
+                            torch::Tensor param, 
                             torch::Tensor output_coords, 
                             torch::Tensor angles_length, 
                             torch::Tensor A
                         ){
     CHECK_GPU_INPUT(input_angles);
+    CHECK_GPU_INPUT(param);
     CHECK_GPU_INPUT(output_coords);
     CHECK_GPU_INPUT(A);
     CHECK_GPU_INPUT_TYPE(angles_length, torch::kInt);
@@ -18,22 +20,25 @@ int Angles2BackboneGPU_forward(torch::Tensor input_angles,
     }
     
     gpu_computeCoordinatesBackbone<float>(	input_angles.data<float>(), 
+                                    param.data<float>(), 
                                     output_coords.data<float>(), 
                                     A.data<float>(), 
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));
 }
-int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
-                                torch::Tensor gradOutput,
-                                torch::Tensor input_angles, 
-                                torch::Tensor angles_length, 
-                                torch::Tensor A,   
-                                torch::Tensor dr_dangle
+int Angles2BackboneGPUAngles_backward(  torch::Tensor gradInput,
+                                        torch::Tensor gradOutput,
+                                        torch::Tensor input_angles, 
+                                        torch::Tensor param, 
+                                        torch::Tensor angles_length, 
+                                        torch::Tensor A,   
+                                        torch::Tensor dr_dangle
                             ){
     CHECK_GPU_INPUT(gradInput);
     CHECK_GPU_INPUT(gradOutput);
     CHECK_GPU_INPUT(input_angles);
+    CHECK_GPU_INPUT(param);
     CHECK_GPU_INPUT(dr_dangle);
     CHECK_GPU_INPUT(A);
     CHECK_GPU_INPUT_TYPE(angles_length, torch::kInt);
@@ -41,6 +46,7 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
         ERROR("Incorrect input ndim");
     }
     gpu_computeDerivativesBackbone<float>( input_angles.data<float>(),
+                                    param.data<float>(),
                                     dr_dangle.data<float>(),
                                     A.data<float>(),
                                     angles_length.data<int>(),
@@ -55,14 +61,51 @@ int Angles2BackboneGPU_backward(   torch::Tensor gradInput,
                                     input_angles.size(2));
 }
 
+int Angles2BackboneGPUParam_backward(torch::Tensor gradParam,
+                                torch::Tensor gradOutput,
+                                torch::Tensor input_angles, 
+                                torch::Tensor param, 
+                                torch::Tensor angles_length, 
+                                torch::Tensor A,
+                                torch::Tensor dr_dparam
+                            ){
+    CHECK_GPU_INPUT(gradParam);
+    CHECK_GPU_INPUT(gradOutput);
+    CHECK_GPU_INPUT(input_angles);
+    CHECK_GPU_INPUT(param);
+    CHECK_GPU_INPUT(dr_dparam);
+    CHECK_GPU_INPUT(A);
+    CHECK_GPU_INPUT_TYPE(angles_length, torch::kInt);
+    if(gradOutput.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+    
+    gpu_computeDerivativesParam<float>( input_angles.data<float>(),
+                                    param.data<float>(),
+                                    dr_dparam.data<float>(),
+                                    A.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
+    
+    gpu_backwardFromCoordsParam<float>( gradParam.data<float>(),
+                                    gradOutput.data<float>(),
+                                    dr_dparam.data<float>(),
+                                    angles_length.data<int>(),
+                                    input_angles.size(0),
+                                    input_angles.size(2));
+}
 
 
-int Angles2BackboneCPU_forward(torch::Tensor input_angles, 
-                            torch::Tensor output_coords, 
-                            torch::Tensor angles_length, 
-                            torch::Tensor A
-                        ){
+
+int Angles2BackboneCPU_forward( torch::Tensor input_angles, 
+                                torch::Tensor param,
+                                torch::Tensor output_coords, 
+                                torch::Tensor angles_length, 
+                                torch::Tensor A
+                            ){
     CHECK_CPU_INPUT(input_angles);
+    CHECK_CPU_INPUT(param);
     CHECK_CPU_INPUT(output_coords);
     CHECK_CPU_INPUT(A);
     CHECK_CPU_INPUT_TYPE(angles_length, torch::kInt);
@@ -71,17 +114,19 @@ int Angles2BackboneCPU_forward(torch::Tensor input_angles,
     }
     
     cpu_computeCoordinatesBackbone<double>(	input_angles.data<double>(), 
-                                    output_coords.data<double>(), 
-                                    A.data<double>(), 
-                                    angles_length.data<int>(),
-                                    input_angles.size(0),
-                                    input_angles.size(2));
+                                            param.data<double>(),
+                                            output_coords.data<double>(), 
+                                            A.data<double>(), 
+                                            angles_length.data<int>(),
+                                            input_angles.size(0),
+                                            input_angles.size(2));
 }
 
 
-int Angles2BackboneCPU_backward(torch::Tensor gradInput,
+int Angles2BackboneCPUAngles_backward(torch::Tensor gradInput,
                                 torch::Tensor gradOutput,
                                 torch::Tensor input_angles, 
+                                torch::Tensor param,
                                 torch::Tensor angles_length, 
                                 torch::Tensor A,   
                                 torch::Tensor dr_dangle
@@ -89,6 +134,7 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
     CHECK_CPU_INPUT(gradInput);
     CHECK_CPU_INPUT(gradOutput);
     CHECK_CPU_INPUT(input_angles);
+    CHECK_CPU_INPUT(param);
     CHECK_CPU_INPUT(dr_dangle);
     CHECK_CPU_INPUT(A);
     CHECK_CPU_INPUT_TYPE(angles_length, torch::kInt);
@@ -97,6 +143,7 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
     }
     
     cpu_computeDerivativesBackbone<double>( input_angles.data<double>(),
+                                    param.data<double>(),
                                     dr_dangle.data<double>(),
                                     A.data<double>(),
                                     angles_length.data<int>(),
@@ -109,4 +156,40 @@ int Angles2BackboneCPU_backward(torch::Tensor gradInput,
                                     angles_length.data<int>(),
                                     input_angles.size(0),
                                     input_angles.size(2));
+}
+
+int Angles2BackboneCPUParam_backward(torch::Tensor gradParam,
+                                torch::Tensor gradOutput,
+                                torch::Tensor input_angles, 
+                                torch::Tensor param,
+                                torch::Tensor angles_length, 
+                                torch::Tensor A,
+                                torch::Tensor dr_dparam
+                            ){
+    CHECK_CPU_INPUT(gradParam);
+    CHECK_CPU_INPUT(gradOutput);
+    CHECK_CPU_INPUT(input_angles);
+    CHECK_CPU_INPUT(param);
+    CHECK_CPU_INPUT(dr_dparam);
+    CHECK_CPU_INPUT(A);
+    CHECK_CPU_INPUT_TYPE(angles_length, torch::kInt);
+    if(gradOutput.ndimension() != 2){
+        ERROR("Incorrect input ndim");
+    }
+    
+    
+    cpu_computeDerivativesParam<double>( input_angles.data<double>(),
+                                        param.data<double>(),
+                                        dr_dparam.data<double>(),
+                                        A.data<double>(),
+                                        angles_length.data<int>(),
+                                        input_angles.size(0),
+                                        input_angles.size(2));
+    
+    cpu_backwardFromCoordsParam<double>( gradParam.data<double>(),
+                                            gradOutput.data<double>(),
+                                            dr_dparam.data<double>(),
+                                            angles_length.data<int>(),
+                                            input_angles.size(0),
+                                            input_angles.size(2));
 }

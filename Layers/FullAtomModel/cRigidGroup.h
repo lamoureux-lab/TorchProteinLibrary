@@ -37,6 +37,13 @@ template <typename T> cRigidGroup<T> *makeProGroup(cGeometry<T> &geo, uint atomI
 template <typename T> cRigidGroup<T> *makePheGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
 template <typename T> cRigidGroup<T> *makeTyrGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
 template <typename T> cRigidGroup<T> *makeTrpGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makePhosGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeC2Group(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeCytGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeThyGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeAdeGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeGuaGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
+template <typename T> cRigidGroup<T> *makeUraGroup(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr);
 template <typename T> std::ostream& operator<<(std::ostream& os, const cRigidGroup<T>& rg);
 
 

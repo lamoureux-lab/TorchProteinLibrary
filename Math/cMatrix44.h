@@ -21,6 +21,8 @@ public:
     
     void setDihedral(const T phi, const T psi, const T R);
     void setDihedralDphi(const T phi, const T psi, const T R);
+    void setDihedralDpsi(const T phi, const T psi, const T R);
+    void setDihedralDr(const T phi, const T psi, const T R);
     
     void setRx(const T angle);
     void setRy(const T angle);

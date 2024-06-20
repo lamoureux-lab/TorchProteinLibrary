@@ -124,7 +124,6 @@ void Coords2RMSD_forward(   torch::Tensor centered_coords_src,
     if(centered_coords_src.ndimension() != 2){
         ERROR("Incorrect input ndim");
     }
-
     int batch_size = num_atoms.size(0);
     for(int i=0; i<batch_size; i++){
         torch::Tensor UT_single = UT[i];

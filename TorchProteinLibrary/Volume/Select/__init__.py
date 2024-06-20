@@ -1,1 +1,1 @@
-from .SelectVolume import SelectVolume
+from .SelectVolume import CoordsSelect

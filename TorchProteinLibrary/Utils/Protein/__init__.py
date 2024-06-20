@@ -1,0 +1,1 @@
+from .ProteinStructure import ProteinStructure, ProteinBatch

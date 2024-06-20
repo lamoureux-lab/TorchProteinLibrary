@@ -6,3 +6,10 @@ void SelectVolume_forward(  torch::Tensor volume,
                             torch::Tensor features,
                             float res
                         );
+
+void SelectVolume_backward( torch::Tensor gradOutput,
+                            torch::Tensor gradInput,
+                            torch::Tensor coords,
+                            torch::Tensor num_atoms,
+                            float res
+                        );

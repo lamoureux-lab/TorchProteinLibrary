@@ -16,6 +16,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 	m.def("getSeqNumAtoms", &getSeqNumAtoms, "Get number of atoms in a sequence");
 
 	m.def("PDB2CoordsUnordered", &PDB2CoordsUnordered, "Convert PDB to coordinates in the PDB order");
+	m.def("PDB2CoordsOrdered", &PDB2CoordsOrdered, "Convert PDB to coordinates in the Angles2Coords order");
 	
 	m.def("Coords2TypedCoords_forward", &Coords2TypedCoords_forward, "Convert coordinates to atom types");
 	m.def("Coords2TypedCoords_backward", &Coords2TypedCoords_backward, "Backward of Coords2TypedCoords");

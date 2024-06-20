@@ -42,8 +42,7 @@ template <typename T> cMatrix44<T>::~cMatrix44(){
 		delete [] m;
     }
 }
-
-
+// AS: Need transformation matrices (setDihedral,setDihedralDphi,setDihedralDpsi,setDihedralDr, setRx, setRy, setRz, setDRx)
 template <typename T> void cMatrix44<T>::setDihedral(const T phi, const T psi, const T R){
 	m[0]=cos(psi);            	m[1]=sin(phi)*sin(psi);	m[2]=cos(phi)*sin(psi);		m[3]=R*cos(psi);
 	m[4]=0.0;					m[5]=cos(phi); 			m[6]=-sin(phi); 			m[7]=0.0;
@@ -57,6 +56,21 @@ template <typename T> void cMatrix44<T>::setDihedralDphi(const T phi, const T ps
 	m[8]=0;  	m[9]=cos(phi)*cos(psi);		m[10]=-sin(phi)*cos(psi);	m[11]=0;
 	m[12]=0;	m[13]=0.0;					m[14]=0.0;					m[15]=0;
 }
+
+template <typename T> void cMatrix44<T>::setDihedralDpsi(const T phi, const T psi, const T R){
+	m[0]=-sin(psi); 	m[1]=sin(phi)*cos(psi);		m[2]=cos(phi)*cos(psi);		m[3]=-R*sin(psi);
+	m[4]=0;				m[5]=0.0; 					m[6]=0.0;					m[7]=0;
+	m[8]=-cos(psi);  	m[9]=-sin(phi)*sin(psi);	m[10]=-cos(phi)*sin(psi);	m[11]=-R*cos(psi);
+	m[12]=0;			m[13]=0.0;					m[14]=0.0;					m[15]=0;
+}
+
+template <typename T> void cMatrix44<T>::setDihedralDr(const T phi, const T psi, const T R){
+	m[0]=0; 	m[1]=0.0;		m[2]=0.0;	m[3]=cos(psi);
+	m[4]=0;		m[5]=0.0; 		m[6]=0.0;	m[7]=0;
+	m[8]=0;  	m[9]=0.0;		m[10]=0.0;	m[11]=-sin(psi);
+	m[12]=0;	m[13]=0.0;		m[14]=0.0;	m[15]=0;
+}
+
 
 template <typename T> void cMatrix44<T>::setRx(const T angle){
 	m[0]=1;    	m[1]=0;	        	m[2]=0;            m[3]=0;

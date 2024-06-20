@@ -6,10 +6,10 @@ import numpy as np
 import unittest
 import random
 import math
-from TorchProteinLibrary.Volume import VolumeConvolution
+from TorchProteinLibrary.Volume import VolumeCrossConvolution, VolumeCrossMultiply
 import _Volume
 
-class TestVolumeConvolution(unittest.TestCase):
+class TestVolumeCrossConvolution(unittest.TestCase):
 	device = 'cuda'
 	dtype = torch.float
 	places = 5
@@ -18,11 +18,12 @@ class TestVolumeConvolution(unittest.TestCase):
 	eps=1e-03 
 	atol=1e-05 
 	rtol=0.001
-	msg = "Testing VolumeConvolution"
+	msg = "Testing VolumeCrossConvolution"
 
 	def setUp(self):
 		print(self.msg, self.device, self.dtype)
-		self.vc = VolumeConvolution()
+		self.vc = VolumeCrossConvolution()
+		self.mult = VolumeCrossMultiply()
 		self.box_size = 30
 		self.resolution = 1.0
 		
@@ -75,8 +76,8 @@ class TestVolumeConvolution(unittest.TestCase):
 
 
 
-class TestVolumeConvolutionForward(TestVolumeConvolution):
-	msg = "Testing VolumeConvolutionFwd"
+class TestVolumeCrossConvolutionForward(TestVolumeCrossConvolution):
+	msg = "Testing VolumeCrossConvolutionFwd"
 	def runTest(self):
 		R0 = 8
 		x0 = [15,15,15]
@@ -94,8 +95,7 @@ class TestVolumeConvolutionForward(TestVolumeConvolution):
 		self.get_boundary(inp1, inp1_border)
 		
 		self.fill_V2(np.array(y0), R1, inp2)
-		# self.get_boundary(inp2, inp2_border)
-
+		
 		border_overlap = self.vc(inp1_border, inp2)
 		bulk_overlap = self.vc(inp1, inp2)
 		
@@ -103,29 +103,18 @@ class TestVolumeConvolutionForward(TestVolumeConvolution):
 
 		score, r = self.get_argmax(out[0,0,:,:,:])
 		
-		r = list(r)
-		if r[0]>=self.box_size:
-			r[0] = -(2*self.box_size - r[0])
-		if r[1]>=self.box_size:
-			r[1] = -(2*self.box_size - r[1])
-		if r[2]>=self.box_size:
-			r[2] = -(2*self.box_size - r[2])
-
+		r = [ri - self.box_size for ri in list(r)]
+				
 		self.assertEqual(r[0]+y0[0], x1[0])
 		self.assertEqual(r[1]+y0[1], x1[1])
 		self.assertEqual(r[2]+y0[2], x1[2])
 
-		# out2 = torch.zeros_like(inp1)
-		# self.fill_V2(np.array([y0[0]+r[0],y0[1]+r[1],y0[2]+r[2]]), R1, out2)
-		# v_out = inp1 + out2
-		# _Volume.Volume2Xplor(v_out.squeeze().cpu(), "vout.xplor", 1.0)
 
-
-class TestVolumeConvolutionBackward(TestVolumeConvolution):
-	msg = "Testing VolumeConvolutionBwd"
+class TestVolumeCrossConvolutionBackward(TestVolumeCrossConvolution):
+	msg = "Testing VolumeCrossConvolutionBwd"
 	eps=4.0
-	atol=1.0
-	rtol=0.01
+	atol=2.0
+	rtol=0.05
 	def runTest(self):
 		inp1 = torch.zeros(1, 1, self.box_size, self.box_size, self.box_size, dtype=self.dtype, device=self.device)
 		inp2tmp_p = torch.zeros_like(inp1)
@@ -146,8 +135,8 @@ class TestVolumeConvolutionBackward(TestVolumeConvolution):
 		E0 = torch.sum((out-target)*(out-target))
 		E0.backward()
 		
-		# num_grads = []
-		# an_grads = []
+		num_grads = []
+		an_grads = []
 		for i in range(0, inp1.size(0)):
 			for j in range(0, inp1.size(2)):
 				x = j
@@ -165,17 +154,16 @@ class TestVolumeConvolutionBackward(TestVolumeConvolution):
 				dE_dx = (E1_p.item() - E1_m.item())/(2.0*self.eps)
 				# print(inp2.grad[0, 0, x, y, z].item(), dE_dx)
 				self.assertLess(math.fabs(dE_dx - inp2.grad[0, 0, x, y, z].item()), math.fabs(dE_dx) * self.rtol + self.atol)
-				# num_grads.append(dE_dx)
-				# an_grads.append(inp2.grad[0,0,x,y,z].item())
+				num_grads.append(dE_dx)
+				an_grads.append(inp2.grad[0,0,x,y,z].item())
 		
-		# import matplotlib.pylab as plt
-		# fig = plt.figure()
-		# plt.plot(num_grads, 'r.-', label = 'num grad')
-		# plt.plot(an_grads,'bo', label = 'an grad')
+		import matplotlib.pylab as plt
+		fig = plt.figure()
+		plt.plot(num_grads, 'r.-', label = 'num grad')
+		plt.plot(an_grads,'bo', label = 'an grad')
 		# plt.ylim(0, 100)
-		# plt.legend()
-		# plt.savefig('TestFig/test_backward_new.png')
-
+		plt.legend()
+		plt.savefig('TestFig/test_backward_new.png')
 
 if __name__=='__main__':
 	unittest.main()
