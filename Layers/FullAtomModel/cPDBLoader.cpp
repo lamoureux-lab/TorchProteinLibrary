@@ -23,40 +23,30 @@ cPDBLoader::cPDBLoader(){
 
 }
 cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_type) {
-//    std::cout << "Before File Open Test cPDBLoader call \n";
     int model_count;
     std::ifstream pfile(filename);
 	std::string line, header, xStr, yStr, zStr, atom_name, res_name, chain_name;
     int res_num;
 	// reading raw file
 
-//	std::cout << "Before while Test cPDBLoader call \n";
-//    std::cout << "chain_id "<< chain_id << " polymer_type " << polymer_type <<'\n';
-//    std::cout << filename;
-
 	while ( getline (pfile,line) ){
 		header = line.substr(0,4);
 
         if( header.compare("MODE")==0){
-//            std::cerr << "model number " << trim(line.substr(11,14)) << "\n";
             if (trim(line.substr(11,14))=="1"){
                model_count = 0;
             }
             if (trim(line.substr(11,14))!="1"){
-//                std::cerr << "DOES NOT EQUAL 1 \n";
                 model_count = 1;
             }
         }
 
-//        std::cerr << "model count " << model_count << "\n";
-//        std::cout << header << " \n" << std::endl;  //cPDBLoader call Test
+
 //        Instead of if poly type here, Get Atom Name Check if Heavy Atom, Then Get res_name to detect poly type
 //          Poly_type can then be detected, saved, and puch back from here so it never has to be inputted.
         if(polymer_type == 0 && model_count == 0){
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
-//                 std::cerr << " 0";
-//                 std::cout<<atom_name<<" ";
                 if(isHeavyAtom(atom_name)){
                     chain_name = line.substr(21, 1);
                     if(chain_id.empty()){
@@ -81,29 +71,20 @@ cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_t
                         res_names.push_back(res_name);
                         res_nums.push_back(res_num);
                         atom_names.push_back(atom_name);
-                        }
-//                     std::cout<<res_name<<": "<<atom_name << "| ";
+                    }
                 }
             }
-                // std::cout<<std::endl;
 
         }
-//        std::cerr << "1" << "\n";
+
 	    if(polymer_type == 1 && model_count == 0){
-//	        std::cerr << "PDBLoader polymer_tyoe 1 Test";
             if( header.compare("ATOM")==0){
                 atom_name = trim(line.substr(12,4));
-//                std::cerr << atom_name <<" "; //PDBLoader "if polymer_type = 1" test
-                if(isHeavyAtom(atom_name)){ //Needs to be adjusted for NA's
-//                    std::cerr << atom_name <<" "; //PDBLoader "is heavy atom" test
+                if(isHeavyAtom(atom_name)){
                     res_name = trim(line.substr(17,3));
-//                    std::cout << res_name << " ";
                     if(isNucleotide(res_name, polymer_type)){
-//                        std::cout << atom_name <<" "; //PDBLoader "is nucleotide" test
                         chain_name = line.substr(21, 1);
-//                        std::cout << "chain name:" << chain_name;
                         if(chain_id.empty()){
-//                        std::cout << "1";
                             xStr = line.substr(30,8);
                             yStr = line.substr(38,8);
                             zStr = line.substr(46,8);
@@ -115,7 +96,6 @@ cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_t
                             atom_names.push_back(atom_name);
                         }
                         if(chain_name == chain_id && chain_id.length() > 0){
-//                            std::cout << "2";
                             xStr = line.substr(30,8);
                             yStr = line.substr(38,8);
                             zStr = line.substr(46,8);
@@ -125,20 +105,16 @@ cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_t
                             res_names.push_back(res_name);
                             res_nums.push_back(res_num);
                             atom_names.push_back(atom_name);
-//                            std::cout<<res_num << "\n"; //PDBLoader isNucleotide Test
                         }
                     }
                 }
             }
 	    }
 	    if(polymer_type == 2 && model_count == 0){
-//	        std::cerr << " 2";
             if( header.compare("ATOM")==0){
-//                std::cout << header << "cPDBLoader if header compare Test \n" << std::endl;
                 atom_name = trim(line.substr(12,4));
                 if(isHeavyAtom(atom_name)){
                     res_name = trim(line.substr(17,3));
-//                    std::cout<<atom_name<<" " << res_name << std::endl;
                     if(isNucleotide(res_name, polymer_type)){
                         chain_name = line.substr(21, 1);
                         if(chain_id.empty()){
@@ -162,13 +138,10 @@ cPDBLoader::cPDBLoader(std::string filename, std::string chain_id, int polymer_t
                             res_names.push_back(res_name);
                             res_nums.push_back(res_num);
                             atom_names.push_back(atom_name);
-                            // std::cout<<res_name<<" "<<atom_name;
                         }
                     }
                 }
             }
-                // std::cout<<std::endl;
-
 	    }
 	}
     

@@ -35,7 +35,7 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 		# residue_1name = dindex_to_1[d3_to_index[residue_3name]]
 		current_residue = Residue((" ", resnums[batch_idx, atom_idx].item(), " "), residue_3name, current_chain.get_id())
 		
-		for atom_idx in range(num_atoms[batch_idx].item()):
+		for atom_idx in range(num_atoms[batch_idx].item()): ##added -1? was that helpful/needed
 			if previous_resnum < resnums[batch_idx, atom_idx].item():
 				residue_3name = _tensor2str(resnames[batch_idx, atom_idx, :])
 				# residue_1name = dindex_to_1[d3_to_index[residue_3name]]
@@ -57,13 +57,10 @@ def Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_at
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				current_residue.add(atom)
 			if polymer_type == 1:
-				#error from pdb.atom [for poly type: change how atom is saved and then save as pdb to be read by barnaba]
-				# print(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				current_residue.add(atom)
 
 			if polymer_type == 2:
-				# print(atom_name, coord, 0.0, 1.0, "", atom_name, None)
 				if len(atom_name) == 0:
 					continue
 				atom = Atom(atom_name, coord, 0.0, 1.0, "", atom_name, None)
@@ -108,12 +105,10 @@ def BioStructure2Dihedrals(structure, polymer_type):
 			angles[9, i] = nu3[i]
 			angles[10, i] = nu4[i]
 			angles[11, i] = chi[i]
-			# print(str(residue)[10])
 			# xis = getRotamer(residue, polymer_type) # Commented out for test, but they aren't currently used anyway
 			# for j, xi in enumerate(xis):			# Commented out for test, but they aren't currently used anyway
 			# 	angles[12 + j, i] = xis[j]			# Commented out for test, but they aren't currently used anyway
 		return angles
-		# print("Error Polymer Type 1 Not Implemented for TPL/TPL/FullAtomModel/Coords2PDB.py/Biostructure2Dihedrals")
 
 def getBackbone(residues, polymer_type= 0):
 	if polymer_type == 0:
@@ -160,11 +155,6 @@ def getBackbone(residues, polymer_type= 0):
 		chain_idx = str(0)
 
 		for i, res_i in enumerate(residues):
-			# print("atom list ",res_i.get_list())
-			# print("res", res_i)
-			# print("res_i 9:10",str(res_i)[9:10])
-			# print("res_i 9:11",str(res_i)[9:11])
-			# print("parent ",res_i.get_parent())
 			if str(res_i.get_parent()) > chain_idx:  #& res_i.get_atom() == "O5'":
 				chain_idx = str(res_i.get_parent())
 				#res_idx = res_i
@@ -204,7 +194,6 @@ def getBackbone(residues, polymer_type= 0):
 					P_ip1 = res_ip1["P"].get_vector()
 					O5_ip1 = res_ip1["O5'"].get_vector()
 					zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
-					# print("residue:", res_i, "C3", C3_i, "O3", O3_i, "P", P_ip1, "O5", O5_ip1, "zeta:", calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
 				# nu0.append(calc_dihedral(C4p_i, O4_i, C1_i, C2_i)) #original
 				nu0.append(calc_dihedral(O4_i, C4p_i, C5_i, O5_i) - calc_dihedral(O5_i, C5_i, C4p_i, C3_i)) # modified to point towards O4, also switched from o3 to from o5
@@ -287,7 +276,6 @@ def getBackbone(residues, polymer_type= 0):
 				P_ip1 = res_ip1["P"].get_vector()
 				O5_ip1 = res_ip1["O5'"].get_vector()
 				zeta.append(calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
-				# print("residue:", res_i, "C3", C3_i, "O3", O3_i, "P", P_ip1, "O5", O5_ip1, "zeta:", calc_dihedral(C3_i, O3_i, P_ip1, O5_ip1))
 
 			if i == (len(residues) - 1):
 				epsilon.append(0.0)
@@ -305,8 +293,6 @@ def getBackbone(residues, polymer_type= 0):
 			nu4.append(calc_dihedral(C3_i, C4p_i, O4_i, C1_i)) #
 			# nu4.append(calc_dihedral(C5_i, C4p_i, O4_i, C1_i))  ## modified w/ C5 instead of C3, to point towards C1
 			chi.append(calc_dihedral(C2_i, C1_i, N_i, C_i)  + (np.pi/2))
-
-			# print(chi)
 
 		return alpha, beta, gamma, delta, epsilon, zeta, nu0, nu1, nu2, nu3, nu4, chi
 
@@ -682,23 +668,16 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 			angles[batch_idx,:,:length[batch_idx].item()] = dihedrals
 
 	if polymer_type == 1:
-		# i = 0
-		# for i in range(len(coords[0]) - 2):
-		# 	print('x:',torch.Tensor.detach(coords[0, i]), ", y:", torch.Tensor.detach(coords[0, i+1]), ", z:", torch.Tensor.detach(coords[0, i+2]))
-		# 	i += 2
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
-		# print("length", length)
 		max_seq_length = max(length)
 		batch_size = length.size(0)
 		angles = torch.zeros(batch_size, 12, max_seq_length, dtype=torch.float32, device='cpu')
 		for batch_idx, structure in enumerate(structures):
 			dihedrals = BioStructure2Dihedrals(structure, polymer_type)
-			# print(dihedrals)
 			angles[batch_idx, :, :length[batch_idx].item()] = dihedrals
 
 	elif polymer_type == 2:
 		structures, length = Coords2BioStructure(coords, chainnames, resnames, resnums, atomnames, num_atoms, polymer_type)
-		# print("length", length)
 		max_seq_length = max(length)
 		batch_size = length.size(0)
 		angles = torch.zeros(batch_size, 12, max_seq_length, dtype=torch.float32, device='cpu')
@@ -709,7 +688,6 @@ def Coords2Angles(coords, chainnames, resnames, resnums, atomnames, num_atoms, p
 	type_list = [0, 1, 2]
 
 	if polymer_type not in type_list:
-		print(polymer_type)
 		print("C2A: Polymer Type is Not Valid")
 
 	return angles, length

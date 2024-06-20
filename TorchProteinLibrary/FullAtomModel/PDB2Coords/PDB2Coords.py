@@ -55,7 +55,6 @@ class PDB2CoordsOrdered:
 					
 	def __call__(self, filenames, chain_ids=[], polymer_types=[0]):
 
-		# print("1")
 		filenamesTensor = convertStringList(filenames)
 		batch_size = len(filenames)
 		num_atoms = torch.zeros(batch_size, dtype=torch.int)
@@ -66,7 +65,6 @@ class PDB2CoordsOrdered:
 		output_atomnames_cpu = torch.zeros(batch_size, 1, 1, dtype=torch.uint8)
 		mask = torch.zeros(batch_size, 1, dtype=torch.uint8)
 		chain_tensor = convertStringList(chain_ids)
-		# print("2")
 
 		_FullAtomModel.PDB2CoordsOrdered(filenamesTensor, output_coords_cpu, output_chainnames_cpu, output_resnames_cpu,
 										output_resnums_cpu, output_atomnames_cpu, mask, num_atoms, chain_tensor, polymer_types)
@@ -137,7 +135,6 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 
 		if num_atoms.size():
 			for i in range(batch_size):
-			# print('batch_size', batch_size)
 				if add_model:
 					fout.write("MODEL %d\n"%(i+last_model_num))
 
@@ -146,7 +143,6 @@ def writePDB(filename, coords, chainnames, resnames, resnums, atomnames, num_ato
 					chain_name = tensor2string(chainnames[i,j,:])
 					if len(chain_name) == 0:
 						chain_name = "A"
-					# print(chain_name)
 					atom_name = tensor2string(atomnames[i,j,:])
 					res_name = tensor2string(resnames[i,j,:])
 					res_num = resnums[i,j].item() + 1

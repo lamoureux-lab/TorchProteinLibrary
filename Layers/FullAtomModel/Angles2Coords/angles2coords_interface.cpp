@@ -99,12 +99,8 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 
                 int length = single_angles.sizes()[1];
 
-//                std::cout << "single_sequence" << single_sequence << "\n";
-//                std::cout << "size of single_sequence" << (int)single_sequence.sizes()[0] << "\n";
-//                std::cout << "size of single_sequence[0]" << sizeof(single_sequence[0]) << "\n";
+
                 int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
-//                int num_atoms = (((int)single_sequence.sizes()[0] - 1) * 9) - 2 + (114); // for test use getNumAtoms
-//                std::cout << "interface num_atoms" << num_atoms << std::endl; // for test use getNumAtoms
 
                 if( single_coords.sizes()[0]<3*num_atoms){
                     ERROR("incorrect coordinates tensor length");
@@ -126,7 +122,6 @@ void Angles2Coords_forward(     torch::Tensor sequences,
 
                 AT_DISPATCH_FLOATING_TYPES(single_angles.type(), "cConformation", ([&] {
                     cConformation<scalar_t> conf( seq, single_angles.data<scalar_t>(), dummy_grad.data<scalar_t>(), length, single_coords.data<scalar_t>(), polymer_type, chain_names);
-//                    std::cout << "atom_names" << single_atom_names << "res_names" << single_res_names << std::endl;
                     for(int j=0; j<conf.groups.size(); j++){
                         for(int k=0; k<conf.groups[j]->atomNames.size(); k++){
                             int idx = conf.groups[j]->atomIndexes[k];
@@ -137,12 +132,8 @@ void Angles2Coords_forward(     torch::Tensor sequences,
                             StringUtil::string2Tensor(conf.groups[j]->atomNames[k], single_atom_name);}
                     }
                 }));
-            }
         }
-
-//      if(polymer_type == 2){
-//      std::cout << "Error Polymer Type 2 Not Implemented in angles2coords_interface.cpp \n";
-//      }
+    }
 }
 
 void Angles2Coords_backward(    torch::Tensor grad_atoms,
@@ -176,8 +167,6 @@ void Angles2Coords_backward(    torch::Tensor grad_atoms,
 //      Get Num Atoms
         uint length = single_angles.sizes()[1];
         int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
-//        int num_atoms = ((seq.size() -1) * 9)- 2 + (114);
-//        std::cout << "interface back num_atoms"<< num_atoms << "\n";
         
 //      Conformation
         torch::Tensor dummy_coords = torch::zeros({3*num_atoms}, torch::TensorOptions().dtype(grad_atoms.dtype()));
@@ -218,7 +207,6 @@ void Angles2Coords_save(    const char* sequence,
 int getSeqNumAtoms( const char *sequence, int polymer_type, torch::Tensor chain_names){
     bool add_terminal = false;
     std::string seq(sequence);
-//    int polymer_type = polymer_type; //"hard coded" need to change to arg
     int num_atoms = ProtUtil::getNumAtoms(seq, add_terminal, polymer_type, chain_names);
     return num_atoms;
 }

@@ -71,12 +71,8 @@ class Angles2CoordsFunction(Function):
 		if polymer_type == 1 or polymer_type == 2:
 			ctx.save_for_backward(input_angles_cpu, sequenceTensor, torch.tensor(polymer_type, dtype=torch.int32), chain_names)
 			input_angles_cpu = input_angles_cpu.contiguous()
-			# print('num atoms', num_atoms)
-			# print("a2c function poly 1 seq",str(convert2str(sequenceTensor))[2:-1])
-			# max_num_atoms = (int(len(str(convert2str(sequenceTensor))) - 3) * 9) + (- 2) + (114) #for test [(seq - 3) * 6 for backbone length][(+ (-2)) for loss of phos group due to new chain] + 52 due to addition of Cyt & Thy rigid group without changing to getNum atoms
 			max_num_atoms = num_atoms
 			batch_size = input_angles_cpu.size(0)
-			# print('batch size', batch_size)
 			output_coords_cpu = torch.zeros(batch_size, 3 * max_num_atoms, dtype=input_angles_cpu.dtype)
 			# output_chainnames_cpu = torch.zeros(batch_size, max_num_atoms, 1, dtype=torch.uint8).fill_(ord('A')) ##needs to be able to detect and write correct chain names
 			output_chainnames_cpu = chain_names ##should be modified to detect new chains rather than just assign as chain_names arg
@@ -84,10 +80,6 @@ class Angles2CoordsFunction(Function):
 			output_resnums_cpu = torch.zeros(batch_size, max_num_atoms, dtype=torch.int)
 			output_atomnames_cpu = torch.zeros(batch_size, max_num_atoms, 4, dtype=torch.uint8)
 
-			# print(sequenceTensor,
-			# 	 input_angles_cpu,
-			# 	 polymer_type,
-			# 	 max_num_atoms)
 
 			_FullAtomModel.Angles2Coords_forward(sequenceTensor,
 												 input_angles_cpu,
@@ -102,20 +94,16 @@ class Angles2CoordsFunction(Function):
 				raise(Exception('Angles2CoordsFunction: forward Nan'))
 
 			ctx.mark_non_differentiable(output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms)
-			# print("output_chainnames_cpu:", output_chainnames_cpu, "\n")
 			return output_coords_cpu, output_chainnames_cpu, output_resnames_cpu, output_resnums_cpu, output_atomnames_cpu, num_atoms
 	
 	# @profile
 	@staticmethod 
-	def backward(ctx, grad_atoms_cpu, *kwargs): ##, polymer_type=0, chain_names=torch.zeros(240, 1, dtype=torch.uint8).fill_(ord('A'))
+	def backward(ctx, grad_atoms_cpu, *kwargs):
 		# ATTENTION! It passes non-contiguous tensor
 		grad_atoms_cpu = grad_atoms_cpu.contiguous()		
 		input_angles_cpu, sequenceTensor, polymer_type, chain_names = ctx.saved_tensors
 		polymer_type_int = int(polymer_type)
 		grad_angles_cpu = torch.zeros_like(input_angles_cpu)
-
-		# print("input angles:", input_angles_cpu)
-		# print("grad angles:", grad_angles_cpu)
 
 
 		_FullAtomModel.Angles2Coords_backward(grad_atoms_cpu, grad_angles_cpu, sequenceTensor, input_angles_cpu, polymer_type_int, chain_names)
@@ -133,7 +121,6 @@ class Angles2Coords(Module):
 	def forward(self, input_angles_cpu, sequences, chain_names, polymer_type=0):
 		stringListTensor = convertStringList(sequences)
 				
-		# print(chain_names)
 		self.num_atoms = []
 		for seq in sequences:
 			self.num_atoms.append(_FullAtomModel.getSeqNumAtoms(seq, polymer_type, chain_names))

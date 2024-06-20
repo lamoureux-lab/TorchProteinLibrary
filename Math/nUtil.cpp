@@ -193,7 +193,6 @@ bool ProtUtil::isNucleotide(std::string &res_name, int polymer_type){
         return false;
 }
 
-//AS: getNumAtoms returns num_atoms used in line 12 of simple_test.py?
 uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer_type, torch::Tensor chain_names){
     uint num_atoms = 0;
 
@@ -215,26 +214,15 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
         }
 
      if (polymer_type == 1 || polymer_type == 2){
-//         std::cout << "get_num_atoms p1 chain names:" << chain_names.slice(0,0) << std::endl;
          std::string chain_idx = "0";
-//         int chain_num = 0;
          torch::Tensor single_chain_names = chain_names[0];
-//         std::cout << "size of single_chain_name: "<< single_chain_names.size(0) << "\n";
-//         std::cout << sequence;
 
          for(int i=0; i<sequence.length(); i++){
-//            std::cout << sequence[i] << "\n";
 
             std::string NA(1, sequence[i]);
 
-//              std::cout << "NA i:" << NA << "\n";
-//            std::cout << "single_chain_name[num_atoms][0]: "<< single_chain_names[num_atoms][0] << "\n";
-//            std::cout << "single_chain_name[num_atoms]: "<< single_chain_names[num_atoms] << "\n";
-//            std::cout << "chain_idx before update: "<< chain_idx << "\n";
-
             if ((StringUtil::tensor2String(single_chain_names[num_atoms])) > chain_idx ){
                 chain_idx = (StringUtil::tensor2String(single_chain_names[num_atoms]));
-//                std::cout << "chain_idx after update: "<< chain_idx;
 
                 if(NA == std::string("A") || NA == std::string("G")){
                     std::string term_atom("C4");
@@ -244,8 +232,6 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                     std::string term_atom("C6");
                     num_atoms += getAtomIndex(NA, term_atom, true, polymer_type) + 1;
                 }
-//                ++i;
-//                ++chain_num;
                 continue;
             }
 
@@ -258,9 +244,7 @@ uint ProtUtil::getNumAtoms(std::string &sequence, bool add_terminal, int polymer
                 num_atoms += getAtomIndex(NA, term_atom, false, polymer_type) + 1;
             }
          }
-//        std::cout << "chain_num" << chain_num;
-//        num_atoms -= (3 * chain_num); // 3 for 1 chain (need function or arg to get number of chains)
-//        std::cout << "get num atoms:" << num_atoms << std::endl;
+
         return num_atoms;
     }
 }

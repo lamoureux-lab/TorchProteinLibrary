@@ -216,9 +216,6 @@ template <typename T> cRigidGroup<T> *makePhosGroup(cGeometry<T> &geo, uint atom
     g->addAtom(cVector3<T>(0.32, 1.24, 0.79), "OP2", atomIndex+2, residueName, residueIndex, atoms_global_ptr); // was OP1(-0.17653, -1.23469, -0.805979) -> OP2 [original OP2 was (0.0135, -0.09, -1.5)] now from gauss
     return g;
 }
-//    g->addAtom(cVector3<T>(0,0,1), "Z", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
-//    g->addAtom(cVector3<T>(1,0,0), "OX", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
-//    g->addAtom(cVector3<T>(0,1,0), "OY", atomIndex, residueName, residueIndex, atoms_global_ptr); //test
 //    g->addAtom(cVector3<T>(-0.184111, -1.287736, 0.84606), "OP1", atomIndex+1, residueName, residueIndex, atoms_global_ptr); // was exp(-0.014, 1.375, -0.45) now from guassian -> OP1
 //    g->addAtom(cVector3<T>(1.40141, 0.67988, 0.365802), "OP2", atomIndex+2, residueName, residueIndex, atoms_global_ptr); // was OP1(-0.17653, -1.23469, -0.805979) -> OP2 [original OP2 was (0.0135, -0.09, -1.5)] now from gauss
 template <typename T> cRigidGroup<T> *makeC2Group(cGeometry<T> &geo, uint atomIndex, char residueName, uint residueIndex, T *atoms_global_ptr){
