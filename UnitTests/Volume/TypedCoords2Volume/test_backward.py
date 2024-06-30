@@ -6,7 +6,7 @@ import numpy as np
 
 from TorchProteinLibrary.FullAtomModel import Angles2Coords
 from TorchProteinLibrary.FullAtomModel import Coords2TypedCoords
-from TorchProteinLibrary.FullAtomModel import Coords2CenteredCoords
+from TorchProteinLibrary.FullAtomModel import Coords2Center, CoordsTranslate
 from TorchProteinLibrary.Volume import TypedCoords2Volume
 
 import _Volume
@@ -53,9 +53,9 @@ if __name__=='__main__':
 
 	coords.requires_grad_()
 	potential.requires_grad_()
-	
 	tc2v = TypedCoords2Volume()
-	density = tc2v(coords.cuda(), num_atoms_of_type.cuda(), offsets.cuda())
+	print(coords.size(), num_atoms_of_type.size())
+	density = tc2v(coords.cuda(), num_atoms_of_type.cuda())
 	E_0 = torch.sum(density*potential)
 	E_0.backward()
 	grad_an = torch.zeros(coords.grad.size(), dtype=torch.double, device='cpu').copy_(coords.grad.data)

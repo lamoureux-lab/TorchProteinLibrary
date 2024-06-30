@@ -11,6 +11,7 @@ from TorchProteinLibrary.FullAtomModel.CoordsTransform import CoordsTranslate, C
 from TorchProteinLibrary.Volume import TypedCoords2Volume
 
 from TorchProteinLibrary.Utils import ProteinBatch, ScalarField
+import _Volume
 
 class TestTypedCoords2Volume(unittest.TestCase):
 	device = 'cuda'
@@ -84,7 +85,7 @@ class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 		import matplotlib.pylab as plt
 		fig = plt.figure(figsize=(10, 10))
 		axis = fig.add_subplot(111, projection='3d')
-		ScalarField(volume[0,0,:,:,:], resolution=self.resolution).isosurface(0.1, axis=axis, alpha=0.0)
+		# ScalarField(volume[0,0,:,:,:], resolution=self.resolution).isosurface(0.1, axis=axis, alpha=0.0)
 		num_atoms = self.num_atoms_of_type[0,0].item()
 		c = self.coords[0,0,:].view(int(self.coords.size(2)/3), 3)[:num_atoms, :]
 		axis.scatter(c[:,0].cpu().numpy(), c[:,1].cpu().numpy(), c[:,2].cpu().numpy())
@@ -108,7 +109,7 @@ class TestTypedCoords2VolumeForward(TestTypedCoords2Volume):
 					r2 = (x-xc)*(x-xc) + (y-yc)*(y-yc) + (z-zc)*(z-zc)
 					self.assertGreaterEqual(volume_gpu[i,j,x_i,y_i,z_i].item(), np.exp(-r2/2.0))
 		
-		#_Volume.Volume2Xplor(volume[0,:,:,:], "TestFig/total_b0_vtest_%d_%.1f.xplor"%(self.box_size, self.resolution), self.resolution)
+		_Volume.Volume2Xplor(volume[0,:,:,:], "TestFig/total_b0_vtest_%d_%.1f.xplor"%(self.box_size, self.resolution), self.resolution)
 
 class TestTypedCoords2VolumeForward_Double(TestTypedCoords2VolumeForward):
 	dtype=torch.double

@@ -28,10 +28,10 @@ if __name__=='__main__':
 				'TorchProteinLibrary.RMSD',
 				'TorchProteinLibrary.RMSD.Coords2RMSD',
 				#Physics
-				'TorchProteinLibrary.Physics',
-				'TorchProteinLibrary.Physics.AtomNames2Params',
-				'TorchProteinLibrary.Physics.Coords2Elec',
-				'TorchProteinLibrary.Physics.Coords2Stress',
+				# 'TorchProteinLibrary.Physics',
+				# 'TorchProteinLibrary.Physics.AtomNames2Params',
+				# 'TorchProteinLibrary.Physics.Coords2Elec',
+				# 'TorchProteinLibrary.Physics.Coords2Stress',
 				#Graph
 				# 'TorchProteinLibrary.Graph.Coords2Neighbours',
 				#Utils

@@ -11,7 +11,7 @@
 
 double getMaxEig(torch::Tensor TMat, double *U){
     //soving eigenvalues problem
-    std::tuple<torch::Tensor, torch::Tensor> result = TMat.eig(true);
+    std::tuple<torch::Tensor, torch::Tensor> result = torch::linalg::eig(TMat);
     //getting maximum eigenvalue and eigenvector
     double max_eig_val = std::numeric_limits<double>::min();
     torch::Tensor max_eig_vec = torch::zeros({4}, torch::TensorOptions().dtype(torch::kDouble));

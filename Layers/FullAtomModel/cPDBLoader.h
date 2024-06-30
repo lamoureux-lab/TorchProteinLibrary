@@ -4,7 +4,7 @@
 #include <vector>
 #include <cVector3.h>
 #include <cMatrix33.h>
-#include <TH/TH.h>
+#include <torch/extension.h>
 
 class cPDBLoader {
 public:
